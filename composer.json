@@ -1,0 +1,34 @@
+{
+    "name": "webware/webware-tools",
+    "description": "CI/CD tool config for the webware-* ecosystem.",
+    "license": "BSD-3-Clause",
+    "keywords": [
+        "webware",
+        "tools",
+        "mago"
+    ],
+    "authors": [
+        {
+            "name": "Joey Smith",
+            "email": "jsmith@webinertia.net",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "~8.3.0 || ~8.4.0 || ~8.5.0",
+        "webmozart/assert": "^2.4.1"
+    },
+    "require-dev": {
+        "roave/security-advisories": "dev-master"
+    },
+    "autoload": {
+        "psr-4": {
+            "Webware\\Tools\\": "src/"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "config": {
+        "sort-packages": true
+    }
+}

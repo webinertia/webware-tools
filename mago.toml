@@ -10,9 +10,10 @@ includes = ["vendor"]
 excludes = []
 
 [source.glob]
-literal-separator = true
+literal-separator = false
 
 [formatter]
+minimum-fail-level = "help"
 preset = "default"
 preserve-breaking-member-access-chain = true
 preserve-breaking-member-access-chain-first-method-on-same-line = true
@@ -25,18 +26,54 @@ preserve-breaking-condition-expression = true
 preserve-redundant-logical-binary-expression-parentheses = true
 
 [linter]
+minimum-fail-level = "help"
 integrations = ["laminas", "phpunit"]
 
 [linter.rules]
-ambiguous-function-call = { enabled = false }
-literal-named-argument = { enabled = false }
+# Clarity Rules
+literal-named-argument = { enabled = true }
 halstead = { effort-threshold = 7000 }
+valid-docblock = { enabled = true }
+no-negated-ternary = { enabled = true }
+no-short-bool-cast = { enabled = true }
+
+# Best Practice Rules
+no-inline ={ enabled = true }
+no-array-accumulation-in-loop = { enabled = true }
+no-literal-namespace-string = { enabled = true }
+no-parameter-shadowing = { enabled = true }
+no-side-effects-with-declarations = { enabled = true }
+prefer-array-spread = { enabled = true }
+prefer-explode-over-preg-split = { enabled = true }
+prefer-first-class-callable = { check-functions = true }
+prefer-test-attribute = { enabled = true }
+require-namespace = { enabled = true }
+prefer-pre-increment = { enabled = true }
+prefer-self-return-type = { enabled = true }
+sorted-integer-keys = { enabled = true }
+yoda-conditions = { enabled = true }
+
+# Consistency Rules
+file-name = { enabled = true }
+array-style = { level = "help" }
+block-statement = { level = "help" }
+braced-string-interpolation = { enabled = true, level = "help" }
+no-alias-function = { level = "help" }
+no-php-tag-terminator = { level = "help" }
+no-trailing-space = { level = "help" }
+string-style = { enabled = true, level = "help" }
+ambiguous-constant-access = { enabled = true }
+ambiguous-function-call = { enabled = true }
+class-name = { psr = true }
+function-name = { camel = true }
+
 
 # Maintainability
 # Exclude test from this rule
 too-many-methods = { exclude = ["test/"] }
 
 [analyzer]
+minimum-fail-level = "help"
 plugins = ["psr-container"]
 find-unused-definitions = true
 find-unused-expressions = true

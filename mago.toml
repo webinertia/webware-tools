@@ -25,12 +25,16 @@ preserve-breaking-condition-expression = true
 preserve-redundant-logical-binary-expression-parentheses = true
 
 [linter]
-integrations = ["phpunit"]
+integrations = ["laminas", "phpunit"]
 
 [linter.rules]
 ambiguous-function-call = { enabled = false }
 literal-named-argument = { enabled = false }
 halstead = { effort-threshold = 7000 }
+
+# Maintainability
+# Exclude test from this rule
+too-many-methods = { exclude = ["test/"] }
 
 [analyzer]
 plugins = ["psr-container"]
@@ -49,3 +53,7 @@ allow-array-truthy-operand = false
 no-boolean-literal-comparison = true
 check-missing-type-hints = true
 register-super-globals = false
+
+class-initializers = [
+    "PHPUnit\\Framework\\TestCase::setUp"
+]

@@ -1,0 +1,9 @@
+/.phpunit.cache
+/coverage.txt
+/phpunit.xml
+/infection.log
+/summary.log
+/vendor/
+/.vscode
+/mago-results.txt
+*:Zone.Identifier

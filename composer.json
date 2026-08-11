@@ -1,6 +1,6 @@
 {
     "name": "webware/webware-tools",
-    "description": "CI/CD tool config for the webware-* ecosystem.",
+    "description": "CI/CD tool config for the webware.",
     "license": "BSD-3-Clause",
     "keywords": [
         "webware",
@@ -15,8 +15,7 @@
         }
     ],
     "require": {
-        "php": "~8.3.0 || ~8.4.0 || ~8.5.0",
-        "webmozart/assert": "^2.4.1"
+        "php": "~8.4.0 || ~8.5.0"
     },
     "require-dev": {
         "roave/security-advisories": "dev-master"
@@ -26,7 +25,6 @@
             "Webware\\Tools\\": "src/"
         }
     },
-    "minimum-stability": "dev",
     "prefer-stable": true,
     "config": {
         "sort-packages": true

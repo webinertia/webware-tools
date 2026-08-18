@@ -1,5 +1,5 @@
-#:schema https://mago.carthage.software/1.45.0/schema.json
-version = "1"
+#:schema https://mago.carthage.software/1.47.1/schema.json
+version = "1.47.1"
 php-version = "8.5.0"
 
 [source]
@@ -127,3 +127,18 @@ class-initializers = [
     "Laminas\\Form\\Element::init",
     "Laminas\\InputFilter\\BaseInputFilter::init"
 ]
+
+[guard]
+mode = "structural"
+
+[[guard.structural.rules]]
+on = "Webware\\**"
+target = "interface"
+must-be-named = "*Interface"
+reason = "Interfaces must follow the *Interface naming convention."
+
+[[guard.structural.rules]]
+on = "Webware\\**"
+target = "trait"
+must-be-named = "*Trait"
+reason = "Traits must follow the *Trait naming convention."

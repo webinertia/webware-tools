@@ -1,19 +1,22 @@
-#:schema https://mago.carthage.software/1.46.0/schema.json
-# Welcome to Mago!
-# For full documentation, see https://mago.carthage.software/1.46.0/en/tools/overview/
+#:schema https://mago.carthage.software/1.45.0/schema.json
 version = "1"
 php-version = "8.5.0"
 
 [source]
 paths = ["src", "test"]
 includes = ["vendor"]
-excludes = []
+excludes = [
+    "vendor/nikic/fast-route/test/HackTypechecker/fixtures/all_options.php",
+    "vendor/nikic/fast-route/test/HackTypechecker/fixtures/no_options.php",
+    "vendor/nikic/fast-route/test/HackTypechecker/fixtures/empty_options.php"
+]
 
 [source.glob]
 literal-separator = false
 
 [formatter]
 preset = "default"
+method-chain-breaking-style = "same_line"
 preserve-breaking-member-access-chain = true
 preserve-breaking-member-access-chain-first-method-on-same-line = true
 preserve-breaking-argument-list = true
@@ -23,20 +26,23 @@ preserve-breaking-attribute-list = true
 preserve-breaking-conditional-expression = true
 preserve-breaking-condition-expression = true
 preserve-redundant-logical-binary-expression-parentheses = true
+preserve-breaking-binary-expression = true
+space-after-logical-not-unary-prefix-operator = true
+always-break-named-arguments-list = true
+align-named-arguments = true
+align-assignment-like = true
+sort-class-methods = true
 
 [linter]
 minimum-fail-level = "Help"
 integrations = ["laminas", "phpunit"]
 
 [linter.rules]
-# Clarity Rules
 literal-named-argument = { enabled = true }
 halstead = { effort-threshold = 7000 }
 valid-docblock = { enabled = true }
 no-negated-ternary = { enabled = true }
 no-short-bool-cast = { enabled = true }
-
-# Best Practice Rules
 no-inline = { enabled = true }
 no-array-accumulation-in-loop = { enabled = true }
 no-literal-namespace-string = { enabled = true }
@@ -51,8 +57,6 @@ prefer-pre-increment = { enabled = true }
 prefer-self-return-type = { enabled = true }
 sorted-integer-keys = { enabled = true }
 yoda-conditions = { enabled = true }
-
-# Consistency Rules
 file-name = { enabled = true }
 array-style = { level = "Help" }
 block-statement = { level = "Help" }
@@ -64,7 +68,7 @@ string-style = { enabled = true, level = "Help" }
 ambiguous-constant-access = { enabled = true }
 ambiguous-function-call = { enabled = true }
 class-name = { psr = true }
-function-name = { camel = true, exclude = ["functions/"] }
+function-name = { camel = true, exclude = ["src/functions/*"] }
 interface-name = { psr = true }
 method-name = { enabled = true, camel = true }
 no-fully-qualified-global-class-like = { enabled = true }
@@ -73,12 +77,7 @@ no-fully-qualified-global-function = { enabled = true }
 property-name = { enabled = true }
 trait-name = { psr = true }
 variable-name = { enabled = true, camel = true, either = false }
-
-# Maintainability
-# Exclude test from this rule
 too-many-methods = { exclude = ["test/"] }
-
-# Redundancy Rules
 no-iterator-to-array-in-foreach = { enabled = true }
 no-duplicate-match-arm = { level = "Help" }
 no-empty-comment = { level = "Help" }
@@ -86,12 +85,8 @@ no-empty-loop = { level = "Help" }
 no-is-null = { enabled = true, level = "Help" }
 no-null-property-init = { enabled = true }
 no-redundant-else = { enabled = true }
-
-# Security Rules
 disallowed-type-instantiation = { enabled = true }
 no-debug-symbols = { level = "Help" }
-
-# Correctness Rules
 no-assign-in-argument = { enabled = true }
 no-dead-store = { enabled = true }
 no-redundant-variable = { enabled = true }
@@ -101,16 +96,16 @@ no-unused-static = { enabled = true }
 switch-continue-to-break = { enabled = true }
 invalid-open-tag = { level = "Help" }
 
-
 [analyzer]
-plugins = ["psr-container"]
+excludes = ["test", "bench"]
+plugins = ["psl", "psr-container"]
 find-unused-definitions = true
 find-unused-expressions = true
 find-overly-wide-return-types = true
 analyze-dead-code = true
 memoize-properties = true
 check-throws = true
-unchecked-exceptions = ["Error", "LogicException"]
+unchecked-exceptions = []
 unchecked-exception-classes = []
 check-missing-override = true
 find-unused-parameters = true
@@ -125,9 +120,10 @@ check-property-initialization = true
 check-use-statements = true
 check-name-casing = true
 enforce-class-finality = true
-allow-side-effects-in-conditions = false
-
+require-api-or-internal = true
 class-initializers = [
+    "PhpDb\\ResultSet\\AbstractResultSet::initialize",
     "PHPUnit\\Framework\\TestCase::setUp",
     "Laminas\\Form\\Element::init",
+    "Laminas\\InputFilter\\BaseInputFilter::init"
 ]

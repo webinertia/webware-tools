@@ -182,6 +182,8 @@ Consumer obligations derived from the contract:
   `requireCoverageMetadata="true"` rules (`#[CoversClass]` / `#[CoversMethod]` per test class).
 - `test/`: scaffolding with at least one test per suite so the pipeline is green (PHPUnit
   errors on zero executed tests; Infection cannot score an empty suite).
+- `.gitattributes`: add `/.specify/` and `/specs/` to the `export-ignore` list; `/.github/`
+  is already ignored, which covers agent skill dirs.
 
 ### Phase 6 — README badges
 

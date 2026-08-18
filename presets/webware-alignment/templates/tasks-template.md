@@ -51,10 +51,13 @@ Replace package parameters (PHP versions, MSI thresholds, test namespaces) befor
   `enable-infection`, `coverage-php-version`, `min-msi`, `min-covered-msi`)
 - [ ] T016 Create `.github/copilot-instructions.md` with PHPUnit 13 mock-vs-stub and coverage
   metadata rules
+- [ ] T017 Add `/.specify/` and `/specs/` to `.gitattributes` `export-ignore` so spec-kit
+  scaffolding never ships in distro packages (`/.github/` is already ignored and covers agent
+  skill dirs)
 
 ## Phase 6 — README badges
 
-- [ ] T017 Add README badges matching `webware/webware-message`: PHP version, latest version,
+- [ ] T018 Add README badges matching `webware/webware-message`: PHP version, latest version,
   license, Continuous Integration, codecov, and Mutation testing. CI and codecov badge URLs carry
   no `?branch=` parameter, so they always point at the default branch. The Stryker mutation badge
   URL embeds the branch segment; update that segment in both the badge URL and the dashboard link
@@ -62,8 +65,8 @@ Replace package parameters (PHP versions, MSI thresholds, test namespaces) befor
 
 ## Verification
 
-- [ ] T018 Run full local check: `mago format --check && mago lint && mago analyze && mago
+- [ ] T019 Run full local check: `mago format --check && mago lint && mago analyze && mago
   guard`, `composer test`, `composer test-coverage`, `composer test-integration`,
   `composer mutation-test`
-- [ ] T019 Push branch, open PR, confirm all CI jobs green (mago, test matrix, codecov,
+- [ ] T020 Push branch, open PR, confirm all CI jobs green (mago, test matrix, codecov,
   mutation-test)

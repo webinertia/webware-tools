@@ -160,6 +160,7 @@ Consumer obligations derived from the contract:
   - `php-version = "8.4.1"`
   - `[linter] baseline = "lint-baseline.toml"`; `[analyzer] baseline = "analysis-baseline.toml"`
   - `[source] paths = ["src", "test"]`, `includes = ["vendor"]`
+- Remove the legacy `mago.json` (pre-alignment mago config).
 - `lint-baseline.toml` + `analysis-baseline.toml`: start empty; only maintainer-approved
   suppressions added.
 - Fix pass: `mago format`, then `mago lint` + `mago analyze` + `mago guard`; fix all `src/`

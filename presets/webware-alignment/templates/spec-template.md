@@ -106,7 +106,7 @@ regenerate baselines, without rewriting per-package config.
   (`requireCoverageMetadata`, `failOnNotice`, `failOnDeprecation`, `failOnWarning`), and suites
   named `unit test` and `integration test`.
 - **FR-004**: `mago.toml` MUST extend `vendor/webware/webware-tools/mago.toml` and define
-  `php-version`, baseline paths, and source paths.
+  `php-version`, baseline paths, and source paths. The legacy `mago.json` MUST be removed.
 - **FR-005**: `lint-baseline.toml` and `analysis-baseline.toml` MUST start empty; entries only for
   maintainer-approved intentional suppressions.
 - **FR-006**: `infection.json5.dist` MUST configure `source.directories = ["src"]` and

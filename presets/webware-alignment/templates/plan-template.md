@@ -16,7 +16,7 @@ extending the shared config, Infection/Codecov/Renovate/PHPBench config files, a
 
 **Language/Version**: PHP `~8.4.1 || ~8.5.0`
 
-**Primary Dependencies**: PHPUnit `^13.3.0`, Infection `^0.34.1`, PHPBench `^1.7`,
+**Primary Dependencies**: PHPUnit `^13.3.0`, Infection `^0.35.0`, PHPBench `^1.7`,
 roave/backward-compatibility-check `^8.21.0`, `webware/webware-tools` (dev, via reusable workflow
 + `mago.toml` extend)
 
@@ -123,7 +123,7 @@ Consumer obligations derived from the contract:
 ### Phase 1 — composer.json
 
 - `require.php`: `~8.4.1 || ~8.5.0`. Do not add `8.6.0-dev`.
-- `require-dev`: PHPUnit `^13.3.0`; add Infection `^0.34.1`, PHPBench `^1.7`,
+- `require-dev`: PHPUnit `^13.3.0`; add Infection `^0.35.0`, PHPBench `^1.7`,
   roave/backward-compatibility-check `^8.21.0`; keep existing package deps,
   `webware/webware-tools`, `roave/security-advisories`.
 - `config.platform.php`: `8.4.99`.

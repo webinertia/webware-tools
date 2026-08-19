@@ -8,7 +8,7 @@ Replace package parameters (PHP versions, MSI thresholds, test namespaces) befor
 
 - [ ] T001 Align `composer.json` `require.php` to `~8.4.1 || ~8.5.0` (no `8.6.0-dev`), set
   `config.platform.php` to `8.4.99` in `composer.json`
-- [ ] T002 Align `require-dev`: PHPUnit `^13.3.0`, add `infection/infection: ^0.34.1`,
+- [ ] T002 Align `require-dev`: PHPUnit `^13.3.0`, add `infection/infection: ^0.35.0`,
   `phpbench/phpbench: ^1.7`, `roave/backward-compatibility-check: ^8.21.0`; keep package deps,
   `webware/webware-tools`, `roave/security-advisories` in `composer.json`
 - [ ] T003 Set `autoload-dev` namespaces: `WebwareTest\<Package>\` → `test/unit/`,

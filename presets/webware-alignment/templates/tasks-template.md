@@ -67,6 +67,7 @@ Replace package parameters (PHP versions, MSI thresholds, test namespaces) befor
 
 - [ ] T019 Run full local check: `mago format --check && mago lint && mago analyze && mago
   guard`, `composer test`, `composer test-coverage`, `composer test-integration`,
-  `composer mutation-test`
+  `composer mutation-test`, and verify the spec-kit scaffolding is ignored:
+  `grep -qxF '/.specify/' .gitignore && grep -qxF '/specs/' .gitignore`
 - [ ] T020 Push branch, open PR, confirm all CI jobs green (mago, test matrix, codecov,
   mutation-test)

@@ -3,7 +3,7 @@ schema_version: "1.0"
 preset:
   id: "webware-alignment"
   name: "Webware Tools Alignment"
-  version: "0.1.0"
+  version: "0.2.0"
   description: "Aligns a Webware package's CI/CD pipeline and dev tooling with the webware-tools reusable workflow"
   author: "Webware"
 

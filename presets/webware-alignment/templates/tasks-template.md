@@ -51,9 +51,8 @@ Replace package parameters (PHP versions, MSI thresholds, test namespaces) befor
   `.github/workflows/continuous-integration.yml`
 - [ ] T016 Create `.github/copilot-instructions.md` from the preset's
   `artifacts/copilot-instructions.md`, replacing `{{PACKAGE_TITLE}}`
-- [ ] T017 Add `/.specify/` and `/specs/` to `.gitattributes` `export-ignore` so spec-kit
-  scaffolding never ships in distro packages (`/.github/` is already ignored and covers agent
-  skill dirs)
+- [ ] T017 Add `/.specify/` and `/specs/` to `.gitignore` so spec-kit
+  scaffolding stays local dev tooling and is never pushed to the remote
 
 ## Phase 6 — README badges
 

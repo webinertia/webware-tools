@@ -124,7 +124,7 @@ regenerate baselines, without rewriting per-package config.
   testing) with CI/codecov badges tracking the default branch and the Stryker badge updated
   whenever the default branch changes.
 - **FR-014**: Repository MUST add spec-kit scaffolding directories (`/.specify/`, `/specs/`) to
-  `.gitattributes` `export-ignore` so distro packages exclude them.
+  `.gitignore` — they are local dev tooling and must not be pushed to the remote.
 
 ### Key Entities
 

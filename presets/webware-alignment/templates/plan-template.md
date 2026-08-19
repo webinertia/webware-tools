@@ -61,6 +61,10 @@ specs/[###-feature]/
 
 ### Source Code (repository root) — artifacts this feature produces
 
+All root-level artifacts below are copied from
+`vendor/webware/webware-tools/presets/webware-alignment/artifacts/` and parameterized per the
+spec's Package Parameters.
+
 ```text
 .github/
 ├── workflows/continuous-integration.yml   # wrapper calling reusable workflow
@@ -70,7 +74,7 @@ mago.toml                                  # extends vendor/webware/webware-tool
 lint-baseline.toml                         # starts empty
 analysis-baseline.toml                     # starts empty
 infection.json5.dist                       # mago staticAnalysisTool
-codecov.yml                                # reference copy
+codecov.yml                                # copy of preset artifacts/codecov.yml
 renovate.json                              # local>webinertia/.github:renovate-config
 phpbench.json.dist                         # runner config only
 composer.json                              # scripts + require-dev aligned
@@ -161,16 +165,16 @@ Consumer obligations derived from the contract:
 - `infection.json5.dist`: `source.directories = ["src"]`, `timeout = 10`, `threads = "max"`,
   logs `text: infection.log`, `summary: summary.log`, stryker badge regex `/^\d+\.\d+\.x$/`,
   `mutators: {"@default": true}`, `staticAnalysisTool: "mago"`.
-- `codecov.yml`: reference copy (targets `auto`, threshold `0%`, comment layout
-  `diff, flags, files`).
+- `codecov.yml`: copy from the preset's `artifacts/codecov.yml` (targets `auto`, threshold
+  `0%`, comment layout `diff, flags, files`).
 - `renovate.json`: `"extends": ["local>webinertia/.github:renovate-config"]`.
 - `phpbench.json.dist`: `runner.path: benchmarks`, `*Bench.php`; config only, no
   `benchmarks/` directory, no CI job.
 
 ### Phase 5 — Workflow wrapper + agent instructions + test scaffolding
 
-- `.github/workflows/continuous-integration.yml`: wrapper mirroring the reference with package
-  inputs:
+- `.github/workflows/continuous-integration.yml`: wrapper from the preset's
+  `artifacts/workflow.yml` with placeholders replaced by package inputs:
   - `on`: `pull_request` → branches `[0-9]+.[0-9]+.x`; `push` → same branches + tags
     `[0-9]+.[0-9]+.[0-9]+`.
   - `uses: webinertia/webware-tools/.github/workflows/continuous-integration.yml@0.1.x`
@@ -182,16 +186,16 @@ Consumer obligations derived from the contract:
   `requireCoverageMetadata="true"` rules (`#[CoversClass]` / `#[CoversMethod]` per test class).
 - `test/`: scaffolding with at least one test per suite so the pipeline is green (PHPUnit
   errors on zero executed tests; Infection cannot score an empty suite).
-- `.gitattributes`: add `/.specify/` and `/specs/` to the `export-ignore` list; `/.github/`
-  is already ignored, which covers agent skill dirs.
+- `.gitignore`: add `/.specify/` and `/specs/` — spec-kit scaffolding is local dev tooling and
+  is never pushed to the remote; `/.github/` is already ignored and covers agent skill dirs.
 
 ### Phase 6 — README badges
 
-- `README.md`: standard badge set matching `webware/webware-message`: PHP version, latest
-  version, license, Continuous Integration, codecov, Mutation testing. CI and codecov badge URLs
-  carry no `?branch=` parameter, so they always point at the default branch. The Stryker mutation
-  badge URL embeds the branch segment; update that segment in both the badge URL and the
-  dashboard link whenever the default branch changes.
+- `README.md`: standard badge block from the preset's `artifacts/readme-badges.md` (PHP
+  version, latest version, license, Continuous Integration, codecov, Mutation testing). CI and
+  codecov badge URLs carry no `?branch=` parameter, so they always point at the default branch.
+  The Stryker mutation badge URL embeds the branch segment; update that segment in both the
+  badge URL and the dashboard link whenever the default branch changes.
 
 ## Complexity Tracking
 

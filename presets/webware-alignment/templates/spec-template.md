@@ -30,8 +30,8 @@ test scaffolding required for a green pipeline.
 
 ## Package Parameters
 
-Fill in before planning. See webware-mailer's `specs/001-webware-tools-alignment/spec.md` for the
-reference instance.
+Fill in before planning. All reference artifacts (configs, workflow wrapper, badge block) ship
+in this preset's `artifacts/` directory — no other package needs to be consulted.
 
 | Parameter | [PACKAGE] value |
 |---|---|
@@ -110,7 +110,8 @@ regenerate baselines, without rewriting per-package config.
   maintainer-approved intentional suppressions.
 - **FR-006**: `infection.json5.dist` MUST configure `source.directories = ["src"]` and
   `staticAnalysisTool: "mago"`.
-- **FR-007**: `codecov.yml` MUST match the reference consumer (targets `auto`, threshold `0%`).
+- **FR-007**: `codecov.yml` MUST be copied from the preset's `artifacts/codecov.yml` (targets
+  `auto`, threshold `0%`).
 - **FR-008**: `renovate.json` MUST extend `local>webinertia/.github:renovate-config`.
 - **FR-009**: `phpbench.json.dist` MUST exist with runner config; a `benchmarks/` directory is not
   required.
@@ -118,11 +119,12 @@ regenerate baselines, without rewriting per-package config.
 - **FR-011**: `.github/copilot-instructions.md` MUST carry PHPUnit 13 mock-vs-stub and coverage
   metadata rules.
 - **FR-012**: Each test suite MUST contain at least one test.
-- **FR-013**: `README.md` MUST carry the standard badge set (PHP version, latest version,
-  license, CI, codecov, mutation testing) with CI/codecov badges tracking the default branch and
-  the Stryker badge updated whenever the default branch changes.
+- **FR-013**: `README.md` MUST carry the standard badge block from the preset's
+  `artifacts/readme-badges.md` (PHP version, latest version, license, CI, codecov, mutation
+  testing) with CI/codecov badges tracking the default branch and the Stryker badge updated
+  whenever the default branch changes.
 - **FR-014**: Repository MUST add spec-kit scaffolding directories (`/.specify/`, `/specs/`) to
-  `.gitattributes` `export-ignore` so distro packages exclude them.
+  `.gitignore` — they are local dev tooling and must not be pushed to the remote.
 
 ### Key Entities
 

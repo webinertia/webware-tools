@@ -128,8 +128,8 @@ regenerate baselines, without rewriting per-package config.
   `.gitignore` — they are local dev tooling and must not be pushed to the remote.
 - **FR-015**: Repository MUST remove legacy tooling: `phpstan/phpstan`,
   `phpstan/phpstan-phpunit`, and `webware/coding-standard` from `require-dev`; delete
-  `.php-cs-fixer.dist.php`, `.php-cs-fixer.cache`, `phpstan.neon.dist`, `phpstan-baseline.neon`,
-  `stubs/`, and `.laminas-ci.json`.
+  `.php-cs-fixer.dist.php`, `.php-cs-fixer.php`, `.php-cs-fixer.cache`, `phpstan.neon.dist`,
+  `phpstan-baseline.neon`, `stubs/`, and `.laminas-ci.json`.
 
 ### Key Entities
 

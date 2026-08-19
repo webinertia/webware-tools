@@ -150,8 +150,8 @@ Consumer obligations derived from the contract:
 - Testsuites: `unit test` → `test/unit`; `integration test` → `test/integration`.
 - `<source restrictNotices="true" ignoreIndirectDeprecations="true">` including `src`.
 - No bootstrap extensions, no env vars.
-- Remove legacy tooling configs: `.php-cs-fixer.dist.php`, `.php-cs-fixer.cache`,
-  `phpstan.neon.dist`, `phpstan-baseline.neon`, `stubs/`, `.laminas-ci.json`.
+- Remove legacy tooling configs: `.php-cs-fixer.dist.php`, `.php-cs-fixer.php`,
+  `.php-cs-fixer.cache`, `phpstan.neon.dist`, `phpstan-baseline.neon`, `stubs/`, `.laminas-ci.json`.
 
 ### Phase 3 — Mago tooling
 

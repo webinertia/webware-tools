@@ -24,8 +24,8 @@ Replace package parameters (PHP versions, MSI thresholds, test namespaces) befor
 - [ ] T006 Create `phpunit.xml.dist` by copying the preset's
   `artifacts/phpunit.xml.dist` (PHPUnit 13.1 schema, strict flags, suites
   `unit test` and `integration test`, `<source>` including `src`); remove legacy tooling:
-  `.php-cs-fixer.dist.php`, `.php-cs-fixer.cache`, `phpstan.neon.dist`, `phpstan-baseline.neon`,
-  `stubs/`, `.laminas-ci.json`
+  `.php-cs-fixer.dist.php`, `.php-cs-fixer.php`, `.php-cs-fixer.cache`, `phpstan.neon.dist`,
+  `phpstan-baseline.neon`, `stubs/`, `.laminas-ci.json`
 - [ ] T007 Add test scaffolding: at least one test in `test/unit/` and one in
   `test/integration/` so PHPUnit and Infection do not error on empty suites
 

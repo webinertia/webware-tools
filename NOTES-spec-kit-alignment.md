@@ -63,6 +63,9 @@ Delete this file only after everything listed under "In flight" is merged.
 - Evening test of the preset on webware-acl — now underway in this session instead.
 - webware-usermanager does not exist as a repo yet (navigation + acl reference
   `Webware\UserManager\`).
+- Retro-clean `.specify/` + `specs/` from mailer and navigation remotes during their next
+  work phase (doctrine change 2026-08-18: spec-kit scaffolding is local dev tooling —
+  gitignored, never pushed).
 
 ---
 
@@ -82,9 +85,9 @@ specify preset add --from https://github.com/webinertia/webware-tools/archive/re
 ```
 
 Workflow: `specify init` → preset add → `/speckit-specify` (fill Package Parameters) →
-`/speckit-plan` → `/speckit-tasks` → `/speckit-implement`. Tasks are T001–T020; T017 adds
+`/speckit-plan` → `/speckit-tasks` → `/speckit-implement`. Tasks are T001–T021; T017 adds
 `/.specify/` and `/specs/` to the consumer `.gitignore` (local dev tooling, never pushed);
-T018 is README badges; T019/T020 verification.
+T018 is README badges; T019 local checks; T020 verifies the gitignore entries; T021 PR/CI.
 
 Reference instance: `webware-mailer/specs/001-webware-tools-alignment/` (mailer values filled).
 

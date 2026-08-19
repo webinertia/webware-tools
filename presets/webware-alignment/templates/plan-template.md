@@ -125,7 +125,8 @@ Consumer obligations derived from the contract:
 - `require.php`: `~8.4.1 || ~8.5.0`. Do not add `8.6.0-dev`.
 - `require-dev`: PHPUnit `^13.3.0`; add Infection `^0.35.0`, PHPBench `^1.7`,
   roave/backward-compatibility-check `^8.21.0`; keep existing package deps,
-  `webware/webware-tools`, `roave/security-advisories`.
+  `webware/webware-tools`, `roave/security-advisories`; remove `phpstan/phpstan`,
+  `phpstan/phpstan-phpunit`, and `webware/coding-standard`.
 - `config.platform.php`: `8.4.99`.
 - `autoload-dev`: `WebwareTest\<Package>\` → `test/unit/`; add
   `WebwareTestIntegration\<Package>\` → `test/integration/`.
@@ -135,7 +136,9 @@ Consumer obligations derived from the contract:
     coverage/html --coverage-text`
   - `test-integration`: `phpunit --no-coverage --colors=always --testsuite "integration test"`
   - `mutation-test`: `infection`
-- No PHPStan package, no PHPStan script.
+  - `test-all`: `@test && @test-integration && @mutation-test`
+- No PHPStan package, no PHPStan script; remove legacy `check-all`/`cs-check`/`cs-fix`/`sa`
+  scripts.
 - Regenerate + commit `composer.lock`.
 
 ### Phase 2 — phpunit.xml.dist (new)
@@ -147,6 +150,8 @@ Consumer obligations derived from the contract:
 - Testsuites: `unit test` → `test/unit`; `integration test` → `test/integration`.
 - `<source restrictNotices="true" ignoreIndirectDeprecations="true">` including `src`.
 - No bootstrap extensions, no env vars.
+- Remove legacy tooling configs: `.php-cs-fixer.dist.php`, `.php-cs-fixer.cache`,
+  `phpstan.neon.dist`, `phpstan-baseline.neon`, `stubs/`, `.laminas-ci.json`.
 
 ### Phase 3 — Mago tooling
 

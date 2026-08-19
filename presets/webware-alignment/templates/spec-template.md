@@ -100,7 +100,8 @@ regenerate baselines, without rewriting per-package config.
   `webinertia/webware-tools/.github/workflows/continuous-integration.yml` with `secrets: inherit`
   and package-specific inputs.
 - **FR-002**: `composer.json` MUST define scripts `test`, `test-coverage`, `test-integration`,
-  and `mutation-test`.
+  `mutation-test`, and a `test-all` alias (`test` + `test-integration` + `mutation-test`).
+  Legacy `php-cs-fixer` and `phpstan` scripts MUST be removed.
 - **FR-003**: `phpunit.xml.dist` MUST use PHPUnit 13.1 schema, strict flags
   (`requireCoverageMetadata`, `failOnNotice`, `failOnDeprecation`, `failOnWarning`), and suites
   named `unit test` and `integration test`.
@@ -125,6 +126,10 @@ regenerate baselines, without rewriting per-package config.
   whenever the default branch changes.
 - **FR-014**: Repository MUST add spec-kit scaffolding directories (`/.specify/`, `/specs/`) to
   `.gitignore` — they are local dev tooling and must not be pushed to the remote.
+- **FR-015**: Repository MUST remove legacy tooling: `phpstan/phpstan`,
+  `phpstan/phpstan-phpunit`, and `webware/coding-standard` from `require-dev`; delete
+  `.php-cs-fixer.dist.php`, `.php-cs-fixer.cache`, `phpstan.neon.dist`, `phpstan-baseline.neon`,
+  `stubs/`, and `.laminas-ci.json`.
 
 ### Key Entities
 

@@ -10,18 +10,22 @@ Replace package parameters (PHP versions, MSI thresholds, test namespaces) befor
   `config.platform.php` to `8.4.99` in `composer.json`
 - [ ] T002 Align `require-dev`: PHPUnit `^13.3.0`, add `infection/infection: ^0.35.0`,
   `phpbench/phpbench: ^1.7`, `roave/backward-compatibility-check: ^8.21.0`; keep package deps,
-  `webware/webware-tools`, `roave/security-advisories` in `composer.json`
+  `webware/webware-tools`, `roave/security-advisories`; remove legacy `phpstan/phpstan`,
+  `phpstan/phpstan-phpunit`, `webware/coding-standard` in `composer.json`
 - [ ] T003 Set `autoload-dev` namespaces: `WebwareTest\<Package>\` → `test/unit/`,
   `WebwareTestIntegration\<Package>\` → `test/integration/` in `composer.json`
-- [ ] T004 Define scripts `test`, `test-coverage`, `test-integration`, `mutation-test` in
-  `composer.json`
+- [ ] T004 Define scripts `test`, `test-coverage`, `test-integration`, `mutation-test`, and a
+  `test-all` alias (`test` + `test-integration` + `mutation-test`); remove legacy
+  `check-all`/`cs-check`/`cs-fix`/`sa` scripts in `composer.json`
 - [ ] T005 Run `composer update` and commit `composer.lock`
 
 ## Phase 2 — phpunit.xml.dist
 
 - [ ] T006 Create `phpunit.xml.dist` by copying the preset's
   `artifacts/phpunit.xml.dist` (PHPUnit 13.1 schema, strict flags, suites
-  `unit test` and `integration test`, `<source>` including `src`)
+  `unit test` and `integration test`, `<source>` including `src`); remove legacy tooling:
+  `.php-cs-fixer.dist.php`, `.php-cs-fixer.php`, `.php-cs-fixer.cache`, `phpstan.neon.dist`,
+  `phpstan-baseline.neon`, `stubs/`, `.laminas-ci.json`
 - [ ] T007 Add test scaffolding: at least one test in `test/unit/` and one in
   `test/integration/` so PHPUnit and Infection do not error on empty suites
 
@@ -67,7 +71,7 @@ Replace package parameters (PHP versions, MSI thresholds, test namespaces) befor
 
 - [ ] T019 Run full local check: `mago format --check && mago lint && mago analyze && mago
   guard`, `composer test`, `composer test-coverage`, `composer test-integration`,
-  `composer mutation-test`
+  `composer mutation-test`, and `composer test-all`
 - [ ] T020 Verify spec-kit scaffolding is ignored:
   `grep -qxF '/.specify/' .gitignore && grep -qxF '/specs/' .gitignore`
 - [ ] T021 Push branch, open PR, confirm all CI jobs green (mago, test matrix, codecov,

@@ -45,7 +45,7 @@ in this preset's `artifacts/` directory — no other package needs to be consult
 | `enable-infection` | `true` |
 | `coverage-php-version` | highest supported PHP |
 | `min-msi` / `min-covered-msi` | `95` / `95` |
-| DB container (`db-image`) | [omitted unless package needs a database] |
+| DB container (`db-image`) | [omitted unless package needs a database]; canonical MySQL value `mysql:9.7`, with `db-port: 3306`, `db-env-json` (seeds the DB), `db-health-cmd` (readiness probe), and `test-env-json` (overrides phpunit.xml.dist connection for CI) |
 | Integration container | [e.g. Mailpit, MySQL, omitted] |
 | Tooling `PHP_VERSION` (Docker) | `8.4.24` (latest 8.4 patch; keep in sync with `require.php`) |
 | Tooling `MAGO_VERSION` (Docker) | `1.47.3` (keep in sync with central `mago.toml` pin) |

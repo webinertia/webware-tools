@@ -1,13 +1,14 @@
 # syntax=docker/dockerfile:1
 
 # ---------------------------------------------------------------------------
-# Webware alignment tooling image
+# Webware alignment development environment image
 #
-# Builds a self-contained PHP development environment carrying the Webware
-# toolchain: PHP CLI, Composer, and Mago. Consumers build this image locally
-# via `docker compose build` and run every tool (composer, phpunit, mago,
-# infection, phpbench, bc-check) inside the container, so the host machine
-# (Windows, WSL, Linux, or macOS) never needs a native PHP toolchain.
+# Builds a self-contained, interactive PHP development environment carrying
+# the Webware toolchain: PHP CLI, Composer, Mago, and Xdebug. Developers work
+# inside this container — either through the VS Code Dev Container (backed by
+# compose.yml) or by `docker compose up -d` + `docker compose exec tooling`.
+# The host machine (Windows, WSL, Linux, or macOS) never needs a native PHP
+# toolchain.
 #
 # All files in this repository are committed with LF line endings (see
 # .gitattributes), which keeps the container and host line endings consistent.
@@ -53,6 +54,22 @@ RUN set -eux; \
     ; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*
+
+# ---------------------------------------------------------------------------
+# Xdebug (step debugging)
+# ---------------------------------------------------------------------------
+# Installed but disabled by default (xdebug.mode=off) so it does not slow down
+# normal Composer/PHPUnit/Mago runs. Enable it with XDEBUG_MODE=debug (see
+# compose.yml) and connect the IDE to host.docker.internal.
+RUN set -eux; \
+    pecl install xdebug \
+    && docker-php-ext-enable xdebug \
+    ; \
+    { \
+        echo 'xdebug.mode=off'; \
+        echo 'xdebug.start_with_request=yes'; \
+        echo 'xdebug.client_host=host.docker.internal'; \
+    } >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
 # ---------------------------------------------------------------------------
 # Composer

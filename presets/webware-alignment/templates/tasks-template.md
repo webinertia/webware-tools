@@ -67,19 +67,25 @@ Replace package parameters (PHP versions, MSI thresholds, test namespaces) befor
   Stryker mutation badge URL embeds the branch segment; update that segment in both the badge
   URL and the dashboard link whenever the default branch changes. Update `README.md`
 
-## Phase 7 — Containerized local toolchain
+## Phase 7 — Containerized development environment
 
 - [ ] T022 Create `Dockerfile` by copying the preset's `artifacts/Dockerfile` (PHP CLI +
-  Composer + Mago, `TARGETARCH`-aware Mago asset selection, `intl`/`pcntl`/`zip`/`pcov`
-  extensions, `WORKDIR /app`)
-- [ ] T023 Create `compose.yml` by copying the preset's `artifacts/compose.yml` (a `tooling`
-  service with `PHP_VERSION`/`MAGO_VERSION` build args and a `/app` bind-mount); add a `db`
+  Composer + Mago + Xdebug, `TARGETARCH`-aware Mago asset selection,
+  `intl`/`pcntl`/`zip`/`pcov` extensions, Xdebug installed but off by default, `WORKDIR /app`)
+- [ ] T023 Create `compose.yml` by copying the preset's `artifacts/compose.yml` (a persistent,
+  interactive `tooling` service: `sleep infinity` command, `stdin_open`/`tty`, named volumes for
+  `vendor/` and the Composer cache, `host.docker.internal` host-gateway for Xdebug); add a `db`
   service here only if the package needs a database
 - [ ] T024 Create `.dockerignore` by copying the preset's `artifacts/.dockerignore`
-  (exclude `vendor/`, `.git/`, `.github/`, `.specify/`, `specs/`, caches, `*.log`)
-- [ ] T025 Verify the containerized toolchain: `docker compose build` then
-  `docker compose run --rm tooling composer test` and
-  `docker compose run --rm tooling mago format --check` succeed with no native PHP toolchain
+  (exclude `vendor/`, `.git/`, `.github/`, `.devcontainer/`, `.specify/`, `specs/`, caches,
+  `*.log`)
+- [ ] T025 Create `.devcontainer/devcontainer.json` by copying the preset's
+  `artifacts/devcontainer.json` (references `compose.yml` via `dockerComposeFile` +
+  `service: tooling`, `workspaceFolder /app`, PHP/Xdebug/EditorConfig extensions)
+- [ ] T026 Verify the development environment: `docker compose up -d` then
+  `docker compose exec tooling composer test` and `docker compose exec tooling mago format
+  --check` succeed with no native PHP toolchain; `docker compose exec tooling php -m` lists
+  `xdebug`; confirm "Reopen in Container" opens against the `tooling` service
 
 ## Verification
 
@@ -90,5 +96,5 @@ Replace package parameters (PHP versions, MSI thresholds, test namespaces) befor
   `grep -qxF '/.specify/' .gitignore && grep -qxF '/specs/' .gitignore`
 - [ ] T021 Push branch, open PR, confirm all CI jobs green (mago, test matrix, codecov,
   mutation-test)
-- [ ] T026 Confirm all committed files use LF line endings (no CRLF); verify via
+- [ ] T027 Confirm all committed files use LF line endings (no CRLF); verify via
   `git ls-files --eol | grep -v 'w/lf'` returns nothing

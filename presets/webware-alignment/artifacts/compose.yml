@@ -1,22 +1,25 @@
 # ---------------------------------------------------------------------------
-# Webware alignment local tooling
+# Webware alignment local development environment
 #
-# Runs the entire Webware toolchain (Composer, PHPUnit, Mago, Infection,
-# PHPBench, roave/backward-compatibility-check) inside a container so the
-# host never needs a native PHP install. Works identically on Windows, WSL,
-# Linux, and macOS.
+# A persistent, interactive development environment that runs the full Webware
+# toolchain (Composer, PHPUnit, Mago, Infection, PHPBench, roave BC-check)
+# inside a container, so the host never needs a native PHP install. Works
+# identically on Windows, WSL, Linux, and macOS.
 #
-# Usage:
-#   docker compose build
-#   docker compose run --rm tooling composer install
-#   docker compose run --rm tooling composer test
-#   docker compose run --rm tooling composer test-coverage
-#   docker compose run --rm tooling composer test-integration
-#   docker compose run --rm tooling composer mutation-test
-#   docker compose run --rm tooling mago format --check
-#   docker compose run --rm tooling mago lint
-#   docker compose run --rm tooling mago analyze
-#   docker compose run --rm tooling mago guard
+# This compose file is the single source of truth for the environment. Two
+# ways to use it:
+#
+#   1. VS Code Dev Container — "Reopen in Container" uses
+#      .devcontainer/devcontainer.json, which is *backed by* this file (it
+#      references the `tooling` service rather than defining its own).
+#
+#   2. Plain Docker Compose (any editor / no VS Code):
+#        docker compose up -d                 # start the persistent container
+#        docker compose exec tooling bash     # attach an interactive shell
+#        docker compose exec tooling composer install
+#        docker compose exec tooling composer test
+#        docker compose exec tooling mago lint
+#        docker compose down                  # stop it
 #
 # Packages that need a database add a `db` service here (mysql, postgres,
 # mariadb, ...) mirroring the `db-image` package parameter used by CI.
@@ -34,8 +37,34 @@ services:
         # Keep in sync with the central mago.toml `version =` pin in
         # webware/webware-tools.
         MAGO_VERSION: "1.47.2"
+    # Keep the container alive so `docker compose exec` can attach to it.
+    # (VS Code Dev Containers override this with their own command.)
+    command: sleep infinity
+    stdin_open: true
+    tty: true
+    environment:
+      # Point Composer at the named volume so its cache and global config
+      # survive container rebuilds (and live on the fast Linux filesystem).
+      COMPOSER_HOME: /tmp/composer-cache
+      # Uncomment (or export in your shell) to enable step debugging:
+      # XDEBUG_MODE: debug
+    extra_hosts:
+      # Lets Xdebug connect back to the host IDE from Windows, macOS, or Linux
+      # (host-gateway resolves to the Docker host on every platform).
+      - "host.docker.internal:host-gateway"
     volumes:
-      # Bind-mount the repository so tooling operates on the working tree and
-      # Composer writes vendor/ back to the host (vendor/ is gitignored).
+      # Bind-mount the source so edits are visible on both the host and the
+      # container. vendor/ is deliberately overridden below with a named
+      # volume — do not bind-mount it from the host.
       - .:/app
+      # Named volumes keep vendor/ and the Composer cache on the Linux
+      # filesystem. Bind-mounting vendor/ from a Windows host is extremely
+      # slow, so vendor/ is owned by the container and populated by
+      # `composer install` (it is gitignored anyway).
+      - vendor:/app/vendor
+      - composer-cache:/tmp/composer-cache
     working_dir: /app
+
+volumes:
+  vendor:
+  composer-cache:

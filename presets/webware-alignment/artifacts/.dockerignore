@@ -6,6 +6,7 @@
 .gitignore
 .gitattributes
 .vscode
+.devcontainer
 vendor
 .specify
 specs

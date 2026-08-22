@@ -19,9 +19,10 @@ values are package-specific parameters.
 ## Scope
 
 **In scope:** CI/CD pipeline, tooling configs, composer metadata, baseline files, the minimum
-test scaffolding required for a green pipeline, and a containerized local dev toolchain
-(`Dockerfile`, `compose.yml`, `.dockerignore`) so the full toolchain runs identically on
-Windows, WSL, Linux, and macOS without a native PHP install.
+test scaffolding required for a green pipeline, and a containerized development environment
+(`Dockerfile`, `compose.yml`, `.dockerignore`, `.devcontainer/devcontainer.json`) so developers
+can work inside the container — via VS Code or plain Docker Compose — identically on Windows,
+WSL, Linux, and macOS without a native PHP install.
 
 **Out of scope (explicit):**
 
@@ -133,13 +134,18 @@ regenerate baselines, without rewriting per-package config.
   `phpstan/phpstan-phpunit`, and `webware/coding-standard` from `require-dev`; delete
   `.php-cs-fixer.dist.php`, `.php-cs-fixer.php`, `.php-cs-fixer.cache`, `phpstan.neon.dist`,
   `phpstan-baseline.neon`, `stubs/`, and `.laminas-ci.json`.
-- **FR-016**: Repository MUST provide a containerized local toolchain: a `Dockerfile` (PHP CLI +
-  Composer + Mago, `TARGETARCH`-aware), a `compose.yml` (a `tooling` service build + bind-mount
-  of the repo at `/app`), and a `.dockerignore` excluding `vendor/`, `.git/`, and other non-source
-  artifacts. All three files MUST be committed with LF line endings.
-- **FR-017**: All local tooling (`composer`, `phpunit`, `mago`, `infection`, `phpbench`,
+- **FR-016**: Repository MUST provide a containerized development environment: a `Dockerfile`
+  (PHP CLI + Composer + Mago + Xdebug, `TARGETARCH`-aware), a `compose.yml` (a persistent,
+  interactive `tooling` service that bind-mounts the repo at `/app` and keeps `vendor/` and the
+  Composer cache in named volumes), and a `.dockerignore` excluding `vendor/`, `.git/`, and other
+  non-source artifacts. All files MUST be committed with LF line endings.
+- **FR-017**: The repository MUST provide `.devcontainer/devcontainer.json` that references
+  `compose.yml` via `dockerComposeFile` + `service: tooling` (a thin wrapper, not a parallel
+  environment), so VS Code and plain `docker compose` users share the same container.
+- **FR-018**: All local tooling (`composer`, `phpunit`, `mago`, `infection`, `phpbench`,
   roave/backward-compatibility-check) MUST be runnable inside the container via
-  `docker compose run --rm tooling ...`, with no native PHP toolchain required on the host.
+  `docker compose exec tooling ...` (or the Dev Container), with no native PHP toolchain required
+  on the host. Xdebug MUST be available but disabled by default, enabled via `XDEBUG_MODE=debug`.
 
 ### Key Entities
 
@@ -160,8 +166,9 @@ regenerate baselines, without rewriting per-package config.
 - **SC-003**: Infection MSI and covered MSI at or above package thresholds (95 reference).
 - **SC-004**: Codecov receives coverage upload from exactly one matrix leg (canonical:
   `coverage-php-version` + locked).
-- **SC-005**: On a fresh Windows machine with only Docker installed, `docker compose build` and
-  `docker compose run --rm tooling composer test` succeed with no native PHP toolchain present.
+- **SC-005**: On a fresh Windows machine with only Docker installed, `docker compose up -d` and
+  `docker compose exec tooling composer test` succeed with no native PHP toolchain present, and
+  the repository opens in a VS Code Dev Container backed by `compose.yml`.
 
 ## Assumptions
 

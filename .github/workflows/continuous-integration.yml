@@ -19,7 +19,7 @@ on:
         required: false
         default: ""
       db-image:
-        description: "Container image for the DB service (e.g. mysql:8.0). Empty = no DB."
+        description: "Container image for the DB service (e.g. mysql:9.7). Empty = no DB."
         type: string
         required: false
         default: ""
@@ -101,7 +101,7 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           coverage: none
-          tools: mago:1.47.2
+          tools: mago:1.47.3
 
       - name: Install dependencies
         run: composer install --no-interaction --no-progress ${{ inputs.composer-options }}
@@ -248,7 +248,7 @@ jobs:
         with:
           php-version: ${{ inputs.coverage-php-version }}
           coverage: pcov
-          tools: mago:1.47.2
+          tools: mago:1.47.3
 
       - name: Start DB service
         if: inputs.db-image != '' && inputs.run-integration

@@ -26,7 +26,9 @@ roave/backward-compatibility-check `^8.21.0`, `webware/webware-tools` (dev, via 
 **Testing**: PHPUnit 13.1 (`unit test` and `integration test` suites), Infection mutation testing
 with Mago as static analysis tool
 
-**Target Platform**: Linux CI runners (GitHub Actions)
+**Target Platform**: Linux CI runners (GitHub Actions) + a containerized development environment
+(Docker Compose / VS Code Dev Container), so developers can work inside the container identically
+on Windows, WSL, Linux, and macOS.
 
 **Project Type**: PHP library
 
@@ -69,6 +71,11 @@ spec's Package Parameters.
 .github/
 ├── workflows/continuous-integration.yml   # wrapper calling reusable workflow
 └── copilot-instructions.md                # PHPUnit 13 rules
+Dockerfile                                 # PHP + Composer + Mago + Xdebug dev image
+compose.yml                                # persistent `tooling` service (the source of truth)
+.dockerignore                              # exclude vendor/, .git/, etc. from build context
+.devcontainer/
+└── devcontainer.json                      # thin VS Code wrapper around compose.yml
 phpunit.xml.dist                           # strict PHPUnit 13.1 config
 mago.toml                                  # extends vendor/webware/webware-tools/mago.toml
 lint-baseline.toml                         # starts empty
@@ -202,6 +209,36 @@ Consumer obligations derived from the contract:
   codecov badge URLs carry no `?branch=` parameter, so they always point at the default branch.
   The Stryker mutation badge URL embeds the branch segment; update that segment in both the
   badge URL and the dashboard link whenever the default branch changes.
+
+### Phase 7 — Containerized development environment
+
+- `Dockerfile` (new): copy from the preset's `artifacts/Dockerfile`. Base image
+  `php:8.4.24-cli` (latest 8.4 patch, in sync with `require.php`); install Composer from the
+  official `composer` image; download the Mago release asset for `${TARGETARCH}` (amd64 →
+  `x86_64`, arm64 → `aarch64`) at the pinned `MAGO_VERSION` and install to `/usr/local/bin/mago`;
+  install `intl`, `pcntl`, `zip`, and `pcov` extensions; install Xdebug (off by default,
+  `XDEBUG_MODE=debug` to enable); `WORKDIR /app`.
+- `compose.yml` (new): copy from the preset's `artifacts/compose.yml`. A single persistent,
+  interactive `tooling` service (`sleep infinity`, `stdin_open`/`tty`) that builds the image (with
+  `PHP_VERSION` and `MAGO_VERSION` build args), bind-mounts the repository at `/app`, keeps
+  `vendor/` and the Composer cache in named volumes, and exposes `host.docker.internal` for
+  Xdebug. This is the single source of truth for the environment. For packages whose tests need
+  MySQL, uncomment the opt-in `mysql` service (and the `depends_on` block on `tooling`); it
+  mirrors the CI `db-image` / `db-env-json` Package Parameters and is reachable from `tooling` as
+  host `mysql` on port 3306 (matching the PhpDb `mysql.local.php` convention). An opt-in
+  `phpmyadmin` service provides a web UI (http://localhost:8080) over the database.
+- `.dockerignore` (new): copy from the preset's `artifacts/.dockerignore` (exclude `vendor/`,
+  `.git/`, `.github/`, `.devcontainer/`, `.specify/`, `specs/`, `.phpunit.cache`, `coverage/`,
+  `*.log`).
+- `.devcontainer/devcontainer.json` (new): copy from the preset's `artifacts/devcontainer.json`.
+  A thin wrapper (`dockerComposeFile` → `compose.yml`, `service: tooling`, `workspaceFolder
+  /app`) so VS Code users reuse the exact same container as plain Compose users — no one is
+  orphaned.
+- Verify: `docker compose up -d` then `docker compose exec tooling composer test` and the full
+  `mago format --check && mago lint && mago analyze && mago guard` sequence run green with no
+  native PHP toolchain on the host; `docker compose exec tooling php -m` lists `xdebug`; "Reopen
+  in Container" resolves against `compose.yml`.
+- All files committed with LF line endings (enforced by the package `.gitattributes`).
 
 ## Complexity Tracking
 

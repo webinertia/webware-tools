@@ -28,7 +28,7 @@ provides:
     - type: "template"
       name: "tasks-template"
       file: "templates/tasks-template.md"
-      description: "Webware tools alignment task list T001-T019"
+      description: "Webware tools alignment task list T001-T027"
       replaces: "tasks-template"
     - type: "template"
       name: "constitution-template"

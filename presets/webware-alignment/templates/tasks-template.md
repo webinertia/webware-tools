@@ -67,6 +67,29 @@ Replace package parameters (PHP versions, MSI thresholds, test namespaces) befor
   Stryker mutation badge URL embeds the branch segment; update that segment in both the badge
   URL and the dashboard link whenever the default branch changes. Update `README.md`
 
+## Phase 7 — Containerized development environment
+
+- [ ] T022 Create `Dockerfile` by copying the preset's `artifacts/Dockerfile` (PHP CLI +
+  Composer + Mago + Xdebug, `TARGETARCH`-aware Mago asset selection,
+  `intl`/`pcntl`/`zip`/`pcov` extensions, Xdebug installed but off by default, `WORKDIR /app`)
+- [ ] T023 Create `compose.yml` by copying the preset's `artifacts/compose.yml` (a persistent,
+  interactive `tooling` service: `sleep infinity` command, `stdin_open`/`tty`, named volumes for
+  `vendor/` and the Composer cache, `host.docker.internal` host-gateway for Xdebug); for packages
+  whose tests need MySQL, uncomment the opt-in `mysql` service (and the `depends_on` block on
+  `tooling`) and point the package's `mysql.local.php` at host `mysql`, port `3306`; uncomment the
+  `phpmyadmin` service (http://localhost:8080) for a web UI
+- [ ] T024 Create `.dockerignore` by copying the preset's `artifacts/.dockerignore`
+  (exclude `vendor/`, `.git/`, `.github/`, `.devcontainer/`, `.specify/`, `specs/`, caches,
+  `*.log`)
+- [ ] T025 Create `.devcontainer/devcontainer.json` by copying the preset's
+  `artifacts/devcontainer.json` (references `compose.yml` via `dockerComposeFile` +
+  `service: tooling`, `workspaceFolder /app`, PHP/Xdebug/EditorConfig extensions)
+- [ ] T026 Verify the development environment: `docker compose up -d` then
+  `docker compose exec tooling composer test` and `docker compose exec tooling mago format
+  --check` succeed with no native PHP toolchain; `docker compose exec tooling php -m` lists
+  `xdebug`; confirm "Reopen in Container" opens against the `tooling` service; for MySQL
+  packages, confirm the `mysql` service reports healthy and the test suite connects
+
 ## Verification
 
 - [ ] T019 Run full local check: `mago format --check && mago lint && mago analyze && mago
@@ -76,3 +99,5 @@ Replace package parameters (PHP versions, MSI thresholds, test namespaces) befor
   `grep -qxF '/.specify/' .gitignore && grep -qxF '/specs/' .gitignore`
 - [ ] T021 Push branch, open PR, confirm all CI jobs green (mago, test matrix, codecov,
   mutation-test)
+- [ ] T027 Confirm all committed files use LF line endings (no CRLF); verify via
+  `git ls-files --eol | grep -v 'w/lf'` returns nothing

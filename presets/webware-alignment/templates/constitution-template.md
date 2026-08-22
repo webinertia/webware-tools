@@ -38,6 +38,24 @@ leg). `mago.toml` extends `vendor/webware/webware-tools/mago.toml`; the consumer
 - Never repeat the namespace in class or interface names. `Webware\Input` namespace has
   `FilterInterface`, not `InputFilterInterface`. Applies to all new code.
 
+### VI. Cross-Platform Development Environment
+
+- Local development tooling (Composer, PHPUnit, Mago, Infection, PHPBench, BC-check, Xdebug)
+  runs inside a persistent, interactive container (`docker compose up -d` +
+  `docker compose exec tooling ...`, or the VS Code Dev Container). The host is never required to
+  have a native PHP toolchain; behavior is identical on Windows, WSL, Linux, and macOS.
+- `compose.yml` is the single source of truth for the environment. `Dockerfile`, `.dockerignore`,
+  and `.devcontainer/devcontainer.json` live alongside it; the Dev Container is a thin wrapper
+  over `compose.yml`, not a parallel environment, so non-VS Code users are never orphaned.
+- These files are kept in sync with the central `webware/webware-tools` preset.
+- The `MAGO_VERSION` build arg tracks the central `mago.toml` `version =` pin; `PHP_VERSION`
+  tracks the package's latest supported 8.4 patch release.
+
+### VII. Line Endings
+
+- All text files are committed with LF line endings only. CRLF is never committed; the package
+  `.gitattributes` (`* text eol=lf`) is authoritative and is not overridden.
+
 ## Quality Gates
 
 Every pull request passes, on all CI matrix legs:

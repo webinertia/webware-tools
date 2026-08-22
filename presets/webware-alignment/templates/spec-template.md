@@ -18,14 +18,15 @@ values are package-specific parameters.
 
 ## Scope
 
-**In scope:** CI/CD pipeline, tooling configs, composer metadata, baseline files, and the minimum
-test scaffolding required for a green pipeline.
+**In scope:** CI/CD pipeline, tooling configs, composer metadata, baseline files, the minimum
+test scaffolding required for a green pipeline, and a containerized local dev toolchain
+(`Dockerfile`, `compose.yml`, `.dockerignore`) so the full toolchain runs identically on
+Windows, WSL, Linux, and macOS without a native PHP install.
 
 **Out of scope (explicit):**
 
 - PHPStan: `phpstan.neon.dist`, `stubs/`, type-coverage packages. The reusable workflow runs no
   PHPStan job.
-- Local Docker dev tooling: install scripts, `compose.yml`, `docker/` (not referenced by CI).
 - Full test suite coverage; only scaffolding sufficient to keep the pipeline green is required.
 
 ## Package Parameters
@@ -45,6 +46,8 @@ in this preset's `artifacts/` directory — no other package needs to be consult
 | `min-msi` / `min-covered-msi` | `95` / `95` |
 | DB container (`db-image`) | [omitted unless package needs a database] |
 | Integration container | [e.g. Mailpit, MySQL, omitted] |
+| Tooling `PHP_VERSION` (Docker) | `8.4.24` (latest 8.4 patch; keep in sync with `require.php`) |
+| Tooling `MAGO_VERSION` (Docker) | `1.47.2` (keep in sync with central `mago.toml` pin) |
 | Test autoload namespaces | `WebwareTest\<Package>\` → `test/unit/`, `WebwareTestIntegration\<Package>\` → `test/integration/` |
 
 ## User Scenarios & Testing
@@ -130,6 +133,13 @@ regenerate baselines, without rewriting per-package config.
   `phpstan/phpstan-phpunit`, and `webware/coding-standard` from `require-dev`; delete
   `.php-cs-fixer.dist.php`, `.php-cs-fixer.php`, `.php-cs-fixer.cache`, `phpstan.neon.dist`,
   `phpstan-baseline.neon`, `stubs/`, and `.laminas-ci.json`.
+- **FR-016**: Repository MUST provide a containerized local toolchain: a `Dockerfile` (PHP CLI +
+  Composer + Mago, `TARGETARCH`-aware), a `compose.yml` (a `tooling` service build + bind-mount
+  of the repo at `/app`), and a `.dockerignore` excluding `vendor/`, `.git/`, and other non-source
+  artifacts. All three files MUST be committed with LF line endings.
+- **FR-017**: All local tooling (`composer`, `phpunit`, `mago`, `infection`, `phpbench`,
+  roave/backward-compatibility-check) MUST be runnable inside the container via
+  `docker compose run --rm tooling ...`, with no native PHP toolchain required on the host.
 
 ### Key Entities
 
@@ -150,6 +160,8 @@ regenerate baselines, without rewriting per-package config.
 - **SC-003**: Infection MSI and covered MSI at or above package thresholds (95 reference).
 - **SC-004**: Codecov receives coverage upload from exactly one matrix leg (canonical:
   `coverage-php-version` + locked).
+- **SC-005**: On a fresh Windows machine with only Docker installed, `docker compose build` and
+  `docker compose run --rm tooling composer test` succeed with no native PHP toolchain present.
 
 ## Assumptions
 

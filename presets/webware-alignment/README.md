@@ -31,6 +31,9 @@ inspecting another package:
 | `copilot-instructions.md` | `.github/copilot-instructions.md` (replace `{{PACKAGE_TITLE}}`) |
 | `gitattributes.txt` | merge into `.gitattributes` |
 | `readme-badges.md` | badge block in `README.md` (replace `{{PACKAGE_NAME}}`, `{{ORG}}`, `{{REPO}}`, `{{DEFAULT_BRANCH}}`) |
+| `Dockerfile` | `Dockerfile` (PHP + Composer + Mago tooling image) |
+| `compose.yml` | `compose.yml` (`tooling` service with `/app` bind-mount) |
+| `.dockerignore` | `.dockerignore` (exclude `vendor/`, `.git/`, caches from build context) |
 
 The tasks template (T006–T018) points each task at the corresponding artifact.
 
@@ -84,9 +87,32 @@ specify preset remove webware-alignment
 5. `/speckit-tasks` — produces T001–T019.
 6. `/speckit-implement` — creates the wrapper workflow, `phpunit.xml.dist`, `mago.toml`
    (extends `vendor/webware/webware-tools/mago.toml`), baselines, `infection.json5.dist`,
-   `codecov.yml`, `renovate.json`, `phpbench.json.dist`, composer changes + lock,
-   `.github/copilot-instructions.md`, and README badges — all copied from the preset's
-   `artifacts/` directory.
+   `codecov.yml`, `renovate.json`, `phpbench.json.dist`, `Dockerfile`, `compose.yml`,
+   `.dockerignore`, composer changes + lock, `.github/copilot-instructions.md`, and README
+   badges — all copied from the preset's `artifacts/` directory.
+
+## Containerized local development
+
+The preset ships a self-contained tooling image (`Dockerfile`) and a Compose service
+(`compose.yml`) so no native PHP toolchain is needed on the host. Works identically on Windows,
+WSL, Linux, and macOS:
+
+```bash
+docker compose build
+docker compose run --rm tooling composer install
+docker compose run --rm tooling composer test
+docker compose run --rm tooling composer test-coverage
+docker compose run --rm tooling composer test-integration
+docker compose run --rm tooling composer mutation-test
+docker compose run --rm tooling mago format --check
+docker compose run --rm tooling mago lint
+docker compose run --rm tooling mago analyze
+docker compose run --rm tooling mago guard
+```
+
+The `MAGO_VERSION` build arg tracks the central `mago.toml` pin; `PHP_VERSION` tracks the
+package's latest supported 8.4 patch release. Packages needing a database add a `db` service to
+`compose.yml` mirroring the CI `db-image` parameter.
 
 ## When to use / when not
 

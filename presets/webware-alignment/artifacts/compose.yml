@@ -1,0 +1,41 @@
+# ---------------------------------------------------------------------------
+# Webware alignment local tooling
+#
+# Runs the entire Webware toolchain (Composer, PHPUnit, Mago, Infection,
+# PHPBench, roave/backward-compatibility-check) inside a container so the
+# host never needs a native PHP install. Works identically on Windows, WSL,
+# Linux, and macOS.
+#
+# Usage:
+#   docker compose build
+#   docker compose run --rm tooling composer install
+#   docker compose run --rm tooling composer test
+#   docker compose run --rm tooling composer test-coverage
+#   docker compose run --rm tooling composer test-integration
+#   docker compose run --rm tooling composer mutation-test
+#   docker compose run --rm tooling mago format --check
+#   docker compose run --rm tooling mago lint
+#   docker compose run --rm tooling mago analyze
+#   docker compose run --rm tooling mago guard
+#
+# Packages that need a database add a `db` service here (mysql, postgres,
+# mariadb, ...) mirroring the `db-image` package parameter used by CI.
+# ---------------------------------------------------------------------------
+
+services:
+  tooling:
+    build:
+      context: .
+      args:
+        # PHP version to base the image on (latest 8.4 patch release). Keep
+        # in sync with the package's supported PHP versions and
+        # `config.platform.php`.
+        PHP_VERSION: "8.4.24"
+        # Keep in sync with the central mago.toml `version =` pin in
+        # webware/webware-tools.
+        MAGO_VERSION: "1.47.2"
+    volumes:
+      # Bind-mount the repository so tooling operates on the working tree and
+      # Composer writes vendor/ back to the host (vendor/ is gitignored).
+      - .:/app
+    working_dir: /app

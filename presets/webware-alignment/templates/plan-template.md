@@ -26,7 +26,8 @@ roave/backward-compatibility-check `^8.21.0`, `webware/webware-tools` (dev, via 
 **Testing**: PHPUnit 13.1 (`unit test` and `integration test` suites), Infection mutation testing
 with Mago as static analysis tool
 
-**Target Platform**: Linux CI runners (GitHub Actions)
+**Target Platform**: Linux CI runners (GitHub Actions) + containerized local dev (Docker
+Compose), so tooling behaves identically on Windows, WSL, Linux, and macOS.
 
 **Project Type**: PHP library
 
@@ -69,6 +70,9 @@ spec's Package Parameters.
 .github/
 ├── workflows/continuous-integration.yml   # wrapper calling reusable workflow
 └── copilot-instructions.md                # PHPUnit 13 rules
+Dockerfile                                 # PHP + Composer + Mago tooling image
+compose.yml                                # `tooling` service (build + /app bind-mount)
+.dockerignore                              # exclude vendor/, .git/, etc. from build context
 phpunit.xml.dist                           # strict PHPUnit 13.1 config
 mago.toml                                  # extends vendor/webware/webware-tools/mago.toml
 lint-baseline.toml                         # starts empty
@@ -202,6 +206,24 @@ Consumer obligations derived from the contract:
   codecov badge URLs carry no `?branch=` parameter, so they always point at the default branch.
   The Stryker mutation badge URL embeds the branch segment; update that segment in both the
   badge URL and the dashboard link whenever the default branch changes.
+
+### Phase 7 — Containerized local toolchain
+
+- `Dockerfile` (new): copy from the preset's `artifacts/Dockerfile`. Base image
+  `php:8.4.24-cli` (latest 8.4 patch, in sync with `require.php`); install Composer from the
+  official `composer` image; download the Mago release asset for `${TARGETARCH}` (amd64 →
+  `x86_64`, arm64 → `aarch64`) at the pinned `MAGO_VERSION` and install to `/usr/local/bin/mago`;
+  install `intl`, `pcntl`, `zip`, and `pcov` extensions; `WORKDIR /app`.
+- `compose.yml` (new): copy from the preset's `artifacts/compose.yml`. A single `tooling`
+  service that builds the image (with `PHP_VERSION` and `MAGO_VERSION` build args) and
+  bind-mounts the repository at `/app`. Packages needing a database add a `db` service here
+  mirroring the CI `db-image` parameter.
+- `.dockerignore` (new): copy from the preset's `artifacts/.dockerignore` (exclude `vendor/`,
+  `.git/`, `.github/`, `.specify/`, `specs/`, `.phpunit.cache`, `coverage/`, `*.log`).
+- Verify: `docker compose build` then `docker compose run --rm tooling composer test` and the
+  full `mago format --check && mago lint && mago analyze && mago guard` sequence run green with
+  no native PHP toolchain on the host.
+- All three files committed with LF line endings (enforced by the package `.gitattributes`).
 
 ## Complexity Tracking
 

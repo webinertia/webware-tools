@@ -21,8 +21,13 @@
 #        docker compose exec tooling mago lint
 #        docker compose down                  # stop it
 #
-# Packages that need a database add a `db` service here (mysql, postgres,
-# mariadb, ...) mirroring the `db-image` package parameter used by CI.
+# Packages whose tests need MySQL uncomment the `mysql` service below (and the
+# `phpmyadmin` web UI if wanted), plus the `depends_on` block on `tooling`. The
+# `mysql` service mirrors the `db-image` package parameter used by CI, and is
+# reachable from `tooling` as host `mysql` on port 3306 — matching the PhpDb
+# `mysql.local.php` connection convention. Packages that need a different
+# engine add an equivalent service here (postgres, mariadb, ...) mirroring
+# their own `db-image` parameter.
 # ---------------------------------------------------------------------------
 
 services:
@@ -63,8 +68,56 @@ services:
       # `composer install` (it is gitignored anyway).
       - vendor:/app/vendor
       - composer-cache:/tmp/composer-cache
+    # Uncomment when the package's tests need MySQL (see the `mysql` service
+    # below). Ensures the database is ready before the shell attaches.
+    # depends_on:
+    #   mysql:
+    #     condition: service_healthy
     working_dir: /app
+
+  # -------------------------------------------------------------------------
+  # MySQL (optional) — uncomment this whole block for packages whose tests
+  # need a MySQL database (e.g. webware-acl via php-db/phpdb-mysql).
+  #
+  # Mirror the spec's `db-image` / `db-env-json` / `db-port` Package Parameters
+  # so the dev database matches CI. Point the package's local DB config (e.g.
+  # config/autoload/mysql.local.php) at host `mysql`, port 3306, using the
+  # credentials below. Adjust MYSQL_DATABASE / MYSQL_USER / MYSQL_PASSWORD to
+  # the package's test-database convention.
+  # -------------------------------------------------------------------------
+  # mysql:
+  #   image: mysql:8.4
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: root
+  #     MYSQL_DATABASE: webware
+  #     MYSQL_USER: webware
+  #     MYSQL_PASSWORD: webware
+  #   healthcheck:
+  #     test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 30
+  #   volumes:
+  #     # Named volume keeps the data on the fast Linux filesystem and
+  #     # survives `docker compose down` (use `down -v` to wipe it).
+  #     - mysql-data:/var/lib/mysql
+  #
+  # # phpMyAdmin — optional web UI for the `mysql` service above. Reachable at
+  # # http://localhost:8080 (log in with the MYSQL_* credentials). Uncomment
+  # # alongside `mysql`.
+  # phpmyadmin:
+  #   image: phpmyadmin:latest
+  #   environment:
+  #     PMA_HOST: mysql
+  #     PMA_PORT: 3306
+  #   ports:
+  #     - "8080:80"
+  #   depends_on:
+  #     mysql:
+  #       condition: service_healthy
 
 volumes:
   vendor:
   composer-cache:
+  # Used by the optional `mysql` service above.
+  mysql-data:

@@ -124,8 +124,13 @@ than being bind-mounted from the host; `composer install` populates them inside 
 Xdebug is installed but off by default — enable step debugging with `XDEBUG_MODE=debug`.
 
 The `MAGO_VERSION` build arg tracks the central `mago.toml` pin; `PHP_VERSION` tracks the
-package's latest supported 8.4 patch release. Packages needing a database add a `db` service to
-`compose.yml` mirroring the CI `db-image` parameter.
+package's latest supported 8.4 patch release. For packages whose tests need MySQL (e.g. anything
+using `php-db/phpdb-mysql`), `compose.yml` ships an opt-in `mysql` service — uncomment the
+`mysql` service and the `depends_on` block on `tooling`, then point the package's local DB config
+(e.g. `config/autoload/mysql.local.php`) at host `mysql`, port `3306`, using the service's
+`MYSQL_*` credentials. The service mirrors the CI `db-image` / `db-env-json` Package Parameters,
+so the dev database matches CI. An optional `phpmyadmin` web UI (http://localhost:8080) is also
+included for inspecting the database.
 
 ## When to use / when not
 

@@ -222,8 +222,11 @@ Consumer obligations derived from the contract:
   interactive `tooling` service (`sleep infinity`, `stdin_open`/`tty`) that builds the image (with
   `PHP_VERSION` and `MAGO_VERSION` build args), bind-mounts the repository at `/app`, keeps
   `vendor/` and the Composer cache in named volumes, and exposes `host.docker.internal` for
-  Xdebug. This is the single source of truth for the environment. Packages needing a database add
-  a `db` service here mirroring the CI `db-image` parameter.
+  Xdebug. This is the single source of truth for the environment. For packages whose tests need
+  MySQL, uncomment the opt-in `mysql` service (and the `depends_on` block on `tooling`); it
+  mirrors the CI `db-image` / `db-env-json` Package Parameters and is reachable from `tooling` as
+  host `mysql` on port 3306 (matching the PhpDb `mysql.local.php` convention). An opt-in
+  `phpmyadmin` service provides a web UI (http://localhost:8080) over the database.
 - `.dockerignore` (new): copy from the preset's `artifacts/.dockerignore` (exclude `vendor/`,
   `.git/`, `.github/`, `.devcontainer/`, `.specify/`, `specs/`, `.phpunit.cache`, `coverage/`,
   `*.log`).

@@ -74,8 +74,10 @@ Replace package parameters (PHP versions, MSI thresholds, test namespaces) befor
   `intl`/`pcntl`/`zip`/`pcov` extensions, Xdebug installed but off by default, `WORKDIR /app`)
 - [ ] T023 Create `compose.yml` by copying the preset's `artifacts/compose.yml` (a persistent,
   interactive `tooling` service: `sleep infinity` command, `stdin_open`/`tty`, named volumes for
-  `vendor/` and the Composer cache, `host.docker.internal` host-gateway for Xdebug); add a `db`
-  service here only if the package needs a database
+  `vendor/` and the Composer cache, `host.docker.internal` host-gateway for Xdebug); for packages
+  whose tests need MySQL, uncomment the opt-in `mysql` service (and the `depends_on` block on
+  `tooling`) and point the package's `mysql.local.php` at host `mysql`, port `3306`; uncomment the
+  `phpmyadmin` service (http://localhost:8080) for a web UI
 - [ ] T024 Create `.dockerignore` by copying the preset's `artifacts/.dockerignore`
   (exclude `vendor/`, `.git/`, `.github/`, `.devcontainer/`, `.specify/`, `specs/`, caches,
   `*.log`)
@@ -85,7 +87,8 @@ Replace package parameters (PHP versions, MSI thresholds, test namespaces) befor
 - [ ] T026 Verify the development environment: `docker compose up -d` then
   `docker compose exec tooling composer test` and `docker compose exec tooling mago format
   --check` succeed with no native PHP toolchain; `docker compose exec tooling php -m` lists
-  `xdebug`; confirm "Reopen in Container" opens against the `tooling` service
+  `xdebug`; confirm "Reopen in Container" opens against the `tooling` service; for MySQL
+  packages, confirm the `mysql` service reports healthy and the test suite connects
 
 ## Verification
 

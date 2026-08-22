@@ -146,6 +146,11 @@ regenerate baselines, without rewriting per-package config.
   roave/backward-compatibility-check) MUST be runnable inside the container via
   `docker compose exec tooling ...` (or the Dev Container), with no native PHP toolchain required
   on the host. Xdebug MUST be available but disabled by default, enabled via `XDEBUG_MODE=debug`.
+- **FR-019**: If the package needs a database (`db-image` set), `compose.yml` MUST provide an
+  opt-in `mysql` service reachable from `tooling` as host `mysql` on port `3306`, mirroring the
+  `db-image` / `db-env-json` Package Parameters, with a healthcheck gating the `tooling`
+  `depends_on`. The package's local DB config (e.g. `config/autoload/mysql.local.php`) MUST point
+  at that service. An opt-in `phpmyadmin` service MUST provide a web UI over the database.
 
 ### Key Entities
 

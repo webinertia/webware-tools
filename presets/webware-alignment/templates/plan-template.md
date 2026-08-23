@@ -139,8 +139,7 @@ Consumer obligations derived from the contract:
   `WebwareTestIntegration\<Package>\` → `test/integration/`.
 - `scripts`:
   - `test`: `phpunit --no-coverage --colors=always --testsuite "unit test"`
-  - `test-coverage`: `phpunit --colors=always --coverage-clover clover.xml --coverage-html
-    coverage/html --coverage-text`
+  - `test-coverage`: `phpunit --colors=always --coverage-clover clover.xml --coverage-text`
   - `test-integration`: `phpunit --no-coverage --colors=always --testsuite "integration test"`
   - `mutation-test`: `infection`
   - `test-all`: `@test && @test-integration && @mutation-test`

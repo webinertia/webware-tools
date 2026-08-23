@@ -42,10 +42,12 @@ jobs:
       # values for CI (the test job runs on the runner VM, so the DB is only
       # reachable via 127.0.0.1 + the mapped port, not the container name).
       # Adjust MYSQL_DATABASE / MYSQL_USER / MYSQL_PASSWORD to the package's
-      # test-database convention.
+      # test-database convention. Keep MYSQL_ALLOW_EMPTY_PASSWORD so the
+      # container boots without a root password (required by mysql:9.7 when
+      # no MYSQL_ROOT_PASSWORD is set — the DB is test-only).
       # db-image: "mysql:9.7"
       # db-port: "3306"
-      # db-env-json: '{"MYSQL_ROOT_HOST":"%","MYSQL_DATABASE":"webware","MYSQL_USER":"webware","MYSQL_PASSWORD":"webware"}'
+      # db-env-json: '{"MYSQL_ROOT_HOST":"%","MYSQL_DATABASE":"webware","MYSQL_USER":"webware","MYSQL_PASSWORD":"webware","MYSQL_ALLOW_EMPTY_PASSWORD":"true"}'
       # db-health-cmd: "mysqladmin ping -h127.0.0.1 --silent"
       # test-env-json: '{"TESTS_ADAPTER_MYSQL_HOSTNAME":"127.0.0.1"}'
       # -----------------------------------------------------------------------

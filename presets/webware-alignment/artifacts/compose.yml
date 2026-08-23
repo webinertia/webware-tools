@@ -83,17 +83,20 @@ services:
   # so the dev database matches CI. Point the package's local DB config (e.g.
   # config/autoload/mysql.local.php) at host `mysql`, port 3306, using the
   # credentials below. Adjust MYSQL_DATABASE / MYSQL_USER / MYSQL_PASSWORD to
-  # the package's test-database convention.
+  # the package's test-database convention. MYSQL_ALLOW_EMPTY_PASSWORD keeps
+  # the test-only database free of a root password and in sync with the CI
+  # `db-env-json` — remove it if the package pins a root password instead.
   # -------------------------------------------------------------------------
   # mysql:
   #   image: mysql:9.7
   #   environment:
-  #     MYSQL_ROOT_PASSWORD: root
+  #     MYSQL_ROOT_HOST: "%"
+  #     MYSQL_ALLOW_EMPTY_PASSWORD: "true"
   #     MYSQL_DATABASE: webware
   #     MYSQL_USER: webware
   #     MYSQL_PASSWORD: webware
   #   healthcheck:
-  #     test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+  #     test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
   #     interval: 5s
   #     timeout: 5s
   #     retries: 30
@@ -103,13 +106,16 @@ services:
   #     - mysql-data:/var/lib/mysql
   #
   # # phpMyAdmin — optional web UI for the `mysql` service above. Reachable at
-  # # http://localhost:8080 (log in with the MYSQL_* credentials). Uncomment
-  # # alongside `mysql`.
+  # # http://localhost:8080 (log in as root with an empty password, or with
+  # # the MYSQL_USER / MYSQL_PASSWORD credentials). Uncomment alongside
+  # # `mysql`.
   # phpmyadmin:
   #   image: phpmyadmin:latest
   #   environment:
   #     PMA_HOST: mysql
   #     PMA_PORT: 3306
+  #     PMA_USER: root
+  #     PMA_PASSWORD: ""
   #   ports:
   #     - "8080:80"
   #   depends_on:

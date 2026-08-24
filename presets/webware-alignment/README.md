@@ -119,8 +119,10 @@ docker compose exec tooling mago guard
 docker compose down                  # stop it
 ```
 
-`vendor/` and the Composer cache live in named volumes (Linux-native I/O, fast on Windows) rather
-than being bind-mounted from the host; `composer install` populates them inside the container.
+`vendor/` is the host's own copy — the project is bind-mounted at `/app`, so `composer install`
+inside the container writes dependencies straight into the developer's working tree on disk. The
+Composer cache lives in a named volume (Linux-native I/O, fast on Windows) so downloads survive
+container rebuilds; it is only a cache.
 Xdebug is installed but off by default — enable step debugging with `XDEBUG_MODE=debug`.
 
 The `MAGO_VERSION` build arg tracks the central `mago.toml` pin; `PHP_VERSION` tracks the

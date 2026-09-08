@@ -9,6 +9,23 @@ for the full list of docblock-only types Mago's analyzer supports (`positive-int
 `non-empty-string`, `list<T>`, `key-of<T>`, etc.) before falling back to `mixed`. webware-tools is
 always a dependency, so this file does not need to be duplicated per package.
 
+### Class-reference string types
+
+Mago distinguishes what a `*::class` string may reference:
+
+- `class-string<T>` — a concrete **class**
+- `interface-string<T>` — an **interface**
+- `enum-string<T>` — an **enum**
+- `trait-string<T>` — a **trait**
+- `class-like-string<T>` — any of class / interface / enum
+
+Webware aliases against interfaces and builds to interfaces, so prefer the precise form:
+
+- DI aliases: `array<interface-string, class-string>` (e.g. `UserRepositoryInterface::class => UserRepository::class`)
+- handler/command/query maps: `array<class-string, class-string>` (e.g. `FetchUsers::class => FetchUsersHandler::class`)
+
+Do not flatten an interface-keyed map to `array<class-string, class-string>`.
+
 ## PHPUnit Mock vs Stub Rules
 
 PHPUnit 13 enforces a strict separation between mocks and stubs. Violating these rules produces `PHPUnit Notices` that cause test suite failures under `failOnNotice="true"` (configured in `phpunit.xml.dist`).

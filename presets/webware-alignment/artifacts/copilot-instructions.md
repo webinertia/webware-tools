@@ -1,5 +1,14 @@
 # {{PACKAGE_TITLE}} — Copilot Agent Instructions
 
+## Mago Analyzer Docblock Types
+
+When resolving `mago analyze` findings (e.g. `mixed-argument`, `mixed-assignment`,
+`missing-return-type`), consult
+[`vendor/webware/webware-tools/mago-analysis-types.md`](../vendor/webware/webware-tools/mago-analysis-types.md)
+for the full list of docblock-only types Mago's analyzer supports (`positive-int`,
+`non-empty-string`, `list<T>`, `key-of<T>`, etc.) before falling back to `mixed`. webware-tools is
+always a dependency, so this file does not need to be duplicated per package.
+
 ## PHPUnit Mock vs Stub Rules
 
 PHPUnit 13 enforces a strict separation between mocks and stubs. Violating these rules produces `PHPUnit Notices` that cause test suite failures under `failOnNotice="true"` (configured in `phpunit.xml.dist`).

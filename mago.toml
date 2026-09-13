@@ -199,16 +199,17 @@ allow-from = [
 # bus contracts themselves (`Webware\MessageBus\Command\CommandInterface`) and
 # messagebus-event's `Webware\MessageBus\Event\Command\*` classes.
 #
-# `NamedCommandInterface` is conventional and generally implemented, but it is
-# NOT the required contract — the ecosystem minimum is CommandInterface.
+# `must-implement` matches the interfaces a class declares directly (it does not
+# traverse inheritance), so the enforced contract is the one commands implement:
+# `NamedCommandInterface`, which itself extends `CommandInterface`.
 
 [[guard.structural.rules]]
 on = "Webware\\**\\Command\\*"
 not-on = "Webware\\MessageBus\\**"
 target = "class"
 must-be-named = "*Command"
-must-implement = "Webware\\MessageBus\\Command\\CommandInterface"
-reason = "Commands live in Command\\, are named *Command, and implement CommandInterface."
+must-implement = "Webware\\MessageBus\\Command\\NamedCommandInterface"
+reason = "Commands live in Command\\, are named *Command, and implement NamedCommandInterface."
 
 [[guard.structural.rules]]
 on = "Webware\\**\\CommandHandler\\*"

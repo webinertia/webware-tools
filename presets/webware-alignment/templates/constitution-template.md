@@ -57,14 +57,14 @@ local overrides is `vendor/webware/webware-tools/mago-guard-realignment.md`.
 
   | Sub-namespace | Name | Required contract |
   |---|---|---|
-  | `Command\` | `*Command` | `Webware\MessageBus\Command\CommandInterface` |
+  | `Command\` | `*Command` | `Webware\MessageBus\Command\NamedCommandInterface` |
   | `CommandHandler\` | `*Handler` | `Webware\MessageBus\CommandHandlerInterface` |
   | `Query\` | `*Query` | `Webware\MessageBus\Query\QueryInterface` |
   | `QueryHandler\` | `*Handler` | `Webware\MessageBus\QueryHandlerInterface` |
 
-  These are the enforced minimums. Additional contracts such as `NamedCommandInterface` are
-  conventional and generally implemented, but they are not required and are not enforced
-  centrally.
+  These are the enforced contracts. `NamedCommandInterface` extends `CommandInterface`, and it is
+  the contract commands declare directly — `must-implement` matches the declared interface list, so
+  an ancestor interface is not a substitute for declaring the contract itself.
 - `MessageBus\` is reserved for the types that intersect the bus contract in order to support
   consumers — `AuthorizableCommandInterface`, `CommandResult`, `CommandStatus`, and middleware
   under `MessageBus\Middleware\`. It is not a namespace for ordinary message classes, and keeping

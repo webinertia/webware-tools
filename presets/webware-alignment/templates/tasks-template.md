@@ -33,10 +33,12 @@ Replace package parameters (PHP versions, MSI thresholds, test namespaces) befor
 
 - [ ] T008 Create `mago.toml` by copying the preset's `artifacts/mago.toml`
   (`extends = "vendor/webware/webware-tools/mago.toml"`, `php-version = "8.4.1"`, linter/analyzer
-  baseline paths, source paths `["src", "test"]`); remove the legacy `mago.json`
+  baseline paths, source paths `["src", "test"]`); remove the legacy `mago.json`. The file stays the
+  stub: no general settings and no general guard rules, since the centre owns them
 - [ ] T009 Create empty `lint-baseline.toml` and `analysis-baseline.toml`
 - [ ] T010 Fix pass: run `mago format`, `mago lint`, `mago analyze`, `mago guard`; fix all
-  findings in `src/`; baseline only maintainer-approved remainder
+  findings in `src/`; baseline only maintainer-approved remainder. Guard findings are fixed in
+  source — a boundary rule is never suppressed or narrowed to get green
 
 ## Phase 4 — Infection / Codecov / Renovate / PHPBench configs
 

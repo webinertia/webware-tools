@@ -48,7 +48,7 @@ in this preset's `artifacts/` directory — no other package needs to be consult
 | DB container (`db-image`) | [omitted unless package needs a database]; canonical MySQL value `mysql:9.7`, with `db-port: 3306`, `db-env-json` (seeds the DB), `db-health-cmd` (readiness probe), and `test-env-json` (overrides phpunit.xml.dist connection for CI) |
 | Integration container | [e.g. Mailpit, MySQL, omitted] |
 | Tooling `PHP_VERSION` (Docker) | `8.4.24` (latest 8.4 patch; keep in sync with `require.php`) |
-| Tooling `MAGO_VERSION` (Docker) | `1.47.3` (keep in sync with central `mago.toml` pin) |
+| Tooling `MAGO_VERSION` (Docker) | `1.48.1` (keep in sync with central `mago.toml` pin) |
 | Test autoload namespaces | `WebwareTest\<Package>\` → `test/unit/`, `WebwareTestIntegration\<Package>\` → `test/integration/` |
 
 ## User Scenarios & Testing
@@ -109,8 +109,10 @@ regenerate baselines, without rewriting per-package config.
 - **FR-003**: `phpunit.xml.dist` MUST use PHPUnit 13.1 schema, strict flags
   (`requireCoverageMetadata`, `failOnNotice`, `failOnDeprecation`, `failOnWarning`), and suites
   named `unit test` and `integration test`.
-- **FR-004**: `mago.toml` MUST extend `vendor/webware/webware-tools/mago.toml` and define
-  `php-version`, baseline paths, and source paths. The legacy `mago.json` MUST be removed.
+- **FR-004**: `mago.toml` MUST extend `vendor/webware/webware-tools/mago.toml` and define only
+  `php-version`, baseline paths, and source paths. General settings and general guard rules are
+  central and MUST NOT be duplicated locally; a domain-specific structural or perimeter rule MAY
+  be added when the centre does not cover it (Principle I). The legacy `mago.json` MUST be removed.
 - **FR-005**: `lint-baseline.toml` and `analysis-baseline.toml` MUST start empty; entries only for
   maintainer-approved intentional suppressions.
 - **FR-006**: `infection.json5.dist` MUST configure `source.directories = ["src"]` and

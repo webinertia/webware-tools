@@ -8,8 +8,23 @@ CI/CD pipeline and dev tooling follow the `webinertia/webware-tools` reusable wo
 repository provides a thin wrapper workflow with package-specific inputs and `secrets: inherit`.
 Composer scripts `test`, `test-coverage`, `test-integration`, and `mutation-test` exist and match
 what the reusable workflow invokes. `composer.lock` is committed (required by the `locked` matrix
-leg). `mago.toml` extends `vendor/webware/webware-tools/mago.toml`; the consumer file defines only
-`php-version`, baseline paths, and source paths.
+leg).
+
+`mago.toml` extends `vendor/webware/webware-tools/mago.toml`. That inheritance is what makes the
+centre authoritative, so the division of responsibility is fixed:
+
+- **General settings and general rules are central.** The guard `mode`, rule enablement, formatter
+  and analyzer flags, and any rule that applies ecosystem-wide are defined once in the centre and
+  MUST NOT be defined or overridden locally. A local copy of a general rule is drift, even when its
+  content is identical today.
+- **Domain rules may be local.** A package MAY add structural or perimeter rules that cover its own
+  domain and are not covered by the centre. Local rules are additive — they layer on top of the
+  centre and can strengthen it, never weaken it, and no central rule can be disabled from the
+  consumer file. The target is the smallest possible set of local rules: the consumer file shrinks
+  toward the stub (`extends`, `php-version`, baseline paths, source paths) as the centre grows.
+
+The boundary rules the centre enforces are stated in Principle VIII. The procedure for dropping
+local overrides is `vendor/webware/webware-tools/mago-guard-realignment.md`.
 
 ### II. PHPUnit 13 Strict Mode
 
@@ -37,6 +52,23 @@ leg). `mago.toml` extends `vendor/webware/webware-tools/mago.toml`; the consumer
 
 - Never repeat the namespace in class or interface names. `Webware\Input` namespace has
   `FilterInterface`, not `InputFilterInterface`. Applies to all new code.
+- Message classes are named and located by type, in the domain they act on — never centralized
+  into a `MessageBus\` bucket:
+
+  | Sub-namespace | Name | Required contract |
+  |---|---|---|
+  | `Command\` | `*Command` | `Webware\MessageBus\Command\NamedCommandInterface` |
+  | `CommandHandler\` | `*Handler` | `Webware\MessageBus\CommandHandlerInterface` |
+  | `Query\` | `*Query` | `Webware\MessageBus\Query\QueryInterface` |
+  | `QueryHandler\` | `*Handler` | `Webware\MessageBus\QueryHandlerInterface` |
+
+  These are the enforced contracts. `NamedCommandInterface` extends `CommandInterface`, and it is
+  the contract commands declare directly — `must-implement` matches the declared interface list, so
+  an ancestor interface is not a substitute for declaring the contract itself.
+- `MessageBus\` is reserved for the types that intersect the bus contract in order to support
+  consumers — `AuthorizableCommandInterface`, `CommandResult`, `CommandStatus`, and middleware
+  under `MessageBus\Middleware\`. It is not a namespace for ordinary message classes, and keeping
+  bus middleware there is what distinguishes it from PSR middleware under `Http\Middleware\`.
 
 ### VI. Cross-Platform Development Environment
 
@@ -56,6 +88,25 @@ leg). `mago.toml` extends `vendor/webware/webware-tools/mago.toml`; the consumer
 - All text files are committed with LF line endings only. CRLF is never committed; the package
   `.gitattributes` (`* text eol=lf`) is authoritative and is not overridden.
 
+### VIII. Boundary Rules
+
+The following boundaries are enforced ecosystem-wide by the central
+`vendor/webware/webware-tools/mago.toml`. The exact TOML lives there and is not restated here, so
+the rule and its rationale cannot drift apart.
+
+- **Http perimeter.** The PSR Http server contracts (`Psr\Http\Server\**` —
+  `MiddlewareInterface`, `RequestHandlerInterface`) are usable only from
+  `Webware\**\Http\**` — including the admin-nested `Http\Admin\Middleware\` and
+  `Http\Admin\RequestHandler\` layout — plus `Webware\Async\**` (a runner must accept a PSR-15
+  handler) and tests. Implementations live under `Http\` and carry the
+  `*Middleware` / `*Handler` names.
+- **Message bus.** Message classes conform by per-type sub-namespace (Principle V) rather than by
+  relocating into a `MessageBus\` bucket. Bus middleware stays under `MessageBus\Middleware\`.
+- **Persistence.** `Webware\**\Repository\**` is reachable only from the handlers that use it,
+  the DI factories that wire it (`Container\`), the composition root, console commands, and tests.
+  `PhpDb\**` additionally stays behind the persistence boundary, so `ResultSet` and `RowPrototype`
+  types never reach middleware, Http handlers, or query payloads.
+
 ## Quality Gates
 
 Every pull request passes, on all CI matrix legs:
@@ -70,6 +121,9 @@ Every pull request passes, on all CI matrix legs:
 
 - Constitution supersedes other practices; conflicts are resolved in its favor or the
   constitution is amended via PR.
+- Boundary guard rules take effect the moment they land in the central `mago.toml`; the expected
+  response in a consumer is to become compliant, never to disable or locally weaken the rule.
+  Realignment follows `vendor/webware/webware-tools/mago-guard-realignment.md`.
 - Wrapper workflow inputs change only when the reusable workflow version bumps or a deliberate
   policy decision is recorded in a spec.
 - `.github/copilot-instructions.md` carries the operational rules derived from this constitution.

@@ -1,5 +1,5 @@
-#:schema https://mago.carthage.software/1.47.3/schema.json
-version = "1.47.3"
+#:schema https://mago.carthage.software/1.48.1/schema.json
+version = "1.48.1"
 php-version = "8.5.0"
 
 [source]
@@ -128,8 +128,20 @@ class-initializers = [
     "Laminas\\InputFilter\\BaseInputFilter::init"
 ]
 
+# ---------------------------------------------------------------------------
+# Guard rules — the ecosystem-wide boundary contract.
+#
+# This is the centre: every consumer extends this file, so a rule added here is
+# enforced in every package the moment the consumer updates its dependency. The
+# doctrine behind these rules lives in the preset constitution (Principles I, V
+# and VIII); the exact TOML lives here so the two cannot drift apart.
+#
+# `mode = "default"` runs both structural and perimeter checks.
+# ---------------------------------------------------------------------------
 [guard]
-mode = "structural"
+mode = "default"
+
+# --- Naming conventions ----------------------------------------------------
 
 [[guard.structural.rules]]
 on = "Webware\\**"
@@ -142,3 +154,131 @@ on = "Webware\\**"
 target = "trait"
 must-be-named = "*Trait"
 reason = "Traits must follow the *Trait naming convention."
+
+# --- HTTP perimeter --------------------------------------------------------
+#
+# PSR-15 implementations live under Http\. The `**` segment in the namespace
+# lets one rule cover both the top-level layout (Http\Middleware\) and the
+# admin-nested one (Http\Admin\Middleware\, Http\Admin\RequestHandler\).
+
+[[guard.structural.rules]]
+on = "Webware\\**\\Http\\**\\Middleware\\*"
+target = "class"
+must-be-named = "*Middleware"
+must-implement = "Psr\\Http\\Server\\MiddlewareInterface"
+reason = "HTTP middleware lives in Http\\Middleware and implements PSR-15 MiddlewareInterface."
+
+[[guard.structural.rules]]
+on = "Webware\\**\\Http\\**\\RequestHandler\\*"
+target = "class"
+must-be-named = "*Handler"
+must-implement = "Psr\\Http\\Server\\RequestHandlerInterface"
+reason = "HTTP request handlers live in Http\\RequestHandler and implement PSR-15 RequestHandlerInterface."
+
+# Psr\Http\Server\** is usable only from the Http\ perimeter and the tests that
+# exercise those classes. Webware\Async\** is a deliberate permit: a runner must
+# accept a PSR-15 request handler. The entry-point contract still belongs to the
+# Http\ boundary — this permit does not move it.
+[[guard.perimeter.restrictions]]
+dependency = "Psr\\Http\\Server\\**"
+allow-from = [
+    "Webware\\**\\Http\\**",
+    "Webware\\Async\\**",
+    "WebwareTest\\**",
+    "WebwareTestIntegration\\**",
+]
+
+# --- Message bus -----------------------------------------------------------
+#
+# Message classes conform by per-type sub-namespace in the domain they act on
+# (Command\, CommandHandler\, Query\, QueryHandler\) — they are never relocated
+# into a MessageBus\ bucket, so `MessageBus\Middleware\` (bus middleware) stays
+# distinguishable from `Http\Middleware\` (PSR middleware).
+#
+# The `not-on` entries are load-bearing: `Webware\**\Command\*` also matches the
+# bus contracts themselves (`Webware\MessageBus\Command\CommandInterface`) and
+# messagebus-event's `Webware\MessageBus\Event\Command\*` classes.
+#
+# `NamedCommandInterface` is conventional and generally implemented, but it is
+# NOT the required contract — the ecosystem minimum is CommandInterface.
+
+[[guard.structural.rules]]
+on = "Webware\\**\\Command\\*"
+not-on = "Webware\\MessageBus\\**"
+target = "class"
+must-be-named = "*Command"
+must-implement = "Webware\\MessageBus\\Command\\CommandInterface"
+reason = "Commands live in Command\\, are named *Command, and implement CommandInterface."
+
+[[guard.structural.rules]]
+on = "Webware\\**\\CommandHandler\\*"
+not-on = "Webware\\MessageBus\\**"
+target = "class"
+must-be-named = "*Handler"
+must-implement = "Webware\\MessageBus\\CommandHandlerInterface"
+reason = "Command handlers live in CommandHandler\\, are named *Handler, and implement CommandHandlerInterface."
+
+[[guard.structural.rules]]
+on = "Webware\\**\\Query\\*"
+not-on = "Webware\\MessageBus\\**"
+target = "class"
+must-be-named = "*Query"
+must-implement = "Webware\\MessageBus\\Query\\QueryInterface"
+reason = "Queries live in Query\\, are named *Query, and implement QueryInterface."
+
+[[guard.structural.rules]]
+on = "Webware\\**\\QueryHandler\\*"
+not-on = "Webware\\MessageBus\\**"
+target = "class"
+must-be-named = "*Handler"
+must-implement = "Webware\\MessageBus\\QueryHandlerInterface"
+reason = "Query handlers live in QueryHandler\\, are named *Handler, and implement QueryHandlerInterface."
+
+[[guard.structural.rules]]
+on = "Webware\\**\\MessageBus\\Middleware\\*"
+target = "class"
+must-be-named = "*Middleware"
+must-implement = "Webware\\MessageBus\\MiddlewareInterface"
+reason = "Bus middleware lives in MessageBus\\Middleware and implements the bus MiddlewareInterface."
+
+# --- Persistence boundary --------------------------------------------------
+#
+# Repositories are reachable only from the handlers that use them, the DI
+# factories that wire them, the composition root (the two-segment root
+# namespace, e.g. Webware\Acl — which is what `Webware\*` matches), console
+# commands, and tests. `allow-from` matches the source *namespace*, prefix
+# matches sub-namespaces, and is never path-based.
+
+[[guard.perimeter.restrictions]]
+dependency = "Webware\\**\\Repository\\**"
+allow-from = [
+    "Webware\\*",
+    "Webware\\**\\Repository\\**",
+    "Webware\\**\\QueryHandler\\**",
+    "Webware\\**\\CommandHandler\\**",
+    "Webware\\**\\Container\\**",
+    "Webware\\**\\Console\\**",
+    "WebwareTest\\**",
+    "WebwareTestIntegration\\**",
+]
+
+# PhpDb\** stays behind the persistence boundary, so ResultSet/RowPrototype
+# types never reach middleware, HTTP handlers, or query payloads. Beyond the
+# boundary types above, three packages touch PhpDb by their nature:
+# Webware\Core\** (the schema/persistence contract home), Webware\Log\Handler\**
+# (the DB log handler), and Webware\Migration\** (the migration tooling).
+[[guard.perimeter.restrictions]]
+dependency = "PhpDb\\**"
+allow-from = [
+    "Webware\\*",
+    "Webware\\Core\\**",
+    "Webware\\Log\\Handler\\**",
+    "Webware\\Migration\\**",
+    "Webware\\**\\Entity\\**",
+    "Webware\\**\\Repository\\**",
+    "Webware\\**\\QueryHandler\\**",
+    "Webware\\**\\CommandHandler\\**",
+    "Webware\\**\\Console\\**",
+    "WebwareTest\\**",
+    "WebwareTestIntegration\\**",
+]

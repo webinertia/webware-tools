@@ -155,7 +155,7 @@ target = "trait"
 must-be-named = "*Trait"
 reason = "Traits must follow the *Trait naming convention."
 
-# --- HTTP perimeter --------------------------------------------------------
+# --- Http perimeter --------------------------------------------------------
 #
 # PSR-15 implementations live under Http\. The `**` segment in the namespace
 # lets one rule cover both the top-level layout (Http\Middleware\) and the
@@ -166,14 +166,14 @@ on = "Webware\\**\\Http\\**\\Middleware\\*"
 target = "class"
 must-be-named = "*Middleware"
 must-implement = "Psr\\Http\\Server\\MiddlewareInterface"
-reason = "HTTP middleware lives in Http\\Middleware and implements PSR-15 MiddlewareInterface."
+reason = "Http middleware lives in Http\\Middleware and implements PSR-15 MiddlewareInterface."
 
 [[guard.structural.rules]]
 on = "Webware\\**\\Http\\**\\RequestHandler\\*"
 target = "class"
 must-be-named = "*Handler"
 must-implement = "Psr\\Http\\Server\\RequestHandlerInterface"
-reason = "HTTP request handlers live in Http\\RequestHandler and implement PSR-15 RequestHandlerInterface."
+reason = "Http request handlers live in Http\\RequestHandler and implement PSR-15 RequestHandlerInterface."
 
 # Psr\Http\Server\** is usable only from the Http\ perimeter and the tests that
 # exercise those classes. Webware\Async\** is a deliberate permit: a runner must
@@ -264,7 +264,7 @@ allow-from = [
 ]
 
 # PhpDb\** stays behind the persistence boundary, so ResultSet/RowPrototype
-# types never reach middleware, HTTP handlers, or query payloads. Beyond the
+# types never reach middleware, Http handlers, or query payloads. Beyond the
 # boundary types above, three packages touch PhpDb by their nature:
 # Webware\Core\** (the schema/persistence contract home), Webware\Log\Handler\**
 # (the DB log handler), and Webware\Migration\** (the migration tooling).

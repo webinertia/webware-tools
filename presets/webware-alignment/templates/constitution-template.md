@@ -94,7 +94,7 @@ The following boundaries are enforced ecosystem-wide by the central
 `vendor/webware/webware-tools/mago.toml`. The exact TOML lives there and is not restated here, so
 the rule and its rationale cannot drift apart.
 
-- **HTTP perimeter.** The PSR HTTP server contracts (`Psr\Http\Server\**` —
+- **Http perimeter.** The PSR Http server contracts (`Psr\Http\Server\**` —
   `MiddlewareInterface`, `RequestHandlerInterface`) are usable only from
   `Webware\**\Http\**` — including the admin-nested `Http\Admin\Middleware\` and
   `Http\Admin\RequestHandler\` layout — plus `Webware\Async\**` (a runner must accept a PSR-15
@@ -105,7 +105,7 @@ the rule and its rationale cannot drift apart.
 - **Persistence.** `Webware\**\Repository\**` is reachable only from the handlers that use it,
   the DI factories that wire it (`Container\`), the composition root, console commands, and tests.
   `PhpDb\**` additionally stays behind the persistence boundary, so `ResultSet` and `RowPrototype`
-  types never reach middleware, HTTP handlers, or query payloads.
+  types never reach middleware, Http handlers, or query payloads.
 
 ## Quality Gates
 

@@ -129,7 +129,7 @@ class-initializers = [
 ]
 
 # ---------------------------------------------------------------------------
-# Guard rules — the ecosystem-wide boundary contract.
+# Guard rules: the ecosystem-wide boundary contract.
 #
 # This is the centre: every consumer extends this file, so a rule added here is
 # enforced in every package the moment the consumer updates its dependency. The
@@ -137,6 +137,13 @@ class-initializers = [
 # and VIII); the exact TOML lives here so the two cannot drift apart.
 #
 # `mode = "default"` runs both structural and perimeter checks.
+#
+# Rule roots use a brace alternation, `{App,Webware}`, so the same convention is
+# enforced on the packages and on consumer application code (`App\`, the Mezzio
+# default module). Verified against mago 1.48.1: brace alternation is supported in
+# a structural `on`, and `**` matches ZERO OR MORE namespace segments, so
+# `{App,Webware}\**\Command\*` covers both `Webware\Acl\Command\X` and
+# `App\Command\X`.
 # ---------------------------------------------------------------------------
 [guard]
 mode = "default"
@@ -144,13 +151,13 @@ mode = "default"
 # --- Naming conventions ----------------------------------------------------
 
 [[guard.structural.rules]]
-on = "Webware\\**"
+on = "{App,Webware}\\**"
 target = "interface"
 must-be-named = "*Interface"
 reason = "Interfaces must follow the *Interface naming convention."
 
 [[guard.structural.rules]]
-on = "Webware\\**"
+on = "{App,Webware}\\**"
 target = "trait"
 must-be-named = "*Trait"
 reason = "Traits must follow the *Trait naming convention."
@@ -162,14 +169,14 @@ reason = "Traits must follow the *Trait naming convention."
 # admin-nested one (Http\Admin\Middleware\, Http\Admin\RequestHandler\).
 
 [[guard.structural.rules]]
-on = "Webware\\**\\Http\\**\\Middleware\\*"
+on = "{App,Webware}\\**\\Http\\**\\Middleware\\*"
 target = "class"
 must-be-named = "*Middleware"
 must-implement = "Psr\\Http\\Server\\MiddlewareInterface"
 reason = "Http middleware lives in Http\\Middleware and implements PSR-15 MiddlewareInterface."
 
 [[guard.structural.rules]]
-on = "Webware\\**\\Http\\**\\RequestHandler\\*"
+on = "{App,Webware}\\**\\Http\\**\\RequestHandler\\*"
 target = "class"
 must-be-named = "*Handler"
 must-implement = "Psr\\Http\\Server\\RequestHandlerInterface"
@@ -178,10 +185,17 @@ reason = "Http request handlers live in Http\\RequestHandler and implement PSR-1
 # Psr\Http\Server\** is usable only from the Http\ perimeter and the tests that
 # exercise those classes. Webware\Async\** is a deliberate permit: a runner must
 # accept a PSR-15 request handler. The entry-point contract still belongs to the
-# Http\ boundary — this permit does not move it.
+# Http\ boundary; this permit does not move it.
+#
+# The App permit is deliberately `App\**\Http\**` only. A consumer that keeps
+# PSR-15 classes outside Http\ (for example `App\Middleware\` or
+# `App\RequestHandler\`) goes red. That is the forcing function for the move.
 [[guard.perimeter.restrictions]]
 dependency = "Psr\\Http\\Server\\**"
 allow-from = [
+    "App\\**\\Http\\**",
+    "AppTest\\**",
+    "AppTestIntegration\\**",
     "Webware\\**\\Http\\**",
     "Webware\\Async\\**",
     "WebwareTest\\**",
@@ -191,28 +205,29 @@ allow-from = [
 # --- Message bus -----------------------------------------------------------
 #
 # Message classes conform by per-type sub-namespace in the domain they act on
-# (Command\, CommandHandler\, Query\, QueryHandler\) — they are never relocated
+# (Command\, CommandHandler\, Query\, QueryHandler\): they are never relocated
 # into a MessageBus\ bucket, so `MessageBus\Middleware\` (bus middleware) stays
 # distinguishable from `Http\Middleware\` (PSR middleware).
 #
-# The `not-on` entries are load-bearing: `Webware\**\Command\*` also matches the
-# bus contracts themselves (`Webware\MessageBus\Command\CommandInterface`) and
-# messagebus-event's `Webware\MessageBus\Event\Command\*` classes.
+# The `not-on` entries are load-bearing: the Webware half of a brace also matches
+# the bus contracts themselves (`Webware\MessageBus\Command\CommandInterface`)
+# and messagebus-event's `Webware\MessageBus\Event\Command\*` classes.
 #
 # `must-implement` matches the interfaces a class declares directly (it does not
 # traverse inheritance), so the enforced contract is the one commands implement:
 # `NamedCommandInterface`, which itself extends `CommandInterface`.
 
 [[guard.structural.rules]]
-on = "Webware\\**\\Command\\*"
+on = "{App,Webware}\\**\\Command\\*"
 not-on = "Webware\\MessageBus\\**"
 target = "class"
 must-be-named = "*Command"
+must-be-final = true
 must-implement = "Webware\\MessageBus\\Command\\NamedCommandInterface"
-reason = "Commands live in Command\\, are named *Command, and implement NamedCommandInterface."
+reason = "Commands live in Command\\, are named *Command, implement NamedCommandInterface, and are final."
 
 [[guard.structural.rules]]
-on = "Webware\\**\\CommandHandler\\*"
+on = "{App,Webware}\\**\\CommandHandler\\*"
 not-on = "Webware\\MessageBus\\**"
 target = "class"
 must-be-named = "*Handler"
@@ -220,15 +235,16 @@ must-implement = "Webware\\MessageBus\\CommandHandlerInterface"
 reason = "Command handlers live in CommandHandler\\, are named *Handler, and implement CommandHandlerInterface."
 
 [[guard.structural.rules]]
-on = "Webware\\**\\Query\\*"
+on = "{App,Webware}\\**\\Query\\*"
 not-on = "Webware\\MessageBus\\**"
 target = "class"
 must-be-named = "*Query"
+must-be-final = true
 must-implement = "Webware\\MessageBus\\Query\\QueryInterface"
-reason = "Queries live in Query\\, are named *Query, and implement QueryInterface."
+reason = "Queries live in Query\\, are named *Query, implement QueryInterface, and are final."
 
 [[guard.structural.rules]]
-on = "Webware\\**\\QueryHandler\\*"
+on = "{App,Webware}\\**\\QueryHandler\\*"
 not-on = "Webware\\MessageBus\\**"
 target = "class"
 must-be-named = "*Handler"
@@ -236,7 +252,7 @@ must-implement = "Webware\\MessageBus\\QueryHandlerInterface"
 reason = "Query handlers live in QueryHandler\\, are named *Handler, and implement QueryHandlerInterface."
 
 [[guard.structural.rules]]
-on = "Webware\\**\\MessageBus\\Middleware\\*"
+on = "{App,Webware}\\**\\MessageBus\\Middleware\\*"
 target = "class"
 must-be-named = "*Middleware"
 must-implement = "Webware\\MessageBus\\MiddlewareInterface"
@@ -246,9 +262,23 @@ reason = "Bus middleware lives in MessageBus\\Middleware and implements the bus 
 #
 # Repositories are reachable only from the handlers that use them, the DI
 # factories that wire them, the composition root (the two-segment root
-# namespace, e.g. Webware\Acl — which is what `Webware\*` matches), console
+# namespace, e.g. Webware\Acl, which is what `Webware\*` matches), console
 # commands, and tests. `allow-from` matches the source *namespace*, prefix
 # matches sub-namespaces, and is never path-based.
+#
+# Every restriction is mirrored for the host application (`App\`, with
+# `AppTest\**` / `AppTestIntegration\**` for tests), so an app is held to the
+# same boundary its packages are.
+#
+# One deliberate asymmetry: `allow-from` entries select SOURCE NAMESPACES. The
+# centre's `Webware\*` is narrow only because a component root is two segments
+# (`Webware\Acl`, the composition root). A one-segment root has no equivalent:
+# bare `App` and `App\` permit everything beneath the root, `App\*` permits every
+# first-level namespace (`App\Repository`, `App\RequestHandler`, `App\Middleware`)
+# and so defeats the restriction, and an exact symbol entry permits nothing at
+# all. The App composition root is therefore NOT permitted. A consumer whose
+# composition root genuinely needs direct persistence access adds a
+# domain-specific local rule, which the doctrine allows. Verified mago 1.48.1.
 
 [[guard.perimeter.restrictions]]
 dependency = "Webware\\**\\Repository\\**"
@@ -263,6 +293,18 @@ allow-from = [
     "WebwareTestIntegration\\**",
 ]
 
+[[guard.perimeter.restrictions]]
+dependency = "App\\**\\Repository\\**"
+allow-from = [
+    "App\\**\\Repository\\**",
+    "App\\**\\QueryHandler\\**",
+    "App\\**\\CommandHandler\\**",
+    "App\\**\\Container\\**",
+    "App\\**\\Console\\**",
+    "AppTest\\**",
+    "AppTestIntegration\\**",
+]
+
 # PhpDb\** stays behind the persistence boundary, so ResultSet/RowPrototype
 # types never reach middleware, Http handlers, or query payloads. Beyond the
 # boundary types above, three packages touch PhpDb by their nature:
@@ -271,6 +313,13 @@ allow-from = [
 [[guard.perimeter.restrictions]]
 dependency = "PhpDb\\**"
 allow-from = [
+    "App\\**\\Entity\\**",
+    "App\\**\\Repository\\**",
+    "App\\**\\QueryHandler\\**",
+    "App\\**\\CommandHandler\\**",
+    "App\\**\\Console\\**",
+    "AppTest\\**",
+    "AppTestIntegration\\**",
     "Webware\\*",
     "Webware\\Core\\**",
     "Webware\\Log\\Handler\\**",

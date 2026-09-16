@@ -103,7 +103,10 @@ the rule and its rationale cannot drift apart.
 - **Message bus.** Message classes conform by per-type sub-namespace (Principle V) rather than by
   relocating into a `MessageBus\` bucket. Bus middleware stays under `MessageBus\Middleware\`.
 - **Persistence.** `Webware\**\Repository\**` is reachable only from the handlers that use it,
-  the DI factories that wire it (`Container\`), the composition root, console commands, and tests.
+  the DI factories that wire it (`Container\`), the composition root, console commands, tests,
+  and the one package that reaches repositories by its nature — the migration tooling
+  (`Webware\Migration\**`), whose runner drives persistence directly. A boundary rule must not
+  block a legitimate consumer; what it permits is recorded with its reason, in the TOML and here.
   `PhpDb\**` additionally stays behind the persistence boundary, so `ResultSet` and `RowPrototype`
   types never reach middleware, Http handlers, or query payloads.
 

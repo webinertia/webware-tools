@@ -280,6 +280,13 @@ reason = "Bus middleware lives in MessageBus\\Middleware and implements the bus 
 # composition root genuinely needs direct persistence access adds a
 # domain-specific local rule, which the doctrine allows. Verified mago 1.48.1.
 
+# Repositories are the read/write boundary, not a persistence preference: reads
+# belong to the query handlers and writes to the command handlers, so this rule
+# is what holds the bus boundary together. Beyond those roles, one package
+# reaches repositories by its nature: Webware\Migration\** (the migration
+# tooling), whose runner drives persistence directly. That is the same package
+# the PhpDb restriction below already admits, on the same grounds - a rule that
+# omitted it would block a legitimate consumer rather than correct one.
 [[guard.perimeter.restrictions]]
 dependency = "Webware\\**\\Repository\\**"
 allow-from = [
@@ -289,6 +296,7 @@ allow-from = [
     "Webware\\**\\CommandHandler\\**",
     "Webware\\**\\Container\\**",
     "Webware\\**\\Console\\**",
+    "Webware\\Migration\\**",
     "WebwareTest\\**",
     "WebwareTestIntegration\\**",
 ]

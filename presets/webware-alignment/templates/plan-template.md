@@ -189,7 +189,7 @@ Consumer obligations derived from the contract:
   `artifacts/workflow.yml` with placeholders replaced by package inputs:
   - `on`: `pull_request` → branches `[0-9]+.[0-9]+.x`; `push` → same branches + tags
     `[0-9]+.[0-9]+.[0-9]+`.
-  - `uses: webinertia/webware-tools/.github/workflows/continuous-integration.yml@0.1.x`
+  - `uses: webinertia/webware-tools/.github/workflows/continuous-integration.yml@1.0.x`
   - `secrets: inherit`
   - `with`: package parameters from spec (PHP versions, integration, codecov, infection flags,
     coverage version, MSI thresholds); omit DB inputs when no database.

@@ -65,6 +65,11 @@ local overrides is `vendor/webware/webware-tools/mago-guard-realignment.md`.
   These are the enforced contracts. `NamedCommandInterface` extends `CommandInterface`, and it is
   the contract commands declare directly — `must-implement` matches the declared interface list, so
   an ancestor interface is not a substitute for declaring the contract itself.
+- PSR-14 events and listeners are named and located by role, and nothing further: `Event\` holds
+  `*Event`, `Listener\` holds `*Listener`. Behaviour is not constrained — a listener may implement
+  `Webware\Event\ListenerInterface` directly or be registered by the package's own provider. A
+  listener's DI factory nests one level deeper, in `Listener\Container\`, the same way
+  `Http\Middleware\Container\` holds middleware factories.
 - `MessageBus\` is reserved for the types that intersect the bus contract in order to support
   consumers — `AuthorizableCommandInterface`, `CommandResult`, `CommandStatus`, and middleware
   under `MessageBus\Middleware\`. It is not a namespace for ordinary message classes, and keeping
@@ -102,6 +107,10 @@ the rule and its rationale cannot drift apart.
   `*Middleware` / `*Handler` names.
 - **Message bus.** Message classes conform by per-type sub-namespace (Principle V) rather than by
   relocating into a `MessageBus\` bucket. Bus middleware stays under `MessageBus\Middleware\`.
+- **Events.** PSR-14 events live in `Event\` and listeners in `Listener\` (Principle V), with no
+  further constraint: the mechanism may be adopted incrementally and no dependency boundary is
+  enforced around it. Reconciling `messagebus-event` against `webware-event` is tracked in
+  webinertia/webware-tools#21.
 - **Persistence.** `Webware\**\Repository\**` is reachable only from the handlers that use it,
   the DI factories that wire it (`Container\`), the composition root, console commands, tests,
   and the one package that reaches repositories by its nature — the migration tooling
@@ -116,7 +125,8 @@ Every pull request passes, on all CI matrix legs:
 
 - Mago format check, lint, analyze, guard
 - Unit tests under lowest/locked/latest dependency strategies
-- Integration tests when `run-integration` is set
+- Integration tests when `run-integration` is set, narrowed to a single leg by
+  `integration-php-version` where the suite is expensive
 - Codecov upload from the canonical coverage leg (report-only)
 - Infection mutation score at or above configured MSI thresholds
 

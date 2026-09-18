@@ -13,6 +13,11 @@ on:
         type: boolean
         required: false
         default: false
+      integration-php-version:
+        description: "Restrict the integration suite (and its DB service) to this PHP version. Empty = every leg where run-integration is true."
+        type: string
+        required: false
+        default: ""
       composer-options:
         description: "Extra flags passed to composer install."
         type: string
@@ -101,6 +106,7 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           coverage: none
+          cache: composer
           tools: mago:1.48.1
 
       - name: Install dependencies
@@ -143,14 +149,21 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           coverage: ${{ (matrix.php == inputs.coverage-php-version && matrix.dependencies == 'locked') && 'pcov' || 'none' }}
+          cache: composer
 
       # DB service is a manual step, not a native `services:` block, because
       # `services:` can't be conditionally omitted per input, and driver
       # packages need different engines (mysql, postgres, mariadb, oracle,
       # mssql, ...). Repos with no DB simply omit `db-image` (default ""),
       # so both steps below are skipped at zero cost.
+      #
+      # Pulling and booting the DB costs ~20-25s per leg, which dominates a
+      # test leg, so the DB is only started where the integration suite will
+      # actually run. `integration-php-version` narrows that to a single leg
+      # (the repo's canonical version) instead of all of them; leaving it empty
+      # keeps the original behaviour of running integration on every leg.
       - name: Start DB service
-        if: inputs.db-image != ''
+        if: inputs.db-image != '' && inputs.run-integration && (inputs.integration-php-version == '' || matrix.php == inputs.integration-php-version)
         run: |
           docker run -d --name db \
             -p ${{ inputs.db-port }}:${{ inputs.db-port }} \
@@ -158,7 +171,7 @@ jobs:
             ${{ inputs.db-image }}
 
       - name: Wait for DB to be healthy
-        if: inputs.db-image != ''
+        if: inputs.db-image != '' && inputs.run-integration && (inputs.integration-php-version == '' || matrix.php == inputs.integration-php-version)
         run: |
           for i in $(seq 1 ${{ inputs.db-health-retries }}); do
             docker exec db ${{ inputs.db-health-cmd }} && exit 0
@@ -197,7 +210,7 @@ jobs:
         run: composer test-coverage
 
       - name: Integration tests
-        if: inputs.run-integration
+        if: inputs.run-integration && (inputs.integration-php-version == '' || matrix.php == inputs.integration-php-version)
         run: composer test-integration
 
       - name: Upload coverage artifact
@@ -248,6 +261,7 @@ jobs:
         with:
           php-version: ${{ inputs.coverage-php-version }}
           coverage: pcov
+          cache: composer
           tools: mago:1.48.1
 
       - name: Start DB service

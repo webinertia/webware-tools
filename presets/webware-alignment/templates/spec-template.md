@@ -41,6 +41,7 @@ in this preset's `artifacts/` directory — no other package needs to be consult
 | `require.php` | `~8.4.1 \|\| ~8.5.0` |
 | `config.platform.php` | `8.4.99` |
 | `run-integration` | [true/false] |
+| `integration-php-version` | highest supported PHP — narrows the integration suite and its DB service to one matrix leg; leave empty to run it on every leg `run-integration` covers |
 | `enable-codecov` | `true` |
 | `enable-infection` | `true` |
 | `coverage-php-version` | highest supported PHP |

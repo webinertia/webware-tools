@@ -258,6 +258,72 @@ must-be-named = "*Middleware"
 must-implement = "Webware\\MessageBus\\MiddlewareInterface"
 reason = "Bus middleware lives in MessageBus\\Middleware and implements the bus MiddlewareInterface."
 
+# --- PSR-14 events ---------------------------------------------------------
+#
+# webware-event owns the event mechanism and the contracts every component
+# consumes (`Webware\Event\EventInterface`, `ListenerInterface`). The convention
+# enforced here is deliberately limited to the two things that make an event
+# graph readable: where a class lives, and what it is called.
+#
+# Both rules carry the `{App,Webware}` root, so a consumer that extends this file
+# takes them for its application code as well as for its packages: an app's
+# `App\Event\SendWelcomeEvent` and its listeners are held to the same convention
+# as a package's. Installing webware-tools is the opt-in. There is no
+# consumer-side disable and no App carve-out.
+#
+# Nothing here constrains behaviour. A listener may implement `ListenerInterface`
+# directly, extend a package base class, or be registered by the package's own
+# provider - there is no `must-implement`, no `must-be-final`, and no dependency
+# restriction on any event library, so the mechanism can be adopted
+# incrementally. Adding one later would be a boundary change, not a naming fix.
+#
+# `\Event\*` and `\Listener\*` match DIRECT CHILDREN ONLY, same as the Command\ and
+# Query\ rules. One consequence is intended: a listener's DI factory nests one
+# level deeper in `Listener\Container\`, exactly as middleware factories nest in
+# `Http\Middleware\Container\`, because a factory is named for the class it builds
+# and cannot satisfy `*Listener` without it. webware-usermanager already sits this
+# way; webware-log's `Listener\Psr3LogPsr14ListenerFactory` is the one package
+# that does not, and moving it is the forcing function, not breakage.
+#
+# `not-on` excludes two roots:
+#
+#   Webware\MessageBus\**  the bus and its integration package, whose event
+#                          classes are bus types under the bus root
+#                          (`Webware\MessageBus\Event\...`). Reconciling that
+#                          package against webware-event is tracked in
+#                          webinertia/webware-tools#21; the parent boundary
+#                          doctrine is #20.
+#   Webware\Event\**       the contract package itself. Its ROOT namespace is
+#                          `Webware\Event`, so `\**\Event\*` matches its root
+#                          classes as if they were events - and `ConfigProvider`
+#                          does not end in `Event`. Excluding the package is the
+#                          fix; renaming its ConfigProvider would be the wrong
+#                          one. This is a namespace collision, not an exemption:
+#                          an application's `App\Event\` really is its event
+#                          bucket and stays fully in scope.
+#
+# Verified against mago 1.48.1: `target = "class"` scopes a naming rule to classes
+# only, so `EventInterface` / `ListenerInterface` are never reported - the
+# contract packages stay out of scope even where they occupy a matching
+# namespace. A class whose name repeats its namespace segment
+# (`Webware\Event\Event`) is accepted, because `*` matches an empty run. `not-on`
+# takes a single string (a list is rejected as a config error) and accepts brace
+# alternation, which is what lets one rule carry both exclusions.
+
+[[guard.structural.rules]]
+on = "{App,Webware}\\**\\Event\\*"
+not-on = "{Webware\\MessageBus,Webware\\Event}\\**"
+target = "class"
+must-be-named = "*Event"
+reason = "Events live in Event\\ and are named *Event."
+
+[[guard.structural.rules]]
+on = "{App,Webware}\\**\\Listener\\*"
+not-on = "Webware\\MessageBus\\**"
+target = "class"
+must-be-named = "*Listener"
+reason = "Listeners live in Listener\\ and are named *Listener, with factories in Listener\\Container\\."
+
 # --- Persistence boundary --------------------------------------------------
 #
 # Repositories are reachable only from the handlers that use them, the DI

@@ -23,6 +23,10 @@ jobs:
     with:
       php-versions: '{{PHP_VERSIONS}}'
       run-integration: {{RUN_INTEGRATION}}
+      # Narrow the integration suite and its DB container to one matrix leg.
+      # Empty = every leg `run-integration` covers. Set it to the highest
+      # supported PHP when the integration suite is the slow part of a leg.
+      integration-php-version: "{{INTEGRATION_PHP_VERSION}}"
       enable-codecov: {{ENABLE_CODECOV}}
       enable-infection: {{ENABLE_INFECTION}}
       # Canonical leg for coverage + mutation testing (highest supported PHP).

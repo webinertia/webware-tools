@@ -97,10 +97,10 @@ test/
 `webinertia/webware-tools/.github/workflows/continuous-integration.yml@X.Y.x` exposes
 `workflow_call`:
 
-- **Inputs**: `php-versions` (JSON array), `run-integration`, `composer-options`, `db-image`,
-  `db-env-json`, `db-port`, `db-health-cmd`, `db-health-retries`, `db-health-interval-seconds`,
-  `enable-codecov`, `enable-infection`, `coverage-php-version`, `min-msi`, `min-covered-msi`,
-  `test-env-json`.
+- **Inputs**: `php-versions` (JSON array), `run-integration`, `integration-php-version`,
+  `composer-options`, `db-image`, `db-env-json`, `db-port`, `db-health-cmd`, `db-health-retries`,
+  `db-health-interval-seconds`, `enable-codecov`, `enable-infection`, `coverage-php-version`,
+  `min-msi`, `min-covered-msi`, `test-env-json`.
 - **Secrets**: `CODECOV_TOKEN`, `INFECTION_DASHBOARD_API_KEY` (optional), forwarded via
   `secrets: inherit`.
 - **Jobs**:
@@ -109,7 +109,10 @@ test/
   2. **test** — matrix `php-versions` × `[lowest, locked, latest]`; optional DB container
      (skipped when `db-image` empty); `composer test` on non-canonical legs, `composer
      test-coverage` on the canonical leg (`coverage-php-version` + locked, pcov);
-     `composer test-integration` when `run-integration`; uploads `clover.xml` artifact.
+     `composer test-integration` when `run-integration`; uploads `clover.xml` artifact. Both the DB
+     container and the integration suite are additionally gated on `run-integration`, and narrowed
+     by `integration-php-version` when set — the integration suite is the expensive part of a leg,
+     so running it on every PHP version is rarely worth the wall-clock time.
   3. **codecov** — needs `test`; `codecov/codecov-action@v5`, `files: clover.xml`,
      `fail_ci_if_error: false` (report-only).
   4. **mutation-test** — needs `test`; PHP `coverage-php-version` with pcov + `tools: mago`;

@@ -52,8 +52,8 @@ Replace package parameters (PHP versions, MSI thresholds, test namespaces) befor
 
 - [ ] T015 Create `.github/workflows/continuous-integration.yml` from the preset's
   `artifacts/workflow.yml`, replacing the `{{PLACEHOLDER}}` values with the spec's Package
-  Parameters (`php-versions`, `run-integration`, `enable-codecov`, `enable-infection`,
-  `coverage-php-version`, `min-msi`, `min-covered-msi`), then move it to
+  Parameters (`php-versions`, `run-integration`, `integration-php-version`, `enable-codecov`,
+  `enable-infection`, `coverage-php-version`, `min-msi`, `min-covered-msi`), then move it to
   `.github/workflows/continuous-integration.yml`
 - [ ] T016 Create `.github/copilot-instructions.md` from the preset's
   `artifacts/copilot-instructions.md`, replacing `{{PACKAGE_TITLE}}`

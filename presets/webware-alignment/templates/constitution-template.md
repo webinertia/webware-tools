@@ -66,7 +66,8 @@ local overrides is `vendor/webware/webware-tools/mago-guard-realignment.md`.
   the contract commands declare directly — `must-implement` matches the declared interface list, so
   an ancestor interface is not a substitute for declaring the contract itself.
 - PSR-14 events and listeners are named and located by role, and nothing further: `Event\` holds
-  `*Event`, `Listener\` holds `*Listener`. Behaviour is not constrained — a listener may implement
+  `*Event`, `Listener\` holds `*Listener`. The convention binds application code (`App\`) exactly as
+  it binds a package. Behaviour is not constrained — a listener may implement
   `Webware\Event\ListenerInterface` directly or be registered by the package's own provider. A
   listener's DI factory nests one level deeper, in `Listener\Container\`, the same way
   `Http\Middleware\Container\` holds middleware factories.
@@ -107,10 +108,12 @@ the rule and its rationale cannot drift apart.
   `*Middleware` / `*Handler` names.
 - **Message bus.** Message classes conform by per-type sub-namespace (Principle V) rather than by
   relocating into a `MessageBus\` bucket. Bus middleware stays under `MessageBus\Middleware\`.
-- **Events.** PSR-14 events live in `Event\` and listeners in `Listener\` (Principle V), with no
-  further constraint: the mechanism may be adopted incrementally and no dependency boundary is
-  enforced around it. Reconciling `messagebus-event` against `webware-event` is tracked in
-  webinertia/webware-tools#21.
+- **Events.** PSR-14 events live in `Event\` and listeners in `Listener\` (Principle V). The rules
+  bind `App\` as well as `Webware\` and there is no consumer-side opt-out: a consumer that extends
+  `webware-tools` takes them for its own application code, which is the point of building on the
+  stack. Nothing further is constrained — the mechanism may be adopted incrementally and no
+  dependency boundary is enforced around it. Reconciling `messagebus-event` against `webware-event`
+  is tracked in webinertia/webware-tools#21.
 - **Persistence.** `Webware\**\Repository\**` is reachable only from the handlers that use it,
   the DI factories that wire it (`Container\`), the composition root, console commands, tests,
   and the one package that reaches repositories by its nature — the migration tooling

@@ -265,6 +265,12 @@ reason = "Bus middleware lives in MessageBus\\Middleware and implements the bus 
 # enforced here is deliberately limited to the two things that make an event
 # graph readable: where a class lives, and what it is called.
 #
+# Both rules carry the `{App,Webware}` root, so a consumer that extends this file
+# takes them for its application code as well as for its packages: an app's
+# `App\Event\SendWelcomeEvent` and its listeners are held to the same convention
+# as a package's. Installing webware-tools is the opt-in. There is no
+# consumer-side disable and no App carve-out.
+#
 # Nothing here constrains behaviour. A listener may implement `ListenerInterface`
 # directly, extend a package base class, or be registered by the package's own
 # provider - there is no `must-implement`, no `must-be-final`, and no dependency
@@ -292,8 +298,9 @@ reason = "Bus middleware lives in MessageBus\\Middleware and implements the bus 
 #                          classes as if they were events - and `ConfigProvider`
 #                          does not end in `Event`. Excluding the package is the
 #                          fix; renaming its ConfigProvider would be the wrong
-#                          one. App-side is unaffected, because an application's
-#                          `App\Event\` really is its event bucket.
+#                          one. This is a namespace collision, not an exemption:
+#                          an application's `App\Event\` really is its event
+#                          bucket and stays fully in scope.
 #
 # Verified against mago 1.48.1: `target = "class"` scopes a naming rule to classes
 # only, so `EventInterface` / `ListenerInterface` are never reported - the

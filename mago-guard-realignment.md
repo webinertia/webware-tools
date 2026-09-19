@@ -8,6 +8,10 @@ Boundary guard rules are enforced from the moment they land in the centre. A con
 response is to make the package compliant, never to disable, weaken, or copy a central rule into
 the consumer file.
 
+The rules address the package and the application it serves through the same `{App,Webware}` roots,
+so application code is held to the same conventions as a package's. Extending the centre is the
+opt-in: a repository built on webware-tools takes the rules, component or app.
+
 ## When this applies
 
 - After `composer update webware/webware-tools` picks up a new or changed central rule.
@@ -59,12 +63,17 @@ The centre's only PSR-14 rules are the two naming rules in Principle V:
 | `Event\` | `*Event` |
 | `Listener\` | `*Listener` |
 
+Both carry the `{App,Webware}` root, so they bind application code exactly as they bind a package:
+an application's `App\Event\SendWelcomeEvent` and `App\Listener\…` are held to the same convention,
+whether the repository is a component or an app built on webware-tools. A consumer that extends the
+centre has opted in by doing so — there is no consumer-side disable and no App carve-out.
+
 They are deliberately narrow. Nothing is enforced about behaviour: a listener may implement
 `Webware\Event\ListenerInterface` directly, extend a package base class, or be registered by its own
 provider. There is no `must-implement`, no `must-be-final`, and no dependency restriction on any
 event library, so the mechanism can be adopted incrementally and a package is never forced into a
 particular dispatch style. The rules exist so the event graph is readable, not so the mechanism is
-uniform.
+uniform — narrow scope means the rules are applied everywhere, not that the convention is optional.
 
 Three consequences of the patterns, all verified against mago 1.48.1:
 
@@ -78,6 +87,9 @@ Three consequences of the patterns, all verified against mago 1.48.1:
   webware-log's `Listener\Psr3LogPsr14ListenerFactory` is the one package that does not yet.
 - A class whose name repeats its namespace segment is accepted, because `*` matches an empty run:
   `Webware\Event\Event` is not a finding.
+- An App-side fixture set behaves identically to a package's: `App\Event\MisnamedThing` and
+  `App\Listener\SomeFactory` are reported, while `App\Event\SendWelcomeEvent`,
+  `App\Listener\SendWelcomeListener` and both interfaces are not.
 
 `not-on` excludes two roots. `Webware\MessageBus\**` keeps the bus integration package out of
 scope while its event classes are bus types under the bus root
@@ -85,8 +97,9 @@ scope while its event classes are bus types under the bus root
 webinertia/webware-tools#21, and the parent boundary doctrine is #20. `Webware\Event\**` excludes the
 contract package itself, because its ROOT namespace is `Webware\Event` — the `\**\Event\*` pattern
 matches its root classes as though they were events, and `ConfigProvider` does not end in `Event`.
-Excluding the package is the fix; renaming its `ConfigProvider` to satisfy the rule is not. An
-application is unaffected, since an application's `App\Event\` really is its event bucket.
+Excluding the package is the fix; renaming its `ConfigProvider` to satisfy the rule is not. That is a
+namespace collision, not an exemption: an application's `App\Event\` really is its event bucket and
+stays fully in scope.
 
 ## Moving a class to satisfy a rule
 

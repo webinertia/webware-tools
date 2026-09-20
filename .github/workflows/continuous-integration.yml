@@ -107,7 +107,7 @@ jobs:
           php-version: ${{ matrix.php }}
           coverage: none
           cache: composer
-          tools: mago:1.48.1
+          tools: mago:1.49.0
 
       - name: Install dependencies
         run: composer install --no-interaction --no-progress ${{ inputs.composer-options }}
@@ -262,7 +262,7 @@ jobs:
           php-version: ${{ inputs.coverage-php-version }}
           coverage: pcov
           cache: composer
-          tools: mago:1.48.1
+          tools: mago:1.49.0
 
       - name: Start DB service
         if: inputs.db-image != '' && inputs.run-integration

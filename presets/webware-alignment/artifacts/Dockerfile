@@ -29,7 +29,7 @@ FROM php:${PHP_VERSION}-cli
 
 # Mago version to install. Keep in sync with the central `mago.toml`
 # `version =` pin in webware/webware-tools.
-ARG MAGO_VERSION=1.48.1
+ARG MAGO_VERSION=1.49.0
 
 # ---------------------------------------------------------------------------
 # System packages + PHP extensions

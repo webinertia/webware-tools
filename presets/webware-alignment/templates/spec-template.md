@@ -33,21 +33,24 @@ WSL, Linux, and macOS without a native PHP install.
 
 ## Package Parameters
 
-Fill in before planning. All reference artifacts (configs, workflow wrapper, badge block) ship
-in this preset's `artifacts/` directory — no other package needs to be consulted.
+Fill in before planning. All reference artifacts (configs, the required workflow's config, badge
+block) ship in this preset's `artifacts/` directory — no other package needs to be consulted.
+
+Parameters that name a `webware-ci.json` key use the key verbatim. The authoritative enumeration
+is `artifacts/webware-ci.json`, and the required workflow reads those names exactly.
 
 | Parameter | [PACKAGE] value |
 |---|---|
-| `php-versions` | `["8.4", "8.5"]` |
+| `php_versions` | `["8.4", "8.5"]` |
 | `require.php` | `~8.4.1 \|\| ~8.5.0` |
 | `config.platform.php` | `8.4.99` |
-| `run-integration` | [true/false] |
-| `integration-php-version` | highest supported PHP — narrows the integration suite and its DB service to one matrix leg; leave empty to run it on every leg `run-integration` covers |
-| `enable-codecov` | `true` |
-| `enable-infection` | `true` |
-| `coverage-php-version` | highest supported PHP |
-| `min-msi` / `min-covered-msi` | `95` / `95` |
-| DB container (`db-image`) | [omitted unless package needs a database]; canonical MySQL value `mysql:9.7`, with `db-port: 3306`, `db-env-json` (seeds the DB), `db-health-cmd` (readiness probe), and `test-env-json` (overrides phpunit.xml.dist connection for CI) |
+| `run_integration` | [true/false] |
+| `integration_php_version` | highest supported PHP — narrows the integration suite and its DB service to one matrix leg; leave empty to run it on every leg `run_integration` covers |
+| `enable_codecov` | `true` |
+| `enable_infection` | `true` |
+| `coverage_php_version` | highest supported PHP |
+| `min_msi` / `min_covered_msi` | `95` / `95` |
+| DB container (`db_image`) | [omitted unless package needs a database]; canonical MySQL value `mysql:9.7`, with `db_port: 3306`, `db_env_json` (seeds the DB), `db_health_cmd` (readiness probe), and `test_env_json` (overrides phpunit.xml.dist connection for CI) |
 | Integration container | [e.g. Mailpit, MySQL, omitted] |
 | Tooling `PHP_VERSION` (Docker) | `8.4.24` (latest 8.4 patch; keep in sync with `require.php`) |
 | Tooling Mago version (Docker) | derived from the central `mago.toml` pin via `composer.lock` (no literal to maintain) |
@@ -78,17 +81,19 @@ change.
 
 ### User Story 2 - Tooling updates propagate with a version bump (Priority: P2)
 
-When `webware/webware-tools` releases a new workflow version, consumers update the pinned ref and
-regenerate baselines, without rewriting per-package config.
+When `webware/webware-tools` cuts a release, consumers move their lock entry to it and regenerate
+baselines, without rewriting per-package config. The pipeline itself changes by nothing: it is the
+organization's required workflow, not a per-package file to re-point.
 
 **Why this priority**: Ongoing maintenance loop.
 
-**Independent Test**: Bump the pinned workflow ref; pipeline still green after `mago` fix pass.
+**Independent Test**: Move the `webware/webware-tools` lock entry; pipeline still green after a
+`mago` fix pass.
 
 **Acceptance Scenarios**:
 
-1. **Given** a new webware-tools version, **When** the pin moves, **Then** only the pin and
-   possibly baselines change.
+1. **Given** a new webware-tools version, **When** the lock entry moves, **Then** only
+   `composer.lock` and possibly baselines change.
 
 ### Edge Cases
 
@@ -104,7 +109,10 @@ regenerate baselines, without rewriting per-package config.
 
 - **FR-001**: Repository MUST provide `webware-ci.json` in the repository root carrying the
   package's CI values, and MUST NOT carry a wrapper workflow — the organization ruleset binds the
-  required workflow to the repository.
+  required workflow to the repository. A key omitted from that file silently takes the workflow's
+  default, so the key names are the contract. The file MUST carry no Mago version literal: the pin
+  is inherited from `webware/webware-tools/mago.toml`, and the workflow fails the build on a copy
+  of it.
 - **FR-002**: `composer.json` MUST define scripts `test`, `test-coverage`, `test-integration`,
   `mutation-test`, and a `test-all` alias (`test` + `test-integration` + `mutation-test`).
   Legacy `php-cs-fixer` and `phpstan` scripts MUST be removed.
@@ -150,9 +158,9 @@ regenerate baselines, without rewriting per-package config.
   roave/backward-compatibility-check) MUST be runnable inside the container via
   `docker compose exec tooling ...` (or the Dev Container), with no native PHP toolchain required
   on the host. Xdebug MUST be available but disabled by default, enabled via `XDEBUG_MODE=debug`.
-- **FR-019**: If the package needs a database (`db-image` set), `compose.yml` MUST provide an
+- **FR-019**: If the package needs a database (`db_image` set), `compose.yml` MUST provide an
   opt-in `mysql` service reachable from `tooling` as host `mysql` on port `3306`, mirroring the
-  `db-image` / `db-env-json` Package Parameters, with a healthcheck gating the `tooling`
+  `db_image` / `db_env_json` Package Parameters, with a healthcheck gating the `tooling`
   `depends_on`. The package's local DB config (e.g. `config/autoload/mysql.local.php`) MUST point
   at that service. An opt-in `phpmyadmin` service MUST provide a web UI over the database.
 
@@ -173,7 +181,7 @@ regenerate baselines, without rewriting per-package config.
   unbaselined issues.
 - **SC-003**: Infection MSI and covered MSI at or above package thresholds (95 reference).
 - **SC-004**: Codecov receives coverage upload from exactly one matrix leg (canonical:
-  `coverage-php-version` + locked).
+  `coverage_php_version` + locked).
 - **SC-005**: On a fresh Windows machine with only Docker installed, `docker compose up -d` and
   `docker compose exec tooling composer test` succeed with no native PHP toolchain present, and
   the repository opens in a VS Code Dev Container backed by `compose.yml`.

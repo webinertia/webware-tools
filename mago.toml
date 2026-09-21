@@ -1,6 +1,6 @@
 #:schema https://mago.carthage.software/1.50.0/schema.json
 version = "1.50.0"
-php-version = "8.5.0"
+php-version = "8.4.1"
 
 [source]
 paths = ["src", "test"]
@@ -140,7 +140,7 @@ class-initializers = [
 #
 # Rule roots use a brace alternation, `{App,Webware}`, so the same convention is
 # enforced on the packages and on consumer application code (`App\`, the Mezzio
-# default module). Verified against mago 1.48.1: brace alternation is supported in
+# default module). Verified against mago 1.50.0: brace alternation is supported in
 # a structural `on`, and `**` matches ZERO OR MORE namespace segments, so
 # `{App,Webware}\**\Command\*` covers both `Webware\Acl\Command\X` and
 # `App\Command\X`.
@@ -278,8 +278,8 @@ reason = "Bus middleware lives in MessageBus\\Middleware and implements the bus 
 # level deeper in `Listener\Container\`, exactly as middleware factories nest in
 # `Http\Middleware\Container\`, because a factory is named for the class it builds
 # and cannot satisfy `*Listener` without it. webware-usermanager already sits this
-# way; webware-log's `Listener\Psr3LogPsr14ListenerFactory` is the one package
-# that does not, and moving it is the forcing function, not breakage.
+# way, webware-log included: its `Listener\Container\Psr3LogPsr14ListenerFactory`
+# moved, so no package is out of line on this rule today.
 #
 # `not-on` excludes two roots:
 #
@@ -288,7 +288,7 @@ reason = "Bus middleware lives in MessageBus\\Middleware and implements the bus 
 #                          (`Webware\MessageBus\Event\...`). Reconciling that
 #                          package against webware-event is tracked in
 #                          webinertia/webware-tools#21; the parent boundary
-#                          doctrine is #20.
+#                          doctrine landed as constitution Principle VIII.
 #   Webware\Event\**       the contract package itself. Its ROOT namespace is
 #                          `Webware\Event`, so `\**\Event\*` matches its root
 #                          classes as if they were events - and `ConfigProvider`
@@ -298,7 +298,7 @@ reason = "Bus middleware lives in MessageBus\\Middleware and implements the bus 
 #                          an application's `App\Event\` really is its event
 #                          bucket and stays fully in scope.
 #
-# Verified against mago 1.48.1: `target = "class"` scopes a naming rule to classes
+# Verified against mago 1.50.0: `target = "class"` scopes a naming rule to classes
 # only, so `EventInterface` / `ListenerInterface` are never reported - the
 # contract packages stay out of scope even where they occupy a matching
 # namespace. A class whose name repeats its namespace segment
@@ -340,7 +340,7 @@ reason = "Listeners live in Listener\\ and are named *Listener, with factories i
 # and so defeats the restriction, and an exact symbol entry permits nothing at
 # all. The App composition root is therefore NOT permitted. A consumer whose
 # composition root genuinely needs direct persistence access adds a
-# domain-specific local rule, which the doctrine allows. Verified mago 1.48.1.
+# domain-specific local rule, which the doctrine allows. Verified mago 1.50.0.
 
 # Repositories are the read/write boundary, not a persistence preference: reads
 # belong to the query handlers and writes to the command handlers, so this rule

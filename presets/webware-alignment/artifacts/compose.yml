@@ -23,11 +23,11 @@
 #
 # Packages whose tests need MySQL uncomment the `mysql` service below (and the
 # `phpmyadmin` web UI if wanted), plus the `depends_on` block on `tooling`. The
-# `mysql` service mirrors the `db-image` package parameter used by CI, and is
+# `mysql` service mirrors the `db_image` package parameter used by CI, and is
 # reachable from `tooling` as host `mysql` on port 3306 — matching the PhpDb
 # `mysql.local.php` connection convention. Packages that need a different
 # engine add an equivalent service here (postgres, mariadb, ...) mirroring
-# their own `db-image` parameter.
+# their own `db_image` parameter.
 # ---------------------------------------------------------------------------
 
 services:
@@ -75,13 +75,13 @@ services:
   # MySQL (optional) — uncomment this whole block for packages whose tests
   # need a MySQL database (e.g. webware-acl via php-db/phpdb-mysql).
   #
-  # Mirror the spec's `db-image` / `db-env-json` / `db-port` Package Parameters
+  # Mirror the spec's `db_image` / `db_env_json` / `db_port` Package Parameters
   # so the dev database matches CI. Point the package's local DB config (e.g.
   # config/autoload/mysql.local.php) at host `mysql`, port 3306, using the
   # credentials below. Adjust MYSQL_DATABASE / MYSQL_USER / MYSQL_PASSWORD to
   # the package's test-database convention. MYSQL_ALLOW_EMPTY_PASSWORD keeps
   # the test-only database free of a root password and in sync with the CI
-  # `db-env-json` — remove it if the package pins a root password instead.
+  # `db_env_json` — remove it if the package pins a root password instead.
   # -------------------------------------------------------------------------
   # mysql:
   #   image: mysql:9.7

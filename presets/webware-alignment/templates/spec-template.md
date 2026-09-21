@@ -49,7 +49,7 @@ in this preset's `artifacts/` directory — no other package needs to be consult
 | DB container (`db-image`) | [omitted unless package needs a database]; canonical MySQL value `mysql:9.7`, with `db-port: 3306`, `db-env-json` (seeds the DB), `db-health-cmd` (readiness probe), and `test-env-json` (overrides phpunit.xml.dist connection for CI) |
 | Integration container | [e.g. Mailpit, MySQL, omitted] |
 | Tooling `PHP_VERSION` (Docker) | `8.4.24` (latest 8.4 patch; keep in sync with `require.php`) |
-| Tooling `MAGO_VERSION` (Docker) | `1.50.0` (keep in sync with central `mago.toml` pin) |
+| Tooling Mago version (Docker) | derived from the central `mago.toml` pin via `composer.lock` (no literal to maintain) |
 | Test autoload namespaces | `WebwareTest\<Package>\` → `test/unit/`, `WebwareTestIntegration\<Package>\` → `test/integration/` |
 
 ## User Scenarios & Testing

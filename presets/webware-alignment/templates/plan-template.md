@@ -217,12 +217,13 @@ Consumer obligations derived from the contract:
 - `Dockerfile` (new): copy from the preset's `artifacts/Dockerfile`. Base image
   `php:8.4.24-cli` (latest 8.4 patch, in sync with `require.php`); install Composer from the
   official `composer` image; download the Mago release asset for `${TARGETARCH}` (amd64 →
-  `x86_64`, arm64 → `aarch64`) at the pinned `MAGO_VERSION` and install to `/usr/local/bin/mago`;
+  `x86_64`, arm64 → `aarch64`) at the Mago version derived from the webware-tools `mago.toml`
+  pin (`version =`, resolved through `composer.lock`) and install to `/usr/local/bin/mago`;
   install `intl`, `pcntl`, `zip`, and `pcov` extensions; install Xdebug (off by default,
   `XDEBUG_MODE=debug` to enable); `WORKDIR /app`.
 - `compose.yml` (new): copy from the preset's `artifacts/compose.yml`. A single persistent,
   interactive `tooling` service (`sleep infinity`, `stdin_open`/`tty`) that builds the image (with
-  `PHP_VERSION` and `MAGO_VERSION` build args), bind-mounts the repository at `/app`, keeps
+  `PHP_VERSION` build arg), bind-mounts the repository at `/app`, keeps
   `vendor/` and the Composer cache in named volumes, and exposes `host.docker.internal` for
   Xdebug. This is the single source of truth for the environment. For packages whose tests need
   MySQL, uncomment the opt-in `mysql` service (and the `depends_on` block on `tooling`); it

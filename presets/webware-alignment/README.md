@@ -125,8 +125,9 @@ Composer cache lives in a named volume (Linux-native I/O, fast on Windows) so do
 container rebuilds; it is only a cache.
 Xdebug is installed but off by default — enable step debugging with `XDEBUG_MODE=debug`.
 
-The `MAGO_VERSION` build arg tracks the central `mago.toml` pin; `PHP_VERSION` tracks the
-package's latest supported 8.4 patch release. For packages whose tests need MySQL (e.g. anything
+The Dockerfile derives Mago's version from the central `mago.toml` `version =` pin at build
+time, resolved through `composer.lock`, so there is no `MAGO_VERSION` build arg to keep in sync.
+`PHP_VERSION` tracks the package's latest supported 8.4 patch release. For packages whose tests need MySQL (e.g. anything
 using `php-db/phpdb-mysql`), `compose.yml` ships an opt-in `mysql` service — uncomment the
 `mysql` service and the `depends_on` block on `tooling`, then point the package's local DB config
 (e.g. `config/autoload/mysql.local.php`) at host `mysql`, port `3306`, using the service's

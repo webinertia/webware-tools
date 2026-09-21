@@ -40,8 +40,8 @@ local overrides is `vendor/webware/webware-tools/mago-guard-realignment.md`.
 
 - Mago `format`, `lint`, `analyze`, `guard` run in CI; findings are fixed in source, never
   silently suppressed. Baseline entries require explicit maintainer approval per issue.
-- Infection runs with Mago as `staticAnalysisTool`; `min_msi` and `min_covered_msi` start at 95
-  and may only be lowered with justification.
+- Infection runs with Mago as `staticAnalysisTool`; `min_msi` and `min_covered_msi` are 95. That
+  is the ecosystem standard, not a starting point.
 
 ### IV. PHP Compatibility
 

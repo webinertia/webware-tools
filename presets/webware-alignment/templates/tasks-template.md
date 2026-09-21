@@ -2,7 +2,8 @@
 
 **Input**: `specs/[###-feature]/spec.md`, `plan.md`
 
-Replace package parameters (PHP versions, MSI thresholds, test namespaces) before executing.
+Replace package parameters (PHP versions, test namespaces) before executing. The MSI gates are 95
+and are not a package parameter.
 
 ## Phase 1 — composer.json
 

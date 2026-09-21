@@ -34,8 +34,8 @@ on Windows, WSL, Linux, and macOS.
 
 **Performance Goals**: N/A
 
-**Constraints**: CI matrix `["8.4", "8.5"]`; `config.platform.php` = `8.4.99`; `min-msi` and
-`min-covered-msi` = 95
+**Constraints**: CI matrix `["8.4", "8.5"]`; `config.platform.php` = `8.4.99`; `min_msi` and
+`min_covered_msi` = 95
 
 **Scale/Scope**: Tooling alignment only (test scaffolding, not full coverage)
 
@@ -106,23 +106,34 @@ invokes it directly, so a repository cannot pass `with:` inputs — per-package 
 - **Secrets**: `CODECOV_TOKEN` and `INFECTION_DASHBOARD_API_KEY` are read by the workflow from
   repository/org secrets; nothing is forwarded per package.
 - **Jobs**:
-  1. **mago** — matrix over `php-versions`; runs `mago format --check`, `mago lint`,
+  1. **config** — runs on every repository; fails when `webware-ci.json` is absent from the root,
+     then publishes every key as a job output. Each key has a default (`php_versions`
+     `["8.4", "8.5"]`, `min_msi` / `min_covered_msi` `"10"`, booleans `false`, the rest empty), so
+     a misspelled key does not fail the build — it silently takes the default. The job also rejects
+     a duplicated Mago version pin; that check is skipped in `webinertia/webware-tools` itself,
+     which owns the pin.
+  2. **mago** — needs `config`; matrix over `php_versions`; installs Mago at the version resolved
+     from the centre's `mago.toml` pin, then runs `mago format --check`, `mago lint`,
      `mago analyze`, `mago guard` (each `success() || failure()`).
-  2. **test** — matrix `php-versions` × `[lowest, locked, latest]`; optional DB container
-     (skipped when `db-image` empty); `composer test` on non-canonical legs, `composer
-     test-coverage` on the canonical leg (`coverage-php-version` + locked, pcov);
-     `composer test-integration` when `run-integration`; uploads `clover.xml` artifact. Both the DB
-     container and the integration suite are additionally gated on `run-integration`, and narrowed
-     by `integration-php-version` when set — the integration suite is the expensive part of a leg,
+  3. **test** — needs `config`; matrix `php_versions` × `[lowest, locked, latest]`; optional DB
+     container (skipped when `db_image` empty); `composer test` on non-canonical legs, `composer
+     test-coverage` on the canonical leg (`coverage_php_version` + locked, pcov);
+     `composer test-integration` when `run_integration`; uploads `clover.xml` artifact. Both the DB
+     container and the integration suite are additionally gated on `run_integration`, and narrowed
+     by `integration_php_version` when set — the integration suite is the expensive part of a leg,
      so running it on every PHP version is rarely worth the wall-clock time.
-  3. **codecov** — needs `test`; `codecov/codecov-action@v5`, `files: clover.xml`,
+  4. **codecov** — needs `[config, test]`; `codecov/codecov-action@v5`, `files: clover.xml`,
      `fail_ci_if_error: false` (report-only).
-  4. **mutation-test** — needs `test`; PHP `coverage-php-version` with pcov + `tools: mago`;
-     `composer mutation-test -- --min-msi=… --min-covered-msi=… --logger-github`; Infection
-     invokes Mago via `staticAnalysisTool`.
+  5. **mutation-test** — needs `[config, test]`; PHP `coverage_php_version` with pcov, Mago at the
+     resolved pin; `composer mutation-test -- --min-msi=… --min-covered-msi=… --logger-github`;
+     Infection invokes Mago via `staticAnalysisTool`.
 
 Consumer obligations derived from the contract:
 
+- `webware-ci.json` must exist in the repository root — the `config` job fails the build without
+  it.
+- No Mago version literal anywhere in the repository: the pin is inherited from
+  `webware/webware-tools/mago.toml`, and the `config` job rejects a copy of it.
 - Required composer scripts must exist.
 - `phpunit.xml.dist` must define suites named `unit test` and `integration test`.
 - `composer.lock` must be committed.
@@ -207,7 +218,7 @@ Consumer obligations derived from the contract:
 ### Phase 6 — README badges
 
 - `README.md`: standard badge block from the preset's `artifacts/readme-badges.md` (PHP
-  version, latest version, license, Continuous Integration, codecov, Mutation testing). CI and
+  version, latest version, license, Required CI, codecov, Mutation testing). CI and
   codecov badge URLs carry no `?branch=` parameter, so they always point at the default branch.
   The Stryker mutation badge URL embeds the branch segment; update that segment in both the
   badge URL and the dashboard link whenever the default branch changes.
@@ -227,7 +238,7 @@ Consumer obligations derived from the contract:
   `vendor/` and the Composer cache in named volumes, and exposes `host.docker.internal` for
   Xdebug. This is the single source of truth for the environment. For packages whose tests need
   MySQL, uncomment the opt-in `mysql` service (and the `depends_on` block on `tooling`); it
-  mirrors the CI `db-image` / `db-env-json` Package Parameters and is reachable from `tooling` as
+  mirrors the CI `db_image` / `db_env_json` Package Parameters and is reachable from `tooling` as
   host `mysql` on port 3306 (matching the PhpDb `mysql.local.php` convention). An opt-in
   `phpmyadmin` service provides a web UI (http://localhost:8080) over the database.
 - `.dockerignore` (new): copy from the preset's `artifacts/.dockerignore` (exclude `vendor/`,

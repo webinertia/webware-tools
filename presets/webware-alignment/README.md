@@ -36,7 +36,7 @@ inspecting another package:
 | `.dockerignore` | `.dockerignore` (exclude `vendor/`, `.git/`, `.devcontainer/`, caches from build context) |
 | `devcontainer.json` | `.devcontainer/devcontainer.json` (thin VS Code wrapper around `compose.yml`) |
 
-The tasks template (T006–T025) points each task at the corresponding artifact.
+Each task names the `artifacts/` file it copies.
 
 `webware-ci.json` is read at run time by the required workflow, which is bound to every repository
 by the organization ruleset — there is no per-package wrapper workflow and no workflow ref to bump.
@@ -57,8 +57,8 @@ database add the `db_*` keys:
 ```
 
 The Package Parameters table in the generated spec is empty by design. Fill in package-specific
-values before planning. Reference instance: webware-mailer's
-`specs/001-webware-tools-alignment/`.
+values before planning, reading the package's `composer.json` and `mago.toml` for the values it
+already carries.
 
 ## Install
 
@@ -71,10 +71,16 @@ Local development (unreleased):
 specify preset add --dev /path/to/webware-tools/presets/webware-alignment
 ```
 
-From a release archive:
+From an installed dependency (the preset ships inside the package):
 
 ```bash
-specify preset add --from https://github.com/webinertia/webware-tools/archive/refs/tags/v0.1.0.zip
+specify preset add --dev vendor/webware/webware-tools/presets/webware-alignment
+```
+
+From a release archive (substitute the tag — webware-tools tags carry no `v` prefix):
+
+```bash
+specify preset add --from https://github.com/webinertia/webware-tools/archive/refs/tags/<tag>.zip
 ```
 
 From the catalog (once submitted):
@@ -145,11 +151,13 @@ Xdebug is installed but off by default — enable step debugging with `XDEBUG_MO
 
 The Dockerfile derives Mago's version from the central `mago.toml` `version =` pin at build
 time, resolved through `composer.lock`, so there is no `MAGO_VERSION` build arg to keep in sync.
-`PHP_VERSION` tracks the package's latest supported 8.4 patch release. For packages whose tests need MySQL (e.g. anything
-using `php-db/phpdb-mysql`), `compose.yml` ships an opt-in `mysql` service — uncomment the
+`PHP_VERSION` tracks the package's latest supported 8.4 patch release.
+
+For packages whose tests need MySQL (e.g. anything using `php-db/phpdb-mysql`), `compose.yml`
+ships an opt-in `mysql` service — uncomment the
 `mysql` service and the `depends_on` block on `tooling`, then point the package's local DB config
 (e.g. `config/autoload/mysql.local.php`) at host `mysql`, port `3306`, using the service's
-`MYSQL_*` credentials. The service mirrors the CI `db-image` / `db-env-json` Package Parameters,
+`MYSQL_*` credentials. The service mirrors the CI `db_image` / `db_env_json` Package Parameters,
 so the dev database matches CI. An optional `phpmyadmin` web UI (http://localhost:8080) is also
 included for inspecting the database.
 

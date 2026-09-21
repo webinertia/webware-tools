@@ -75,7 +75,7 @@ event library, so the mechanism can be adopted incrementally and a package is ne
 particular dispatch style. The rules exist so the event graph is readable, not so the mechanism is
 uniform — narrow scope means the rules are applied everywhere, not that the convention is optional.
 
-Three consequences of the patterns, all verified against mago 1.48.1:
+Three consequences of the patterns, all verified against the pinned mago 1.50.0:
 
 - `target = "class"` scopes both rules to classes. `EventInterface` and `ListenerInterface` are
   never reported, so the contract packages stay out of scope even where they occupy a matching
@@ -83,8 +83,8 @@ Three consequences of the patterns, all verified against mago 1.48.1:
 - `\Event\*` and `\Listener\*` match direct children only. A listener's DI factory therefore belongs
   in `Listener\Container\`, the same nesting the Http boundary requires for
   `Http\Middleware\Container\`, because a factory is named for the class it builds and cannot
-  satisfy `*Listener` otherwise. webware-usermanager already sits this way;
-  webware-log's `Listener\Psr3LogPsr14ListenerFactory` is the one package that does not yet.
+  satisfy `*Listener` otherwise. Every package sits this way now — webware-log's factory moved to
+  `Listener\Container\`.
 - A class whose name repeats its namespace segment is accepted, because `*` matches an empty run:
   `Webware\Event\Event` is not a finding.
 - An App-side fixture set behaves identically to a package's: `App\Event\MisnamedThing` and
@@ -94,7 +94,8 @@ Three consequences of the patterns, all verified against mago 1.48.1:
 `not-on` excludes two roots. `Webware\MessageBus\**` keeps the bus integration package out of
 scope while its event classes are bus types under the bus root
 (`Webware\MessageBus\Event\...`); reconciling that package against webware-event is tracked in
-webinertia/webware-tools#21, and the parent boundary doctrine is #20. `Webware\Event\**` excludes the
+webinertia/webware-tools#21; the parent boundary doctrine landed as constitution Principle VIII.
+`Webware\Event\**` excludes the
 contract package itself, because its ROOT namespace is `Webware\Event` — the `\**\Event\*` pattern
 matches its root classes as though they were events, and `ConfigProvider` does not end in `Event`.
 Excluding the package is the fix; renaming its `ConfigProvider` to satisfy the rule is not. That is a
@@ -121,7 +122,7 @@ Three things go wrong in this order. Plan for all of them before the first commi
    under the boundary is the wrong fix. Leave the class where it belongs and move the class-strings
    into a holder the boundary owns — the `Webware\Log\Http\PipelineIdentifiers` pattern.
 
-## Rule semantics (verified against mago 1.48.1)
+## Rule semantics (verified against the pinned mago 1.50.0)
 
 - **Matching is on the declared namespace, never the directory path.** A file under `src/Command/`
   whose namespace is `Webware\Thing\Domain\Command` matches `Webware\**\Domain\Command\*`. Matching
@@ -163,7 +164,7 @@ Three things go wrong in this order. Plan for all of them before the first commi
 - **`allow-from` entries select source namespaces, not symbols.** An exact symbol entry
   (`App\ConfigProvider`) is accepted and then permits nothing, so it can never be used to carve out a
   false positive. This also makes a one-segment root behave differently from a two-segment root,
-  verified against mago 1.48.1: `Webware\*` matches the namespace `Webware\Acl` alone, so
+  verified against the pinned mago 1.50.0: `Webware\*` matches the namespace `Webware\Acl` alone, so
   `Webware\Acl\Http\RequestHandler\X` is still flagged, while `App\*` matches every first-level
   namespace under `App` (`App\Repository`, `App\RequestHandler`, `App\Middleware`) and therefore
   permits the whole application. Bare `App` and `App\` are broader still, permitting everything
@@ -174,8 +175,10 @@ Three things go wrong in this order. Plan for all of them before the first commi
   and writing `allow-from = []` are the same: no restriction at all, so an "empty list, to be filled
   in later" silently enforces nothing. A list whose every entry fails to match (a placeholder
   namespace, say) is the opposite extreme — it excludes every source, which is how a total ban has
-  to be expressed. Both verified against mago 1.48.1 by probing `Psr\Http\Server\**`: 13 findings
-  and 3 `disallowed-use` under a non-matching list, none under an empty one. When a restriction is
+  to be expressed. Verified by probing `Psr\Http\Server\**` on 1.48.1 — 13 findings
+  and 3 `disallowed-use` under a non-matching list, none under an empty one; re-confirmed on the
+  pinned 1.50.0, where an empty `allow-from` flags nothing and a non-matching one flags the
+  dependency. When a restriction is
   meant to ban a dependency outright, say so in the comment above it, because the TOML on its own
   does not read like a ban.
 - Rules are **additive**: a consumer rule layers on top of the centre's rules; neither replaces the

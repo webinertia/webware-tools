@@ -40,7 +40,7 @@ local overrides is `vendor/webware/webware-tools/mago-guard-realignment.md`.
 
 - Mago `format`, `lint`, `analyze`, `guard` run in CI; findings are fixed in source, never
   silently suppressed. Baseline entries require explicit maintainer approval per issue.
-- Infection runs with Mago as `staticAnalysisTool`; `min-msi` and `min-covered-msi` start at 95
+- Infection runs with Mago as `staticAnalysisTool`; `min_msi` and `min_covered_msi` start at 95
   and may only be lowered with justification.
 
 ### IV. PHP Compatibility
@@ -130,8 +130,8 @@ Every pull request passes, on all CI matrix legs:
 
 - Mago format check, lint, analyze, guard
 - Unit tests under lowest/locked/latest dependency strategies
-- Integration tests when `run-integration` is set, narrowed to a single leg by
-  `integration-php-version` where the suite is expensive
+- Integration tests when `run_integration` is set, narrowed to a single leg by
+  `integration_php_version` where the suite is expensive
 - Codecov upload from the canonical coverage leg (report-only)
 - Infection mutation score at or above configured MSI thresholds
 

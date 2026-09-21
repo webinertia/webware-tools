@@ -20,11 +20,6 @@
     "require-dev": {
         "roave/security-advisories": "dev-master"
     },
-    "autoload": {
-        "psr-4": {
-            "Webware\\Tools\\": "src/"
-        }
-    },
     "prefer-stable": true,
     "config": {
         "sort-packages": true

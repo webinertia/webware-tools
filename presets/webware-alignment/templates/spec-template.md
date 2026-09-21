@@ -179,7 +179,7 @@ organization's required workflow, not a per-package file to re-point.
   codecov, mutation-test.
 - **SC-002**: `mago format --check`, `mago lint`, `mago analyze`, `mago guard` report zero
   unbaselined issues.
-- **SC-003**: Infection MSI and covered MSI at or above package thresholds (95 reference).
+- **SC-003**: Infection MSI and covered MSI at or above 95, the ecosystem standard.
 - **SC-004**: Codecov receives coverage upload from exactly one matrix leg (canonical:
   `coverage_php_version` + locked).
 - **SC-005**: On a fresh Windows machine with only Docker installed, `docker compose up -d` and

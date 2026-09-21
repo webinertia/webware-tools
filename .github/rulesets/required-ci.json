@@ -15,7 +15,7 @@
       "exclude": []
     },
     "ref_name": {
-      "include": ["refs/heads/0.1.x", "refs/heads/1.0.x", "refs/heads/2.0.x"],
+      "include": ["refs/heads/[0-9]*.[0-9]*.x"],
       "exclude": []
     }
   },

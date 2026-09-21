@@ -4,10 +4,11 @@
 
 ### I. Webware-Tools CI Alignment
 
-CI/CD pipeline and dev tooling follow the `webinertia/webware-tools` reusable workflow. The
-repository provides a thin wrapper workflow with package-specific inputs and `secrets: inherit`.
-Composer scripts `test`, `test-coverage`, `test-integration`, and `mutation-test` exist and match
-what the reusable workflow invokes. `composer.lock` is committed (required by the `locked` matrix
+CI/CD pipeline and dev tooling follow the organization's required workflow, owned by
+`webinertia/.github`. The repository provides `webware-ci.json` in its root — values only, no
+workflow ref — and carries no wrapper workflow. Composer scripts `test`, `test-coverage`,
+`test-integration`, and `mutation-test` exist and match
+what the required workflow invokes. `composer.lock` is committed (required by the `locked` matrix
 leg).
 
 `mago.toml` extends `vendor/webware/webware-tools/mago.toml`. That inheritance is what makes the
@@ -86,7 +87,8 @@ local overrides is `vendor/webware/webware-tools/mago-guard-realignment.md`.
   and `.devcontainer/devcontainer.json` live alongside it; the Dev Container is a thin wrapper
   over `compose.yml`, not a parallel environment, so non-VS Code users are never orphaned.
 - These files are kept in sync with the central `webware/webware-tools` preset.
-- The `MAGO_VERSION` build arg tracks the central `mago.toml` `version =` pin; `PHP_VERSION`
+- The Dockerfile derives Mago's version from the central `mago.toml` `version =` pin at build
+  time (resolved through `composer.lock`); there is no `MAGO_VERSION` build arg. `PHP_VERSION`
   tracks the package's latest supported 8.4 patch release.
 
 ### VII. Line Endings
@@ -140,8 +142,7 @@ Every pull request passes, on all CI matrix legs:
 - Boundary guard rules take effect the moment they land in the central `mago.toml`; the expected
   response in a consumer is to become compliant, never to disable or locally weaken the rule.
   Realignment follows `vendor/webware/webware-tools/mago-guard-realignment.md`.
-- Wrapper workflow inputs change only when the reusable workflow version bumps or a deliberate
-  policy decision is recorded in a spec.
+- `webware-ci.json` values change only when a deliberate policy decision is recorded in a spec.
 - `.github/copilot-instructions.md` carries the operational rules derived from this constitution.
 
 **Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]

@@ -7,12 +7,13 @@
 **Status**: Draft
 
 **Input**: User description: "Align [PACKAGE]'s CI/CD pipeline and dev tooling with the
-webinertia/webware-tools reusable workflow"
+required workflow"
 
 ## Purpose
 
 Every Webware package runs the same CI/CD pipeline and dev tooling, owned centrally by
-`webware/webware-tools` and consumed through a thin per-package wrapper. This spec defines the
+`webinertia/.github` (the workflow) and `webware/webware-tools` (the tool config), and varied per
+package through `webware-ci.json`. This spec defines the
 consumer-side contract: which artifacts a package must provide, what shape they take, and which
 values are package-specific parameters.
 
@@ -26,7 +27,7 @@ WSL, Linux, and macOS without a native PHP install.
 
 **Out of scope (explicit):**
 
-- PHPStan: `phpstan.neon.dist`, `stubs/`, type-coverage packages. The reusable workflow runs no
+- PHPStan: `phpstan.neon.dist`, `stubs/`, type-coverage packages. The required workflow runs no
   PHPStan job.
 - Full test suite coverage; only scaffolding sufficient to keep the pipeline green is required.
 
@@ -49,16 +50,16 @@ in this preset's `artifacts/` directory — no other package needs to be consult
 | DB container (`db-image`) | [omitted unless package needs a database]; canonical MySQL value `mysql:9.7`, with `db-port: 3306`, `db-env-json` (seeds the DB), `db-health-cmd` (readiness probe), and `test-env-json` (overrides phpunit.xml.dist connection for CI) |
 | Integration container | [e.g. Mailpit, MySQL, omitted] |
 | Tooling `PHP_VERSION` (Docker) | `8.4.24` (latest 8.4 patch; keep in sync with `require.php`) |
-| Tooling `MAGO_VERSION` (Docker) | `1.50.0` (keep in sync with central `mago.toml` pin) |
+| Tooling Mago version (Docker) | derived from the central `mago.toml` pin via `composer.lock` (no literal to maintain) |
 | Test autoload namespaces | `WebwareTest\<Package>\` → `test/unit/`, `WebwareTestIntegration\<Package>\` → `test/integration/` |
 
 ## User Scenarios & Testing
 
 ### User Story 1 - Maintainer opens a PR and gets a full pipeline (Priority: P1)
 
-A maintainer opens a pull request against a release branch. The wrapper workflow triggers the
-reusable workflow, which runs Mago checks, the test matrix (lowest/locked/latest dependency
-strategies), integration tests, Codecov upload, and Infection mutation testing.
+A maintainer opens a pull request against a release branch. The required workflow runs Mago
+checks, the test matrix (lowest/locked/latest dependency strategies), integration tests, Codecov
+upload, and Infection mutation testing.
 
 **Why this priority**: The pipeline is the deliverable; nothing else in this spec has value
 without it.
@@ -86,12 +87,12 @@ regenerate baselines, without rewriting per-package config.
 
 **Acceptance Scenarios**:
 
-1. **Given** a new webware-tools version, **When** the wrapper ref is bumped, **Then** only the
-   wrapper and possibly baselines change.
+1. **Given** a new webware-tools version, **When** the pin moves, **Then** only the pin and
+   possibly baselines change.
 
 ### Edge Cases
 
-- No `db-image` set: both DB steps of the reusable workflow are skipped at zero cost.
+- No `db_image` set: both DB steps of the required workflow are skipped at zero cost.
 - Integration tests do not exist yet: `test-integration` leg runs an empty suite; acceptable
   temporarily, but at least one test per suite is required for a green pipeline.
 - Zero tests: PHPUnit 13 errors, and Infection cannot score an empty suite; pipeline is red until
@@ -101,9 +102,9 @@ regenerate baselines, without rewriting per-package config.
 
 ### Functional Requirements
 
-- **FR-001**: Repository MUST provide `.github/workflows/continuous-integration.yml` calling
-  `webinertia/webware-tools/.github/workflows/continuous-integration.yml` with `secrets: inherit`
-  and package-specific inputs.
+- **FR-001**: Repository MUST provide `webware-ci.json` in the repository root carrying the
+  package's CI values, and MUST NOT carry a wrapper workflow — the organization ruleset binds the
+  required workflow to the repository.
 - **FR-002**: `composer.json` MUST define scripts `test`, `test-coverage`, `test-integration`,
   `mutation-test`, and a `test-all` alias (`test` + `test-integration` + `mutation-test`).
   Legacy `php-cs-fixer` and `phpstan` scripts MUST be removed.
@@ -157,9 +158,8 @@ regenerate baselines, without rewriting per-package config.
 
 ### Key Entities
 
-- **Wrapper workflow**: per-package file translating package parameters into reusable workflow
-  inputs.
-- **Reusable workflow**: `webinertia/webware-tools@X.Y.x`; owns job definitions (mago, test,
+- **`webware-ci.json`**: the only per-package CI surface — values, no workflow ref.
+- **Required workflow**: owned by `webinertia/.github`; owns job definitions (mago, test,
   codecov, mutation-test).
 - **Baselines**: per-package TOML files holding approved Mago suppressions.
 
@@ -180,5 +180,6 @@ regenerate baselines, without rewriting per-package config.
 
 ## Assumptions
 
-- The reusable workflow keeps its documented inputs until a deliberate version bump.
+- The required workflow keeps its documented `webware-ci.json` keys unless a deliberate change
+  records otherwise.
 - Test scaffolding (not full test coverage) is sufficient for alignment scope.

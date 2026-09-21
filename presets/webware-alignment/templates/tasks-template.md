@@ -48,13 +48,13 @@ Replace package parameters (PHP versions, MSI thresholds, test namespaces) befor
 - [ ] T014 Create `phpbench.json.dist` by copying the preset's `artifacts/phpbench.json.dist`;
   no `benchmarks/` directory required
 
-## Phase 5 — Workflow wrapper + agent instructions
+## Phase 5 — Required-workflow config + agent instructions
 
-- [ ] T015 Create `.github/workflows/continuous-integration.yml` from the preset's
-  `artifacts/workflow.yml`, replacing the `{{PLACEHOLDER}}` values with the spec's Package
-  Parameters (`php-versions`, `run-integration`, `integration-php-version`, `enable-codecov`,
-  `enable-infection`, `coverage-php-version`, `min-msi`, `min-covered-msi`), then move it to
-  `.github/workflows/continuous-integration.yml`
+- [ ] T015 Create `webware-ci.json` in the repository root from the preset's
+  `artifacts/webware-ci.json`, replacing the `{{PLACEHOLDER}}` values with the spec's Package
+  Parameters (`php_versions`, `run_integration`, `integration_php_version`, `enable_codecov`,
+  `enable_infection`, `coverage_php_version`, `min_msi`, `min_covered_msi`). Create no workflow
+  file: the organization ruleset binds the required workflow to the repository.
 - [ ] T016 Create `.github/copilot-instructions.md` from the preset's
   `artifacts/copilot-instructions.md`, replacing `{{PACKAGE_TITLE}}`
 - [ ] T017 Add `/.specify/` and `/specs/` to `.gitignore` so spec-kit

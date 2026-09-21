@@ -4,7 +4,7 @@ name: "Required CI"
 # "Require workflows to pass before merging":
 #
 #   repository_id: 1282417324            (webinertia/webware-tools)
-#   path:          .github/workflows/required-ci.yml
+#   path:          .github/workflows/org-required-ci.yml
 #   ref:           1.0.x
 #
 # GitHub triggers this file itself, so per-repository variation cannot arrive

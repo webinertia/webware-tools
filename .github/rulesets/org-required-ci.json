@@ -38,7 +38,7 @@
         "workflows": [
           {
             "repository_id": 1282417324,
-            "path": ".github/workflows/required-ci.yml",
+            "path": ".github/workflows/org-required-ci.yml",
             "ref": "1.0.x"
           }
         ]

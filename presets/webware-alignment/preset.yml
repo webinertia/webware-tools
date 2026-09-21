@@ -4,7 +4,7 @@ preset:
   id: "webware-alignment"
   name: "Webware Tools Alignment"
   version: "0.4.0"
-  description: "Aligns a Webware package's CI/CD pipeline and dev tooling with the webware-tools reusable workflow"
+  description: "Aligns a Webware package's CI/CD pipeline and dev tooling with the organization's required CI workflow"
   author: "Webware"
 
 repository: "https://github.com/webinertia/webware-tools"
@@ -23,7 +23,7 @@ provides:
     - type: "template"
       name: "plan-template"
       file: "templates/plan-template.md"
-      description: "Webware tools alignment plan prefilled with reusable workflow contract"
+      description: "Webware tools alignment plan prefilled with the required-workflow config contract"
       replaces: "plan-template"
     - type: "template"
       name: "tasks-template"

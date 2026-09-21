@@ -6,9 +6,9 @@
 
 ## Summary
 
-Align the package's CI/CD pipeline and dev-tooling configuration with the
-`webinertia/webware-tools` reusable workflow. The package provides a thin wrapper workflow with
-package-specific inputs, aligned composer metadata, PHPUnit 13 strict configuration, Mago tooling
+Align the package's CI/CD pipeline and dev-tooling configuration with the organization's
+required CI workflow. The package provides `webware-ci.json` with package-specific values,
+aligned composer metadata, PHPUnit 13 strict configuration, Mago tooling
 extending the shared config, Infection/Codecov/Renovate/PHPBench config files, and committed
 `composer.lock`.
 
@@ -17,11 +17,11 @@ extending the shared config, Infection/Codecov/Renovate/PHPBench config files, a
 **Language/Version**: PHP `~8.4.1 || ~8.5.0`
 
 **Primary Dependencies**: PHPUnit `^13.3.0`, Infection `^0.35.0`, PHPBench `^1.7`,
-roave/backward-compatibility-check `^8.21.0`, `webware/webware-tools` (dev, via reusable workflow
-+ `mago.toml` extend)
+roave/backward-compatibility-check `^8.21.0`, `webware/webware-tools` (dev, for `mago.toml`
+extend)
 
-**Storage**: [Package-specific: N/A for no-DB packages; reusable workflow DB steps skipped when
-`db-image` omitted]
+**Storage**: [Package-specific: N/A for no-DB packages; the required workflow's DB steps are
+skipped when `db_image` is omitted]
 
 **Testing**: PHPUnit 13.1 (`unit test` and `integration test` suites), Infection mutation testing
 with Mago as static analysis tool
@@ -41,7 +41,7 @@ on Windows, WSL, Linux, and macOS.
 
 ## Constitution Check
 
-- **I. Webware-Tools CI Alignment** — wrapper workflow, required composer scripts, committed
+- **I. Webware-Tools CI Alignment** — `webware-ci.json`, required composer scripts, committed
   `composer.lock`, `mago.toml` extends vendor config: satisfied by this plan (Phases 1, 2, 3).
 - **II. PHPUnit 13 Strict Mode** — `requireCoverageMetadata` + mock/stub rules: enforced via
   `phpunit.xml.dist` and `.github/copilot-instructions.md` (Phases 2, 5).
@@ -69,8 +69,8 @@ spec's Package Parameters.
 
 ```text
 .github/
-├── workflows/continuous-integration.yml   # wrapper calling reusable workflow
 └── copilot-instructions.md                # PHPUnit 13 rules
+webware-ci.json                            # required-workflow config (values only, no workflow ref)
 Dockerfile                                 # PHP + Composer + Mago + Xdebug dev image
 compose.yml                                # persistent `tooling` service (the source of truth)
 .dockerignore                              # exclude vendor/, .git/, etc. from build context
@@ -92,17 +92,19 @@ test/
 └── integration/                           # WebwareTestIntegration\<Package>\
 ```
 
-## Reference Mechanics (reusable workflow contract)
+## Reference Mechanics (required workflow contract)
 
-`webinertia/webware-tools/.github/workflows/continuous-integration.yml@X.Y.x` exposes
-`workflow_call`:
+`webinertia/.github` owns `.github/workflows/org-required-ci.yml`; the organization ruleset binds it
+to every repository, and that config repository's default branch is the ref it runs at. GitHub
+invokes it directly, so a repository cannot pass `with:` inputs — per-package variation arrives as
+`webware-ci.json` in the repository root:
 
-- **Inputs**: `php-versions` (JSON array), `run-integration`, `integration-php-version`,
-  `composer-options`, `db-image`, `db-env-json`, `db-port`, `db-health-cmd`, `db-health-retries`,
-  `db-health-interval-seconds`, `enable-codecov`, `enable-infection`, `coverage-php-version`,
-  `min-msi`, `min-covered-msi`, `test-env-json`.
-- **Secrets**: `CODECOV_TOKEN`, `INFECTION_DASHBOARD_API_KEY` (optional), forwarded via
-  `secrets: inherit`.
+- **`webware-ci.json` keys**: `php_versions` (JSON array), `run_integration`,
+  `integration_php_version`, `composer_options`, `db_image`, `db_env_json`, `db_port`,
+  `db_health_cmd`, `db_health_retries`, `db_health_interval_seconds`, `enable_codecov`,
+  `enable_infection`, `coverage_php_version`, `min_msi`, `min_covered_msi`, `test_env_json`.
+- **Secrets**: `CODECOV_TOKEN` and `INFECTION_DASHBOARD_API_KEY` are read by the workflow from
+  repository/org secrets; nothing is forwarded per package.
 - **Jobs**:
   1. **mago** — matrix over `php-versions`; runs `mago format --check`, `mago lint`,
      `mago analyze`, `mago guard` (each `success() || failure()`).
@@ -186,16 +188,14 @@ Consumer obligations derived from the contract:
 - `phpbench.json.dist`: `runner.path: benchmarks`, `*Bench.php`; config only, no
   `benchmarks/` directory, no CI job.
 
-### Phase 5 — Workflow wrapper + agent instructions + test scaffolding
+### Phase 5 — Required-workflow config + agent instructions + test scaffolding
 
-- `.github/workflows/continuous-integration.yml`: wrapper from the preset's
-  `artifacts/workflow.yml` with placeholders replaced by package inputs:
-  - `on`: `pull_request` → branches `[0-9]+.[0-9]+.x`; `push` → same branches + tags
-    `[0-9]+.[0-9]+.[0-9]+`.
-  - `uses: webinertia/webware-tools/.github/workflows/continuous-integration.yml@1.0.x`
-  - `secrets: inherit`
-  - `with`: package parameters from spec (PHP versions, integration, codecov, infection flags,
-    coverage version, MSI thresholds); omit DB inputs when no database.
+- `webware-ci.json`: copied from the preset's `artifacts/webware-ci.json` with the placeholders
+  replaced by the spec's Package Parameters (`php_versions`, `run_integration`,
+  `integration_php_version`, `enable_codecov`, `enable_infection`, `coverage_php_version`,
+  `min_msi`, `min_covered_msi`). No workflow file is created: the organization ruleset binds the
+  required workflow to the repository, so this file is the only per-package CI surface. Omit the
+  `db_*` keys when the package needs no database.
 - `.github/copilot-instructions.md`: PHPUnit 13 mock-vs-stub rules (`createStub()` for
   value-returning doubles, `createMock()` only with `expects()`) and
   `requireCoverageMetadata="true"` rules (`#[CoversClass]` / `#[CoversMethod]` per test class).

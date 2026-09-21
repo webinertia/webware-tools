@@ -1,7 +1,7 @@
 # Webware Tools Alignment — Spec Kit Preset
 
 Spec Kit preset for aligning a Webware package's CI/CD pipeline and dev tooling with the
-`webinertia/webware-tools` reusable workflow.
+organization's required CI workflow.
 
 ## What it provides
 
@@ -10,8 +10,8 @@ Four template overrides for Spec Kit:
 | Template | Content |
 |---|---|
 | `spec-template` | Alignment spec skeleton: purpose, scope, Package Parameters table, functional requirements, success criteria |
-| `plan-template` | Plan prefilled with the reusable workflow contract (inputs, jobs, consumer obligations) and 6 implementation phases |
-| `tasks-template` | Task list T001–T027: composer, phpunit, mago, infection/codecov/renovate/phpbench, workflow wrapper, README badges, containerized dev environment |
+| `plan-template` | Plan prefilled with the required-workflow contract (`webware-ci.json` keys, jobs, consumer obligations) and 6 implementation phases |
+| `tasks-template` | Task list T001–T027: composer, phpunit, mago, infection/codecov/renovate/phpbench, `webware-ci.json`, README badges, containerized dev environment |
 | `constitution-template` | Webware constitution: CI alignment, PHPUnit 13 strict mode, Mago gates, PHP compatibility, naming |
 
 ## Reference artifacts (`artifacts/`)
@@ -27,7 +27,7 @@ inspecting another package:
 | `codecov.yml` | `codecov.yml` |
 | `renovate.json` | `renovate.json` |
 | `phpbench.json.dist` | `phpbench.json.dist` |
-| `workflow.yml` | `.github/workflows/continuous-integration.yml` (replace `{{PLACEHOLDER}}`s with Package Parameters) |
+| `webware-ci.json` | `webware-ci.json` in the repository root, beside `mago.toml` (replace `{{PLACEHOLDER}}`s with Package Parameters) |
 | `copilot-instructions.md` | `.github/copilot-instructions.md` (replace `{{PACKAGE_TITLE}}`) |
 | `gitattributes.txt` | merge into `.gitattributes` |
 | `readme-badges.md` | badge block in `README.md` (replace `{{PACKAGE_NAME}}`, `{{ORG}}`, `{{REPO}}`, `{{DEFAULT_BRANCH}}`) |
@@ -37,6 +37,24 @@ inspecting another package:
 | `devcontainer.json` | `.devcontainer/devcontainer.json` (thin VS Code wrapper around `compose.yml`) |
 
 The tasks template (T006–T025) points each task at the corresponding artifact.
+
+`webware-ci.json` is read at run time by the required workflow, which is bound to every repository
+by the organization ruleset — there is no per-package wrapper workflow and no workflow ref to bump.
+GitHub invokes the required workflow directly, so it cannot receive `with:` inputs; this file is how
+a package varies its pipeline.
+
+It is a template: `{{PHP_VERSIONS}}` is replaced by a JSON array (e.g. `["8.4", "8.5"]`), the
+boolean placeholders are unquoted, and the rest are quoted strings. `integration_php_version` may be
+left empty, which runs the integration suite on every matrix leg. Packages whose tests need a
+database add the `db_*` keys:
+
+```json
+"db_image": "mysql:9.7",
+"db_port": "3306",
+"db_env_json": {"MYSQL_ROOT_HOST": "%", "MYSQL_DATABASE": "webware", "MYSQL_USER": "webware", "MYSQL_PASSWORD": "webware", "MYSQL_ALLOW_EMPTY_PASSWORD": "true"},
+"db_health_cmd": "mysqladmin ping -h127.0.0.1 --silent",
+"test_env_json": {"TESTS_ADAPTER_MYSQL_HOSTNAME": "127.0.0.1"}
+```
 
 The Package Parameters table in the generated spec is empty by design. Fill in package-specific
 values before planning. Reference instance: webware-mailer's
@@ -86,7 +104,7 @@ specify preset remove webware-alignment
    fill the Package Parameters table with the package's values.
 4. `/speckit-plan` — produces the artifact-by-artifact plan with the package's inputs.
 5. `/speckit-tasks` — produces T001–T027.
-6. `/speckit-implement` — creates the wrapper workflow, `phpunit.xml.dist`, `mago.toml`
+6. `/speckit-implement` — creates `webware-ci.json`, `phpunit.xml.dist`, `mago.toml`
    (extends `vendor/webware/webware-tools/mago.toml`), baselines, `infection.json5.dist`,
    `codecov.yml`, `renovate.json`, `phpbench.json.dist`, `Dockerfile`, `compose.yml`,
    `.dockerignore`, `.devcontainer/devcontainer.json`, composer changes + lock,
@@ -137,8 +155,8 @@ included for inspecting the database.
 
 ## When to use / when not
 
-Use for: any `webinertia` package that consumes the webware-tools reusable workflow and needs its
-first alignment or a re-alignment after a workflow version bump.
+Use for: any `webinertia` package that needs its first alignment to the organization's required
+workflow.
 
 Do not use for: feature work inside an already-aligned package, or packages outside the webware
 ecosystem.

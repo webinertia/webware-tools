@@ -1,5 +1,5 @@
-#:schema https://mago.carthage.software/1.49.0/schema.json
-version = "1.49.0"
+#:schema https://mago.carthage.software/1.50.0/schema.json
+version = "1.50.0"
 php-version = "8.5.0"
 
 [source]
@@ -193,13 +193,9 @@ reason = "Http request handlers live in Http\\RequestHandler and implement PSR-1
 [[guard.perimeter.restrictions]]
 dependency = "Psr\\Http\\Server\\**"
 allow-from = [
-    "App\\**\\Http\\**",
-    "AppTest\\**",
-    "AppTestIntegration\\**",
-    "Webware\\**\\Http\\**",
+    "{App,Webware}\\**\\Http\\**",
+    "{AppTest,AppTestIntegration,WebwareTest,WebwareTestIntegration}\\**",
     "Webware\\Async\\**",
-    "WebwareTest\\**",
-    "WebwareTestIntegration\\**",
 ]
 
 # --- Message bus -----------------------------------------------------------

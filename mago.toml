@@ -254,6 +254,63 @@ must-be-named = "*Middleware"
 must-implement = "Webware\\MessageBus\\MiddlewareInterface"
 reason = "Bus middleware lives in MessageBus\\Middleware and implements the bus MiddlewareInterface."
 
+# --- Console ---------------------------------------------------------------
+#
+# Console commands are Symfony's, not the bus's. The two namespaces share a word
+# and nothing else: `Command\` is the message bus's (production-facing messages,
+# above), `Console\` is the CLI surface. Both are in use side by side in the same
+# package today — webware-usermanager and webware-migration each carry
+# `src/Command/...` (bus) beside `src/Console/...` (CLI) — so the namespace IS
+# the discriminator, and a rule is what keeps it one.
+#
+# A single `Command\` cannot host both kinds: guard matching is namespace-scoped
+# only (`on` / `not-on` / `target` plus all-AND constraints, with no predicate on
+# parent class), so admitting console commands there would mean dropping
+# `must-implement` for every bus command. Hence a second namespace with its own
+# rule rather than a widened first one.
+#
+# `\Console\*` matches DIRECT CHILDREN ONLY, like Command\, CommandHandler\,
+# Query\, QueryHandler\, Event\ and Listener\. A command's DI factory therefore
+# nests one level deeper in `Console\Container\` and is out of scope by
+# construction, exactly as middleware factories nest in
+# `Http\Middleware\Container\`.
+#
+# `not-on` excludes the console package wholesale, the same way `not-on` excludes
+# `Webware\MessageBus\**` above and `Webware\Event\**` in the PSR-14 rules
+# below. `**` matches ZERO OR MORE segments, so a package whose ROOT namespace is
+# `Console` matches this pattern through its own root: `Webware\Console\App`
+# and `Webware\Console\ConfigProvider` read as `<root>\Console\<class>`. The
+# package that IMPLEMENTS the convention is not the thing being policed; the
+# components and applications that write commands are. webware-console therefore
+# keeps its own commands at its package root
+# (`Webware\Console\DevelopmentModeCommand`) with their factories in `Container\`
+# beside the others, rather than in a `Console\Console\` duplicate segment.
+#
+# `target = "class"` scopes the rule to classes, so an interface occupying a
+# matched namespace is never reported. `must-be = ["class"]` is deliberately NOT
+# used: it constrains which symbol kinds a matched NAMESPACE may contain, so it
+# would report such an interface as a foreign symbol rather than ignore it.
+#
+# `must-use-attribute` is what ties the namespace to Symfony rather than to a
+# naming habit: a class's parent is not expressible here (`must-implement` sees
+# directly-declared interfaces only, and Symfony's `Command` is a class), so the
+# attribute is the constraint that can say "is a console command". Every command
+# in the fleet already carries it.
+#
+# Two classes sit in this rule's path and RELOCATE, they do not break, on their
+# next tools bump: `Webware\Acl\Console\AclSchema` and
+# `Webware\UserManager\Console\UserSchema` move to `Console\Schema\` — the nesting
+# `Console\Ddl\Column\` already uses. That is the forcing function, not breakage.
+
+[[guard.structural.rules]]
+on = "{App,Webware}\\**\\Console\\*"
+not-on = "Webware\\Console\\**"
+target = "class"
+must-be-named = "*Command"
+must-be-final = true
+must-use-attribute = "Symfony\\Component\\Console\\Attribute\\AsCommand"
+reason = "Console commands live in Console\\, are named *Command, are final, and carry #[AsCommand]."
+
 # --- PSR-14 events ---------------------------------------------------------
 #
 # webware-event owns the event mechanism and the contracts every component

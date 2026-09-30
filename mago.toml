@@ -437,9 +437,13 @@ allow-from = [
 # boundary types above, three packages touch PhpDb by their nature:
 # Webware\Core\** (the schema/persistence contract home), Webware\Log\Handler\**
 # (the DB log handler), and Webware\Migration\** (the migration tooling).
+# PhpDb\** itself is admitted: code that declares classes in the PhpDb namespace
+# (webware-phpdb, which presents them as native PhpDb types) is the package being
+# policed, not a consumer reaching across the boundary.
 [[guard.perimeter.restrictions]]
 dependency = "PhpDb\\**"
 allow-from = [
+    "PhpDb\\**",
     "App\\**\\Entity\\**",
     "App\\**\\Repository\\**",
     "App\\**\\QueryHandler\\**",

@@ -75,7 +75,7 @@ event library, so the mechanism can be adopted incrementally and a package is ne
 particular dispatch style. The rules exist so the event graph is readable, not so the mechanism is
 uniform — narrow scope means the rules are applied everywhere, not that the convention is optional.
 
-Three consequences of the patterns, all verified against the pinned mago 1.50.0:
+Three consequences of the patterns, all verified against the pinned mago 1.51.0:
 
 - `target = "class"` scopes both rules to classes. `EventInterface` and `ListenerInterface` are
   never reported, so the contract packages stay out of scope even where they occupy a matching
@@ -122,7 +122,7 @@ Three things go wrong in this order. Plan for all of them before the first commi
    under the boundary is the wrong fix. Leave the class where it belongs and move the class-strings
    into a holder the boundary owns — the `Webware\Log\Http\PipelineIdentifiers` pattern.
 
-## Rule semantics (verified against the pinned mago 1.50.0)
+## Rule semantics (verified against the pinned mago 1.51.0)
 
 - **Matching is on the declared namespace, never the directory path.** A file under `src/Command/`
   whose namespace is `Webware\Thing\Domain\Command` matches `Webware\**\Domain\Command\*`. Matching
@@ -164,7 +164,7 @@ Three things go wrong in this order. Plan for all of them before the first commi
 - **`allow-from` entries select source namespaces, not symbols.** An exact symbol entry
   (`App\ConfigProvider`) is accepted and then permits nothing, so it can never be used to carve out a
   false positive. This also makes a one-segment root behave differently from a two-segment root,
-  verified against the pinned mago 1.50.0: `Webware\*` matches the namespace `Webware\Acl` alone, so
+  verified against the pinned mago 1.51.0: `Webware\*` matches the namespace `Webware\Acl` alone, so
   `Webware\Acl\Http\RequestHandler\X` is still flagged, while `App\*` matches every first-level
   namespace under `App` (`App\Repository`, `App\RequestHandler`, `App\Middleware`) and therefore
   permits the whole application. Bare `App` and `App\` are broader still, permitting everything
@@ -177,7 +177,7 @@ Three things go wrong in this order. Plan for all of them before the first commi
   namespace, say) is the opposite extreme — it excludes every source, which is how a total ban has
   to be expressed. Verified by probing `Psr\Http\Server\**` on 1.48.1 — 13 findings
   and 3 `disallowed-use` under a non-matching list, none under an empty one; re-confirmed on the
-  pinned 1.50.0, where an empty `allow-from` flags nothing and a non-matching one flags the
+  pinned 1.51.0, where an empty `allow-from` flags nothing and a non-matching one flags the
   dependency. When a restriction is
   meant to ban a dependency outright, say so in the comment above it, because the TOML on its own
   does not read like a ban.

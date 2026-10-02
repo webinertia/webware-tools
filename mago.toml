@@ -259,6 +259,7 @@ reason = "Listeners live in Listener\\ and are named *Listener, with factories i
 # `allow-from` selects source namespaces. `Webware\*` is the two-segment composition root (`Webware\Acl`). A
 # one-segment root has no equivalent: `App` or `App\` admits everything beneath it and `App\*` admits every
 # first-level namespace, so the App composition root is not permitted. A consumer that needs it adds a local rule.
+# An exact symbol entry permits nothing.
 [[guard.perimeter.restrictions]]
 dependency = "Webware\\**\\Repository\\**"
 allow-from = [

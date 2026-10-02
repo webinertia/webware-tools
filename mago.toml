@@ -128,28 +128,13 @@ class-initializers = [
     "Laminas\\InputFilter\\BaseInputFilter::init"
 ]
 
-# ---------------------------------------------------------------------------
-# Guard rules: the ecosystem-wide boundary contract.
-#
-# This is the centre: every consumer extends this file, so a rule added here is
-# enforced in every package the moment the consumer updates its dependency. The
-# doctrine behind these rules lives in the preset constitution (Principles I, V
-# and VIII); the exact TOML lives here so the two cannot drift apart.
-#
-# `mode = "default"` runs both structural and perimeter checks.
-#
-# Rule roots use a brace alternation, `{App,Webware}`, so the same convention is
-# enforced on the packages and on consumer application code (`App\`, the Mezzio
-# default module). Verified against mago 1.50.0: brace alternation is supported in
-# a structural `on`, and `**` matches ZERO OR MORE namespace segments, so
-# `{App,Webware}\**\Command\*` covers both `Webware\Acl\Command\X` and
-# `App\Command\X`.
-# ---------------------------------------------------------------------------
+# Ecosystem-wide guard rules. Every consumer extends this file, so a rule added here applies to every
+# package after its next dependency update. Roots use `{App,Webware}` so consumer applications (`App\`)
+# are held to the same conventions as packages. `**` matches zero or more namespace segments.
 [guard]
 mode = "default"
 
-# --- Naming conventions ----------------------------------------------------
-
+# Naming
 [[guard.structural.rules]]
 on = "{App,Webware}\\**"
 target = "interface"
@@ -162,12 +147,7 @@ target = "trait"
 must-be-named = "*Trait"
 reason = "Traits must follow the *Trait naming convention."
 
-# --- Http perimeter --------------------------------------------------------
-#
-# PSR-15 implementations live under Http\. The `**` segment in the namespace
-# lets one rule cover both the top-level layout (Http\Middleware\) and the
-# admin-nested one (Http\Admin\Middleware\, Http\Admin\RequestHandler\).
-
+# Http
 [[guard.structural.rules]]
 on = "{App,Webware}\\**\\Http\\**\\Middleware\\*"
 target = "class"
@@ -182,14 +162,9 @@ must-be-named = "*Handler"
 must-implement = "Psr\\Http\\Server\\RequestHandlerInterface"
 reason = "Http request handlers live in Http\\RequestHandler and implement PSR-15 RequestHandlerInterface."
 
-# Psr\Http\Server\** is usable only from the Http\ perimeter and the tests that
-# exercise those classes. Webware\Async\** is a deliberate permit: a runner must
-# accept a PSR-15 request handler. The entry-point contract still belongs to the
-# Http\ boundary; this permit does not move it.
-#
-# The App permit is deliberately `App\**\Http\**` only. A consumer that keeps
-# PSR-15 classes outside Http\ (for example `App\Middleware\` or
-# `App\RequestHandler\`) goes red. That is the forcing function for the move.
+# PSR-15 is usable only from Http\ and tests. `Webware\Async\**` is a deliberate permit: a runner must
+# accept a request handler. The App permit is `App\**\Http\**` only, so PSR-15 classes elsewhere in an app
+# fail; that is the forcing function.
 [[guard.perimeter.restrictions]]
 dependency = "Psr\\Http\\Server\\**"
 allow-from = [
@@ -198,21 +173,10 @@ allow-from = [
     "Webware\\Async\\**",
 ]
 
-# --- Message bus -----------------------------------------------------------
-#
-# Message classes conform by per-type sub-namespace in the domain they act on
-# (Command\, CommandHandler\, Query\, QueryHandler\): they are never relocated
-# into a MessageBus\ bucket, so `MessageBus\Middleware\` (bus middleware) stays
-# distinguishable from `Http\Middleware\` (PSR middleware).
-#
-# The `not-on` entries are load-bearing: the Webware half of a brace also matches
-# the bus contracts themselves (`Webware\MessageBus\Command\CommandInterface`)
-# and messagebus-event's `Webware\MessageBus\Event\Command\*` classes.
-#
-# `must-implement` matches the interfaces a class declares directly (it does not
-# traverse inheritance), so the enforced contract is the one commands implement:
-# `NamedCommandInterface`, which itself extends `CommandInterface`.
-
+# Message bus
+# Messages live in per-type namespaces of their own domain, never in a MessageBus\ bucket. `not-on` excludes
+# the bus package, which the `Webware` half of the brace would otherwise match. `must-implement` sees directly
+# declared interfaces only, so commands are held to `NamedCommandInterface`.
 [[guard.structural.rules]]
 on = "{App,Webware}\\**\\Command\\*"
 not-on = "Webware\\MessageBus\\**"
@@ -254,54 +218,11 @@ must-be-named = "*Middleware"
 must-implement = "Webware\\MessageBus\\MiddlewareInterface"
 reason = "Bus middleware lives in MessageBus\\Middleware and implements the bus MiddlewareInterface."
 
-# --- Console ---------------------------------------------------------------
-#
-# Console commands are Symfony's, not the bus's. The two namespaces share a word
-# and nothing else: `Command\` is the message bus's (production-facing messages,
-# above), `Console\` is the CLI surface. Both are in use side by side in the same
-# package today — webware-usermanager and webware-migration each carry
-# `src/Command/...` (bus) beside `src/Console/...` (CLI) — so the namespace IS
-# the discriminator, and a rule is what keeps it one.
-#
-# A single `Command\` cannot host both kinds: guard matching is namespace-scoped
-# only (`on` / `not-on` / `target` plus all-AND constraints, with no predicate on
-# parent class), so admitting console commands there would mean dropping
-# `must-implement` for every bus command. Hence a second namespace with its own
-# rule rather than a widened first one.
-#
-# `\Console\*` matches DIRECT CHILDREN ONLY, like Command\, CommandHandler\,
-# Query\, QueryHandler\, Event\ and Listener\. A command's DI factory therefore
-# nests one level deeper in `Console\Container\` and is out of scope by
-# construction, exactly as middleware factories nest in
-# `Http\Middleware\Container\`.
-#
-# `not-on` excludes the console package wholesale, the same way `not-on` excludes
-# `Webware\MessageBus\**` above and `Webware\Event\**` in the PSR-14 rules
-# below. `**` matches ZERO OR MORE segments, so a package whose ROOT namespace is
-# `Console` matches this pattern through its own root: `Webware\Console\App`
-# and `Webware\Console\ConfigProvider` read as `<root>\Console\<class>`. The
-# package that IMPLEMENTS the convention is not the thing being policed; the
-# components and applications that write commands are. webware-console therefore
-# keeps its own commands at its package root
-# (`Webware\Console\DevelopmentModeCommand`) with their factories in `Container\`
-# beside the others, rather than in a `Console\Console\` duplicate segment.
-#
-# `target = "class"` scopes the rule to classes, so an interface occupying a
-# matched namespace is never reported. `must-be = ["class"]` is deliberately NOT
-# used: it constrains which symbol kinds a matched NAMESPACE may contain, so it
-# would report such an interface as a foreign symbol rather than ignore it.
-#
-# `must-use-attribute` is what ties the namespace to Symfony rather than to a
-# naming habit: a class's parent is not expressible here (`must-implement` sees
-# directly-declared interfaces only, and Symfony's `Command` is a class), so the
-# attribute is the constraint that can say "is a console command". Every command
-# in the fleet already carries it.
-#
-# Two classes sit in this rule's path and RELOCATE, they do not break, on their
-# next tools bump: `Webware\Acl\Console\AclSchema` and
-# `Webware\UserManager\Console\UserSchema` move to `Console\Schema\` — the nesting
-# `Console\Ddl\Column\` already uses. That is the forcing function, not breakage.
-
+# Console
+# `Console\` is Symfony's CLI surface and `Command\` is the bus's; guard matches namespaces only, so each needs
+# its own rule. Direct children only: a command's factory nests in `Console\Container\`. `not-on` excludes
+# webware-console, whose root namespace would otherwise match; it keeps its commands at its package root.
+# `must-use-attribute` identifies a Symfony command, since a parent class cannot be expressed.
 [[guard.structural.rules]]
 on = "{App,Webware}\\**\\Console\\*"
 not-on = "Webware\\Console\\**"
@@ -311,58 +232,11 @@ must-be-final = true
 must-use-attribute = "Symfony\\Component\\Console\\Attribute\\AsCommand"
 reason = "Console commands live in Console\\, are named *Command, are final, and carry #[AsCommand]."
 
-# --- PSR-14 events ---------------------------------------------------------
-#
-# webware-event owns the event mechanism and the contracts every component
-# consumes (`Webware\Event\EventInterface`, `ListenerInterface`). The convention
-# enforced here is deliberately limited to the two things that make an event
-# graph readable: where a class lives, and what it is called.
-#
-# Both rules carry the `{App,Webware}` root, so a consumer that extends this file
-# takes them for its application code as well as for its packages: an app's
-# `App\Event\SendWelcomeEvent` and its listeners are held to the same convention
-# as a package's. Installing webware-tools is the opt-in. There is no
-# consumer-side disable and no App carve-out.
-#
-# Nothing here constrains behaviour. A listener may implement `ListenerInterface`
-# directly, extend a package base class, or be registered by the package's own
-# provider - there is no `must-implement`, no `must-be-final`, and no dependency
-# restriction on any event library, so the mechanism can be adopted
-# incrementally. Adding one later would be a boundary change, not a naming fix.
-#
-# `\Event\*` and `\Listener\*` match DIRECT CHILDREN ONLY, same as the Command\ and
-# Query\ rules. One consequence is intended: a listener's DI factory nests one
-# level deeper in `Listener\Container\`, exactly as middleware factories nest in
-# `Http\Middleware\Container\`, because a factory is named for the class it builds
-# and cannot satisfy `*Listener` without it. webware-usermanager already sits this
-# way, webware-log included: its `Listener\Container\Psr3LogPsr14ListenerFactory`
-# moved, so no package is out of line on this rule today.
-#
-# `not-on` excludes two roots:
-#
-#   Webware\MessageBus\**  the bus and its integration package, whose event
-#                          classes are bus types under the bus root
-#                          (`Webware\MessageBus\Event\...`). Reconciling that
-#                          package against webware-event is tracked in
-#                          webinertia/webware-tools#21; the parent boundary
-#                          doctrine landed as constitution Principle VIII.
-#   Webware\Event\**       the contract package itself. Its ROOT namespace is
-#                          `Webware\Event`, so `\**\Event\*` matches its root
-#                          classes as if they were events - and `ConfigProvider`
-#                          does not end in `Event`. Excluding the package is the
-#                          fix; renaming its ConfigProvider would be the wrong
-#                          one. This is a namespace collision, not an exemption:
-#                          an application's `App\Event\` really is its event
-#                          bucket and stays fully in scope.
-#
-# Verified against mago 1.50.0: `target = "class"` scopes a naming rule to classes
-# only, so `EventInterface` / `ListenerInterface` are never reported - the
-# contract packages stay out of scope even where they occupy a matching
-# namespace. A class whose name repeats its namespace segment
-# (`Webware\Event\Event`) is accepted, because `*` matches an empty run. `not-on`
-# takes a single string (a list is rejected as a config error) and accepts brace
-# alternation, which is what lets one rule carry both exclusions.
-
+# PSR-14 events
+# Only placement and naming are constrained, with no `must-implement`, so the mechanism can be adopted
+# incrementally. Direct children only: a listener's factory nests in `Listener\Container\`. `not-on` excludes
+# the bus package and webware-event itself, whose root namespace is `Webware\Event` and would match its own
+# classes. `not-on` takes a single string (a list is a config error) and accepts brace alternation.
 [[guard.structural.rules]]
 on = "{App,Webware}\\**\\Event\\*"
 not-on = "{Webware\\MessageBus,Webware\\Event}\\**"
@@ -377,35 +251,14 @@ target = "class"
 must-be-named = "*Listener"
 reason = "Listeners live in Listener\\ and are named *Listener, with factories in Listener\\Container\\."
 
-# --- Persistence boundary --------------------------------------------------
+# Persistence boundary
+# Repositories are reached only from the handlers that use them (reads in query handlers, writes in command
+# handlers), DI factories, the composition root, console commands, `Webware\Migration\**` (the migration
+# runner) and tests. Every restriction is mirrored for `App\`.
 #
-# Repositories are reachable only from the handlers that use them, the DI
-# factories that wire them, the composition root (the two-segment root
-# namespace, e.g. Webware\Acl, which is what `Webware\*` matches), console
-# commands, and tests. `allow-from` matches the source *namespace*, prefix
-# matches sub-namespaces, and is never path-based.
-#
-# Every restriction is mirrored for the host application (`App\`, with
-# `AppTest\**` / `AppTestIntegration\**` for tests), so an app is held to the
-# same boundary its packages are.
-#
-# One deliberate asymmetry: `allow-from` entries select SOURCE NAMESPACES. The
-# centre's `Webware\*` is narrow only because a component root is two segments
-# (`Webware\Acl`, the composition root). A one-segment root has no equivalent:
-# bare `App` and `App\` permit everything beneath the root, `App\*` permits every
-# first-level namespace (`App\Repository`, `App\RequestHandler`, `App\Middleware`)
-# and so defeats the restriction, and an exact symbol entry permits nothing at
-# all. The App composition root is therefore NOT permitted. A consumer whose
-# composition root genuinely needs direct persistence access adds a
-# domain-specific local rule, which the doctrine allows. Verified mago 1.50.0.
-
-# Repositories are the read/write boundary, not a persistence preference: reads
-# belong to the query handlers and writes to the command handlers, so this rule
-# is what holds the bus boundary together. Beyond those roles, one package
-# reaches repositories by its nature: Webware\Migration\** (the migration
-# tooling), whose runner drives persistence directly. That is the same package
-# the PhpDb restriction below already admits, on the same grounds - a rule that
-# omitted it would block a legitimate consumer rather than correct one.
+# `allow-from` selects source namespaces. `Webware\*` is the two-segment composition root (`Webware\Acl`). A
+# one-segment root has no equivalent: `App` or `App\` admits everything beneath it and `App\*` admits every
+# first-level namespace, so the App composition root is not permitted. A consumer that needs it adds a local rule.
 [[guard.perimeter.restrictions]]
 dependency = "Webware\\**\\Repository\\**"
 allow-from = [
@@ -432,14 +285,9 @@ allow-from = [
     "AppTestIntegration\\**",
 ]
 
-# PhpDb\** stays behind the persistence boundary, so ResultSet/RowPrototype
-# types never reach middleware, Http handlers, or query payloads. Beyond the
-# boundary types above, three packages touch PhpDb by their nature:
-# Webware\Core\** (the schema/persistence contract home), Webware\Log\Handler\**
-# (the DB log handler), and Webware\Migration\** (the migration tooling).
-# PhpDb\** itself is admitted: code that declares classes in the PhpDb namespace
-# (webware-phpdb, which presents them as native PhpDb types) is the package being
-# policed, not a consumer reaching across the boundary.
+# PhpDb\** stays behind the persistence boundary so ResultSet and RowPrototype types never reach middleware,
+# Http handlers or query payloads. `Webware\Core\**` (schema contracts), `Webware\Log\Handler\**` (the DB log
+# handler) and `Webware\Migration\**` also touch it by their nature; `PhpDb\**` itself is webware-phpdb.
 [[guard.perimeter.restrictions]]
 dependency = "PhpDb\\**"
 allow-from = [

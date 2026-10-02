@@ -286,11 +286,10 @@ allow-from = [
     "AppTestIntegration\\**",
 ]
 
-# PhpDb\** stays behind the persistence boundary so ResultSet and RowPrototype types never reach middleware,
-# Http handlers or query payloads. `Webware\Core\**` (schema contracts), `Webware\Log\Handler\**` (the DB log
-# handler) and `Webware\Migration\**` also touch it by their nature; `PhpDb\**` itself is webware-phpdb.
+# PhpDb stays behind the persistence boundary, except `ResultSet` (a legitimate return type) and `Validator`.
+# The first restriction lists every namespace except those two: a new PhpDb namespace must be added here.
 [[guard.perimeter.restrictions]]
-dependency = "PhpDb\\**"
+dependency = "PhpDb\\{Adapter,Container,Exception,Feature,Metadata,Mysql,RowGateway,Session,Sql,TableGateway}\\**"
 allow-from = [
     "PhpDb\\**",
     "App\\**\\Entity\\**",
@@ -311,4 +310,19 @@ allow-from = [
     "Webware\\**\\Console\\**",
     "WebwareTest\\**",
     "WebwareTestIntegration\\**",
+    "Webware\\**\\Validator\\**",
+]
+
+# Validators are attached to input filters.
+[[guard.perimeter.restrictions]]
+dependency = "PhpDb\\Validator\\**"
+allow-from = [
+    "PhpDb\\**",
+    "Webware\\**\\InputFilter\\**",
+    "Webware\\**\\Validator\\**",
+    "WebwareTest\\**",
+    "WebwareTestIntegration\\**",
+    "App\\**\\InputFilter\\**",
+    "AppTest\\**",
+    "AppTestIntegration\\**",
 ]

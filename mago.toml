@@ -147,6 +147,24 @@ target = "trait"
 must-be-named = "*Trait"
 reason = "Traits must follow the *Trait naming convention."
 
+# A namespace segment never repeats its parent segment. The repeated segment shadows any class of the
+# same name in the parent namespace: `Webware\Acl\Acl` collided with the root `Webware\Acl\Acl` class
+# and forced `ConfigProvider` to use `Acl` as both a class alias and a namespace prefix.
+#
+# Every entry is a two-segment package root repeating itself, so a leaf namespace that shares a name
+# with its parent at depth (`Webware\Log\Handler\Handler`) is deliberately not swept in. A new package
+# root is added here, the same maintenance obligation the PhpDb enumeration carries.
+#
+# The pattern ends `\**\*` rather than `\**` because `on` is matched against the fully qualified
+# symbol name, not the namespace: a trailing `\**` also matches the root class itself
+# (`Webware\MessageBus\MessageBus`, `Webware\Event\Event`, `Webware\Mailer\Mailer`), which are
+# correct names. `must-be = []` bans every symbol kind in the namespace, which is why `target` is
+# omitted — `target = "class"` would let an interface, enum or function in the same namespace escape.
+[[guard.structural.rules]]
+on = "{App,Webware,AppTest,AppTestIntegration,WebwareTest,WebwareTestIntegration}\\{Acl\\Acl,Admin\\Admin,Async\\Async,Console\\Console,Core\\Core,Event\\Event,Htmx\\Htmx,Log\\Log,Mailer\\Mailer,Message\\Message,MessageBus\\MessageBus,Migration\\Migration,Navigation\\Navigation,ResultSet\\ResultSet,Theme\\Theme,Traccio\\Traccio,UserManager\\UserManager,Validator\\Validator}\\**\\*"
+must-be = []
+reason = "A namespace segment must not repeat its parent segment."
+
 # Http
 [[guard.structural.rules]]
 on = "{App,Webware}\\**\\Http\\**\\Middleware\\*"
@@ -288,8 +306,10 @@ allow-from = [
 
 # PhpDb stays behind the persistence boundary, except `ResultSet` (a legitimate return type) and `Validator`.
 # The first restriction lists every namespace except those two: a new PhpDb namespace must be added here.
+# `ConfigProvider`, `Pgsql`, `SchemaFactory`, `SchemaInterface`, `Sqlite` and `WebwareProvider` were
+# absent from the enumeration, so the boundary silently did not cover them.
 [[guard.perimeter.restrictions]]
-dependency = "PhpDb\\{Adapter,Container,Exception,Feature,Metadata,Mysql,RowGateway,Session,Sql,TableGateway}\\**"
+dependency = "PhpDb\\{Adapter,ConfigProvider,Container,Exception,Feature,Metadata,Mysql,Pgsql,RowGateway,SchemaFactory,SchemaInterface,Session,Sql,Sqlite,TableGateway,WebwareProvider}\\**"
 allow-from = [
     "PhpDb\\**",
     "App\\**\\Entity\\**",
@@ -326,3 +346,40 @@ allow-from = [
     "AppTest\\**",
     "AppTestIntegration\\**",
 ]
+
+# Symfony Console is the CLI surface. Commands and their support classes live under `Console\`, so the
+# dependency is reachable from a `Console\` namespace and from tests, and from nowhere else. A console
+# implementation package is one whose own root is `Console\` (`Webware\Console`, `PhpDb\Session\Console`),
+# which the `\**\Console\**` form admits because `**` matches zero segments.
+[[guard.perimeter.restrictions]]
+dependency = "Symfony\\Component\\Console\\**"
+allow-from = [
+    "Webware\\**\\Console\\**",
+    "App\\**\\Console\\**",
+    "PhpDb\\**\\Console\\**",
+    "WebwareTest\\**",
+    "WebwareTestIntegration\\**",
+    "AppTest\\**",
+    "AppTestIntegration\\**",
+]
+
+# Request handlers are render-only. Data collection and mutation happen in PSR middleware, which composes
+# anywhere in the pipeline; a handler sits at the terminal end. A handler that holds the bus can dispatch
+# anything, so the boundary is the interface itself and not the bus namespace: `CommandResult` and
+# `MessageStatus` are render inputs and stay available. The pattern also covers `RequestHandler\Container\**`,
+# which is where a handler's factory resolves the bus today; the factory comes off the bus with its handler.
+[[guard.perimeter.restrictions]]
+dependency = "Webware\\MessageBus\\{MessageBusInterface,MessageBus}"
+deny-from = ["{App,Webware}\\**\\Http\\**\\RequestHandler\\**"]
+
+# Repositories stay bus-agnostic: they persist rows and never speak the bus's message contracts. A write is
+# reached by dispatching a command from a command handler, not by handing a command object to a repository.
+[[guard.perimeter.restrictions]]
+dependency = "Webware\\MessageBus\\**"
+deny-from = ["{App,Webware}\\**\\Repository\\**"]
+
+# The two components are mutually independent: webware-acl must not depend on webware-usermanager, which
+# would be a circular dependency between the authorization layer and a consumer of it.
+[[guard.perimeter.restrictions]]
+dependency = "Webware\\UserManager\\**"
+deny-from = ["Webware\\Acl\\**"]

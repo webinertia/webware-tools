@@ -51,8 +51,18 @@ local overrides is `vendor/webware/webware-tools/mago-guard-realignment.md`.
 
 ### V. Naming
 
-- Never repeat the namespace in class or interface names. `Webware\Input` namespace has
-  `FilterInterface`, not `InputFilterInterface`. Applies to all new code.
+- A namespace segment never repeats its parent segment. `Webware\Acl\RuleSeeds`, never
+  `Webware\Acl\Acl\RuleSeeds`. The repeated segment shadows any class of the same name in the
+  parent namespace: `Webware\Acl\Acl` collided with the root `Webware\Acl\Acl` class and forced
+  `ConfigProvider` to use `Acl` as both a class alias and a namespace prefix. Applies to all new
+  code.
+- A class or interface name that repeats its enclosing namespace with a redundant prefix is allowed
+  but discouraged. `Webware\Acl\AclRuleSeeds` is not a violation; `Webware\Acl\RuleSeeds` is
+  preferred. The prefix is redundant only where dropping it leaves a name that still says what the
+  type is — `AclRuleSeeds` becomes `RuleSeeds`, and the namespace already carries the `Acl`. Where
+  dropping it leaves no name, the repetition is not redundant and the name is correct:
+  `Webware\Migration\MigrationInterface` and `Webware\Migration\AbstractMigration` are both valid,
+  because `Interface` and `Abstract` are not names.
 - Message classes are named and located by type, in the domain they act on — never centralized
   into a `MessageBus\` bucket:
 

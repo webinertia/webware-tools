@@ -132,7 +132,10 @@ the rule and its rationale cannot drift apart.
   (`Webware\Migration\**`), whose runner drives persistence directly. A boundary rule must not
   block a legitimate consumer; what it permits is recorded with its reason, in the TOML and here.
   `PhpDb\**` additionally stays behind the persistence boundary, so `ResultSet` and `RowPrototype`
-  types never reach middleware, Http handlers, or query payloads.
+  types never reach middleware, Http handlers, or query payloads. `Webware\Traccio\**` carries the
+  same exemption as the migration tooling: Traccio is a profiler, so it reads the adapter, the
+  profiler and the Sql DDL types to render its panels and persists nothing of its own. Only the
+  three namespaces that touch PhpDb are admitted: `Debug\`, `PhpDb\` and `Http\`.
 
 ## Quality Gates
 

@@ -308,6 +308,12 @@ allow-from = [
 # The first restriction lists every namespace except those two: a new PhpDb namespace must be added here.
 # `ConfigProvider`, `Pgsql`, `SchemaFactory`, `SchemaInterface`, `Sqlite` and `WebwareProvider` were
 # absent from the enumeration, so the boundary silently did not cover them.
+#
+# `Webware\Traccio\**` is admitted on the same footing as `Webware\Migration\**`: Traccio is a profiler,
+# so it reads the adapter, the profiler and the Sql DDL types to render its panels and persists nothing
+# of its own. Only the three namespaces that actually touch PhpDb are listed - `Debug\` renders the
+# panels, `PhpDb\` holds the delegator that installs the profiler, and `Http\` wires both into the
+# middleware stack. A boundary rule must not block a legitimate consumer.
 [[guard.perimeter.restrictions]]
 dependency = "PhpDb\\{Adapter,ConfigProvider,Container,Exception,Feature,Metadata,Mysql,Pgsql,RowGateway,SchemaFactory,SchemaInterface,Session,Sql,Sqlite,TableGateway,WebwareProvider}\\**"
 allow-from = [
@@ -323,6 +329,9 @@ allow-from = [
     "Webware\\Core\\**",
     "Webware\\Log\\Handler\\**",
     "Webware\\Migration\\**",
+    "Webware\\Traccio\\Debug\\**",
+    "Webware\\Traccio\\Http\\**",
+    "Webware\\Traccio\\PhpDb\\**",
     "Webware\\**\\Entity\\**",
     "Webware\\**\\Repository\\**",
     "Webware\\**\\QueryHandler\\**",

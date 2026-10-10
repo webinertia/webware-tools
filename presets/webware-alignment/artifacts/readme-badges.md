@@ -11,7 +11,7 @@ Placeholders: `{{PACKAGE_NAME}}` = composer name (owner/package), `{{ORG}}` =
 GitHub org, `{{REPO}}` = GitHub repo, `{{DEFAULT_BRANCH}}` = default branch
 (e.g. `0.1.x`). The CI and codecov badge URLs carry no `?branch=` parameter so
 they always point at the default branch. The Stryker badge URL embeds the branch
-segment — update it in both the badge URL and the dashboard link whenever the
+segment - update it in both the badge URL and the dashboard link whenever the
 default branch changes.
 
 The CI badge uses GitHub's synthetic route for the required workflow. Its file
@@ -22,6 +22,6 @@ lives in the config repository, so the route spells out those coordinates as
 https://github.com/{{ORG}}/{{REPO}}/actions/workflows/required/webinertia/.github/.github/workflows/org-required-ci.yml/badge.svg
 ```
 
-Do not point the badge at `continuous-integration.yml` — a consumer repository
+Do not point the badge at `continuous-integration.yml` - a consumer repository
 has no such file, so that URL 404s. The required-route URL is the one GitHub's
 own "Create status badge" dialog produces for that workflow.

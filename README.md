@@ -14,13 +14,13 @@ dependency by every component; it ships no PHP code.
 
 ## How a consumer uses it
 
-- **Mago** — the package's own `mago.toml` is a stub that extends this one
+- **Mago**: the package's own `mago.toml` is a stub that extends this one
   (`extends = "vendor/webware/webware-tools/mago.toml"`). General settings and the
   ecosystem-wide guard rules are central; only a domain-specific rule belongs locally.
-- **CI** — the pipeline is the organization's required workflow, bound to every repository by the
+- **CI**: the pipeline is the organization's required workflow, bound to every repository by the
   organization ruleset. A package varies it with `webware-ci.json` in its own root. There is no
   per-package workflow file and no workflow ref to keep in sync.
-- **Containers** — the tooling `Dockerfile` derives the Mago version from this file's `version =`
+- **Containers**: the tooling `Dockerfile` derives the Mago version from this file's `version =`
   pin, resolved through the consumer's `composer.lock`, so the tool inside the container always
   matches the pin Mago itself enforces.
 

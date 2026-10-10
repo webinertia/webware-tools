@@ -5,7 +5,7 @@
 Replace package parameters (PHP versions, test namespaces) before executing. The MSI gates are 95
 and are not a package parameter.
 
-## Phase 1 — composer.json
+## Phase 1: composer.json
 
 - [ ] T001 Align `composer.json` `require.php` to `~8.4.1 || ~8.5.0` (no `8.6.0-dev`), set
   `config.platform.php` to `8.4.99` in `composer.json`
@@ -20,7 +20,7 @@ and are not a package parameter.
   `check-all`/`cs-check`/`cs-fix`/`sa` scripts in `composer.json`
 - [ ] T005 Run `composer update` and commit `composer.lock`
 
-## Phase 2 — phpunit.xml.dist
+## Phase 2: phpunit.xml.dist
 
 - [ ] T006 Create `phpunit.xml.dist` by copying the preset's
   `artifacts/phpunit.xml.dist` (PHPUnit 13.1 schema, strict flags, suites
@@ -30,7 +30,7 @@ and are not a package parameter.
 - [ ] T007 Add test scaffolding: at least one test in `test/unit/` and one in
   `test/integration/` so PHPUnit and Infection do not error on empty suites
 
-## Phase 3 — Mago tooling
+## Phase 3: Mago tooling
 
 - [ ] T008 Create `mago.toml` by copying the preset's `artifacts/mago.toml`
   (`extends = "vendor/webware/webware-tools/mago.toml"`, `php-version = "8.4.1"`, linter/analyzer
@@ -39,9 +39,9 @@ and are not a package parameter.
 - [ ] T009 Create empty `lint-baseline.toml` and `analysis-baseline.toml`
 - [ ] T010 Fix pass: run `mago format`, `mago lint`, `mago analyze`, `mago guard`; fix all
   findings in `src/`; baseline only maintainer-approved remainder. Guard findings are fixed in
-  source — a boundary rule is never suppressed or narrowed to get green
+  source - a boundary rule is never suppressed or narrowed to get green
 
-## Phase 4 — Infection / Codecov / Renovate / PHPBench configs
+## Phase 4: Infection / Codecov / Renovate / PHPBench configs
 
 - [ ] T011 Create `infection.json5.dist` by copying the preset's `artifacts/infection.json5.dist`
 - [ ] T012 Create `codecov.yml` by copying the preset's `artifacts/codecov.yml` verbatim
@@ -49,7 +49,7 @@ and are not a package parameter.
 - [ ] T014 Create `phpbench.json.dist` by copying the preset's `artifacts/phpbench.json.dist`;
   no `benchmarks/` directory required
 
-## Phase 5 — Required-workflow config + agent instructions
+## Phase 5: Required-workflow config + agent instructions
 
 - [ ] T015 Create `webware-ci.json` in the repository root from the preset's
   `artifacts/webware-ci.json`, replacing the `{{PLACEHOLDER}}` values with the spec's Package
@@ -61,7 +61,7 @@ and are not a package parameter.
 - [ ] T017 Add `/.specify/` and `/specs/` to `.gitignore` so spec-kit
   scaffolding stays local dev tooling and is never pushed to the remote
 
-## Phase 6 — README badges
+## Phase 6: README badges
 
 - [ ] T018 Add the standard badge block from the preset's `artifacts/readme-badges.md`,
   replacing `{{PACKAGE_NAME}}`, `{{ORG}}`, `{{REPO}}`, `{{DEFAULT_BRANCH}}` (PHP version,
@@ -70,7 +70,7 @@ and are not a package parameter.
   Stryker mutation badge URL embeds the branch segment; update that segment in both the badge
   URL and the dashboard link whenever the default branch changes. Update `README.md`
 
-## Phase 7 — Containerized development environment
+## Phase 7: Containerized development environment
 
 - [ ] T019 Create `Dockerfile` by copying the preset's `artifacts/Dockerfile` (PHP CLI +
   Composer + Mago + Xdebug, `TARGETARCH`-aware Mago asset selection,

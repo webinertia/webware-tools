@@ -22,7 +22,7 @@ values are package-specific parameters.
 **In scope:** CI/CD pipeline, tooling configs, composer metadata, baseline files, the minimum
 test scaffolding required for a green pipeline, and a containerized development environment
 (`Dockerfile`, `compose.yml`, `.dockerignore`, `.devcontainer/devcontainer.json`) so developers
-can work inside the container — via VS Code or plain Docker Compose — identically on Windows,
+can work inside the container - via VS Code or plain Docker Compose - identically on Windows,
 WSL, Linux, and macOS without a native PHP install.
 
 **Out of scope (explicit):**
@@ -34,7 +34,7 @@ WSL, Linux, and macOS without a native PHP install.
 ## Package Parameters
 
 Fill in before planning. All reference artifacts (configs, the required workflow's config, badge
-block) ship in this preset's `artifacts/` directory — no other package needs to be consulted.
+block) ship in this preset's `artifacts/` directory - no other package needs to be consulted.
 
 Parameters that name a `webware-ci.json` key use the key verbatim. The authoritative enumeration
 is `artifacts/webware-ci.json`, and the required workflow reads those names exactly.
@@ -45,7 +45,7 @@ is `artifacts/webware-ci.json`, and the required workflow reads those names exac
 | `require.php` | `~8.4.1 \|\| ~8.5.0` |
 | `config.platform.php` | `8.4.99` |
 | `run_integration` | [true/false] |
-| `integration_php_version` | highest supported PHP — narrows the integration suite and its DB service to one matrix leg; leave empty to run it on every leg `run_integration` covers |
+| `integration_php_version` | highest supported PHP - narrows the integration suite and its DB service to one matrix leg; leave empty to run it on every leg `run_integration` covers |
 | `enable_codecov` | `true` |
 | `enable_infection` | `true` |
 | `coverage_php_version` | highest supported PHP |
@@ -108,7 +108,7 @@ organization's required workflow, not a per-package file to re-point.
 ### Functional Requirements
 
 - **FR-001**: Repository MUST provide `webware-ci.json` in the repository root carrying the
-  package's CI values, and MUST NOT carry a wrapper workflow — the organization ruleset binds the
+  package's CI values, and MUST NOT carry a wrapper workflow - the organization ruleset binds the
   required workflow to the repository. A key omitted from that file silently takes the workflow's
   default, so the key names are the contract. The file MUST carry no Mago version literal: the pin
   is inherited from `webware/webware-tools/mago.toml`, and the workflow fails the build on a copy
@@ -141,7 +141,7 @@ organization's required workflow, not a per-package file to re-point.
   testing) with CI/codecov badges tracking the default branch and the Stryker badge updated
   whenever the default branch changes.
 - **FR-014**: Repository MUST add spec-kit scaffolding directories (`/.specify/`, `/specs/`) to
-  `.gitignore` — they are local dev tooling and must not be pushed to the remote.
+  `.gitignore` - they are local dev tooling and must not be pushed to the remote.
 - **FR-015**: Repository MUST remove legacy tooling: `phpstan/phpstan`,
   `phpstan/phpstan-phpunit`, and `webware/coding-standard` from `require-dev`; delete
   `.php-cs-fixer.dist.php`, `.php-cs-fixer.php`, `.php-cs-fixer.cache`, `phpstan.neon.dist`,
@@ -166,7 +166,7 @@ organization's required workflow, not a per-package file to re-point.
 
 ### Key Entities
 
-- **`webware-ci.json`**: the only per-package CI surface — values, no workflow ref.
+- **`webware-ci.json`**: the only per-package CI surface - values, no workflow ref.
 - **Required workflow**: owned by `webinertia/.github`; owns job definitions (mago, test,
   codecov, mutation-test).
 - **Baselines**: per-package TOML files holding approved Mago suppressions.

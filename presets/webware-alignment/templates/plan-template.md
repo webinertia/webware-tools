@@ -41,14 +41,14 @@ on Windows, WSL, Linux, and macOS.
 
 ## Constitution Check
 
-- **I. Webware-Tools CI Alignment** — `webware-ci.json`, required composer scripts, committed
+- **I. Webware-Tools CI Alignment**: `webware-ci.json`, required composer scripts, committed
   `composer.lock`, `mago.toml` extends vendor config: satisfied by this plan (Phases 1, 2, 3).
-- **II. PHPUnit 13 Strict Mode** — `requireCoverageMetadata` + mock/stub rules: enforced via
+- **II. PHPUnit 13 Strict Mode**: `requireCoverageMetadata` + mock/stub rules: enforced via
   `phpunit.xml.dist` and `.github/copilot-instructions.md` (Phases 2, 5).
-- **III. Code Quality Gates** — Mago clean + approved-only baselines; Infection MSI thresholds
+- **III. Code Quality Gates**: Mago clean + approved-only baselines; Infection MSI thresholds
   (Phases 3, 4).
-- **IV. PHP Compatibility** — no `8.6.0-dev` in `require.php`; platform `8.4.99` (Phase 1).
-- **V. Naming** — no namespace repetition: no new classes introduced by this plan.
+- **IV. PHP Compatibility**: no `8.6.0-dev` in `require.php`; platform `8.4.99` (Phase 1).
+- **V. Naming**: no namespace repetition: no new classes introduced by this plan.
 
 ## Project Structure
 
@@ -61,7 +61,7 @@ specs/[###-feature]/
 └── tasks.md             # Task list
 ```
 
-### Source Code (repository root) — artifacts this feature produces
+### Source Code (repository root): artifacts this feature produces
 
 All root-level artifacts below are copied from
 `vendor/webware/webware-tools/presets/webware-alignment/artifacts/` and parameterized per the
@@ -96,7 +96,7 @@ test/
 
 `webinertia/.github` owns `.github/workflows/org-required-ci.yml`; the organization ruleset binds it
 to every repository, and that config repository's default branch is the ref it runs at. GitHub
-invokes it directly, so a repository cannot pass `with:` inputs — per-package variation arrives as
+invokes it directly, so a repository cannot pass `with:` inputs - per-package variation arrives as
 `webware-ci.json` in the repository root:
 
 - **`webware-ci.json` keys**: `php_versions` (JSON array), `run_integration`,
@@ -106,31 +106,31 @@ invokes it directly, so a repository cannot pass `with:` inputs — per-package 
 - **Secrets**: `CODECOV_TOKEN` and `INFECTION_DASHBOARD_API_KEY` are read by the workflow from
   repository/org secrets; nothing is forwarded per package.
 - **Jobs**:
-  1. **config** — runs on every repository; fails when `webware-ci.json` is absent from the root,
+  1. **config**: runs on every repository; fails when `webware-ci.json` is absent from the root,
      then publishes every key as a job output. Each key has a default (`php_versions`
      `["8.4", "8.5"]`, `min_msi` / `min_covered_msi` `"10"`, booleans `false`, the rest empty), so
-     a misspelled key does not fail the build — it silently takes the default. The job also rejects
+     a misspelled key does not fail the build - it silently takes the default. The job also rejects
      a duplicated Mago version pin; that check is skipped in `webinertia/webware-tools` itself,
      which owns the pin.
-  2. **mago** — needs `config`; matrix over `php_versions`; installs Mago at the version resolved
+  2. **mago**: needs `config`; matrix over `php_versions`; installs Mago at the version resolved
      from the centre's `mago.toml` pin, then runs `mago format --check`, `mago lint`,
      `mago analyze`, `mago guard` (each `success() || failure()`).
-  3. **test** — needs `config`; matrix `php_versions` × `[lowest, locked, latest]`; optional DB
+  3. **test**: needs `config`; matrix `php_versions` × `[lowest, locked, latest]`; optional DB
      container (skipped when `db_image` empty); `composer test` on non-canonical legs, `composer
      test-coverage` on the canonical leg (`coverage_php_version` + locked, pcov);
      `composer test-integration` when `run_integration`; uploads `clover.xml` artifact. Both the DB
      container and the integration suite are additionally gated on `run_integration`, and narrowed
-     by `integration_php_version` when set — the integration suite is the expensive part of a leg,
+     by `integration_php_version` when set - the integration suite is the expensive part of a leg,
      so running it on every PHP version is rarely worth the wall-clock time.
-  4. **codecov** — needs `[config, test]`; `codecov/codecov-action@v5`, `files: clover.xml`,
+  4. **codecov**: needs `[config, test]`; `codecov/codecov-action@v5`, `files: clover.xml`,
      `fail_ci_if_error: false` (report-only).
-  5. **mutation-test** — needs `[config, test]`; PHP `coverage_php_version` with pcov, Mago at the
+  5. **mutation-test**: needs `[config, test]`; PHP `coverage_php_version` with pcov, Mago at the
      resolved pin; `composer mutation-test -- --min-msi=… --min-covered-msi=… --logger-github`;
      Infection invokes Mago via `staticAnalysisTool`.
 
 Consumer obligations derived from the contract:
 
-- `webware-ci.json` must exist in the repository root — the `config` job fails the build without
+- `webware-ci.json` must exist in the repository root - the `config` job fails the build without
   it.
 - No Mago version literal anywhere in the repository: the pin is inherited from
   `webware/webware-tools/mago.toml`, and the `config` job rejects a copy of it.
@@ -143,7 +143,7 @@ Consumer obligations derived from the contract:
 
 ## Implementation Phases
 
-### Phase 1 — composer.json
+### Phase 1: composer.json
 
 - `require.php`: `~8.4.1 || ~8.5.0`. Do not add `8.6.0-dev`.
 - `require-dev`: PHPUnit `^13.3.0`; add Infection `^0.35.0`, PHPBench `^1.7`,
@@ -163,7 +163,7 @@ Consumer obligations derived from the contract:
   scripts.
 - Regenerate + commit `composer.lock`.
 
-### Phase 2 — phpunit.xml.dist (new)
+### Phase 2: phpunit.xml.dist (new)
 
 - Schema 13.1 (`https://schema.phpunit.de/13.1/phpunit.xsd`), `bootstrap="vendor/autoload.php"`,
   `colors="true"`, `cacheDirectory=".phpunit.cache"`.
@@ -175,7 +175,7 @@ Consumer obligations derived from the contract:
 - Remove legacy tooling configs: `.php-cs-fixer.dist.php`, `.php-cs-fixer.php`,
   `.php-cs-fixer.cache`, `phpstan.neon.dist`, `phpstan-baseline.neon`, `stubs/`, `.laminas-ci.json`.
 
-### Phase 3 — Mago tooling
+### Phase 3: Mago tooling
 
 - `mago.toml` (new):
   - `extends = "vendor/webware/webware-tools/mago.toml"`
@@ -188,7 +188,7 @@ Consumer obligations derived from the contract:
 - Fix pass: `mago format`, then `mago lint` + `mago analyze` + `mago guard`; fix all `src/`
   findings; baseline approved remainder only.
 
-### Phase 4 — Infection / Codecov / Renovate / PHPBench configs
+### Phase 4: Infection / Codecov / Renovate / PHPBench configs
 
 - `infection.json5.dist`: `source.directories = ["src"]`, `timeout = 10`, `threads = "max"`,
   logs `text: infection.log`, `summary: summary.log`, stryker badge regex `/^\d+\.\d+\.x$/`,
@@ -199,7 +199,7 @@ Consumer obligations derived from the contract:
 - `phpbench.json.dist`: `runner.path: benchmarks`, `*Bench.php`; config only, no
   `benchmarks/` directory, no CI job.
 
-### Phase 5 — Required-workflow config + agent instructions + test scaffolding
+### Phase 5: Required-workflow config + agent instructions + test scaffolding
 
 - `webware-ci.json`: copied from the preset's `artifacts/webware-ci.json` with the placeholders
   replaced by the spec's Package Parameters (`php_versions`, `run_integration`,
@@ -212,10 +212,10 @@ Consumer obligations derived from the contract:
   `requireCoverageMetadata="true"` rules (`#[CoversClass]` / `#[CoversMethod]` per test class).
 - `test/`: scaffolding with at least one test per suite so the pipeline is green (PHPUnit
   errors on zero executed tests; Infection cannot score an empty suite).
-- `.gitignore`: add `/.specify/` and `/specs/` — spec-kit scaffolding is local dev tooling and
+- `.gitignore`: add `/.specify/` and `/specs/` - spec-kit scaffolding is local dev tooling and
   is never pushed to the remote; `/.github/` is already ignored and covers agent skill dirs.
 
-### Phase 6 — README badges
+### Phase 6: README badges
 
 - `README.md`: standard badge block from the preset's `artifacts/readme-badges.md` (PHP
   version, latest version, license, Required CI, codecov, Mutation testing). CI and
@@ -223,7 +223,7 @@ Consumer obligations derived from the contract:
   The Stryker mutation badge URL embeds the branch segment; update that segment in both the
   badge URL and the dashboard link whenever the default branch changes.
 
-### Phase 7 — Containerized development environment
+### Phase 7: Containerized development environment
 
 - `Dockerfile` (new): copy from the preset's `artifacts/Dockerfile`. Base image
   `php:8.4.24-cli` (latest 8.4 patch, in sync with `require.php`); install Composer from the
@@ -246,7 +246,7 @@ Consumer obligations derived from the contract:
   `*.log`).
 - `.devcontainer/devcontainer.json` (new): copy from the preset's `artifacts/devcontainer.json`.
   A thin wrapper (`dockerComposeFile` → `compose.yml`, `service: tooling`, `workspaceFolder
-  /app`) so VS Code users reuse the exact same container as plain Compose users — no one is
+  /app`) so VS Code users reuse the exact same container as plain Compose users - no one is
   orphaned.
 - Verify: `docker compose up -d` then `docker compose exec tooling composer test` and the full
   `mago format --check && mago lint && mago analyze && mago guard` sequence run green with no

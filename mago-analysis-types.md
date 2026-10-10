@@ -72,28 +72,28 @@ writable as real hints and are not listed here.
 ## Array / list / iterable types
 
 - `array<V>`, `array<K, V>`
-- `array{a: int, b?: string}` — shapes, including the `...<T>` additional-fields form
-- `T[]` — slice syntax (sugar for `array<array-key, T>`)
+- `array{a: int, b?: string}` - shapes, including the `...<T>` additional-fields form
+- `T[]` - slice syntax (sugar for `array<array-key, T>`)
 - `non-empty-array`, `non-empty-array<K, V>`
 - `associative-array`, `associative-array<K, V>`
 - `list`, `list<T>`
 - `non-empty-list`, `non-empty-list<T>`
-- `iterable<K, V>` — bare `iterable` is native, the generics are not
+- `iterable<K, V>` - bare `iterable` is native, the generics are not
 - `array-key`
 
 ## Callable types
 
-- `callable(int, string=, mixed...): bool` — parameter / return signature
+- `callable(int, string=, mixed...): bool` - parameter / return signature
 - `pure-callable` (+ signature)
 - `pure-closure` (+ signature)
 - `Closure<...>`, `Generator<TKey, TValue, TSend, TReturn>` and other generic references
 
 ## Object types
 
-- `object{foo: int, bar: string}` — object shapes
+- `object{foo: int, bar: string}` - object shapes
 - `stringable-object`
-- `Foo<T>` — generics on any class reference
-- `$this` — `$this`-bound propagation
+- `Foo<T>` - generics on any class reference
+- `$this` - `$this`-bound propagation
 - intersections such as `Foo&Bar`, and `object&callable` (collapses to a `__invoke` holder)
 
 ## Resource types
@@ -119,13 +119,13 @@ writable as real hints and are not listed here.
 - `properties-of<T>`, `public-properties-of<T>`, `private-properties-of<T>`, `protected-properties-of<T>`
 - `new<T>`
 - `template-type<T, Foo>`
-- `T[K]` — index access
-- `($x is Foo ? A : B)` — conditional types (also `as`, `not`)
-- `Foo::CONSTANT`, `Foo::PREFIX_*`, `Foo::*_SUFFIX`, `Foo::*` — member references with wildcards
-- `PREFIX_*`, `*_SUFFIX` — global constant wildcards
-- `Foo::MyAlias`, `!Foo::MyAlias` — type-alias references (`@phpstan-type` / `@psalm-type` / `@phpstan-import-type`)
-- `$param` — variable types (template / `@param-out`-style references)
-- `covariant` / `contravariant` — generic variance markers on parameters
+- `T[K]` - index access
+- `($x is Foo ? A : B)` - conditional types (also `as`, `not`)
+- `Foo::CONSTANT`, `Foo::PREFIX_*`, `Foo::*_SUFFIX`, `Foo::*` - member references with wildcards
+- `PREFIX_*`, `*_SUFFIX` - global constant wildcards
+- `Foo::MyAlias`, `!Foo::MyAlias` - type-alias references (`@phpstan-type` / `@psalm-type` / `@phpstan-import-type`)
+- `$param` - variable types (template / `@param-out`-style references)
+- `covariant` / `contravariant` - generic variance markers on parameters
 
 ## Parser notes
 

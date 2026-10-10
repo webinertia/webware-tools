@@ -66,14 +66,14 @@ The centre's only PSR-14 rules are the two naming rules in Principle V:
 Both carry the `{App,Webware}` root, so they bind application code exactly as they bind a package:
 an application's `App\Event\SendWelcomeEvent` and `App\Listener\…` are held to the same convention,
 whether the repository is a component or an app built on webware-tools. A consumer that extends the
-centre has opted in by doing so — there is no consumer-side disable and no App carve-out.
+centre has opted in by doing so - there is no consumer-side disable and no App carve-out.
 
 They are deliberately narrow. Nothing is enforced about behaviour: a listener may implement
 `Webware\Event\ListenerInterface` directly, extend a package base class, or be registered by its own
 provider. There is no `must-implement`, no `must-be-final`, and no dependency restriction on any
 event library, so the mechanism can be adopted incrementally and a package is never forced into a
 particular dispatch style. The rules exist so the event graph is readable, not so the mechanism is
-uniform — narrow scope means the rules are applied everywhere, not that the convention is optional.
+uniform - narrow scope means the rules are applied everywhere, not that the convention is optional.
 
 Three consequences of the patterns, all verified against the pinned mago 1.51.0:
 
@@ -83,7 +83,7 @@ Three consequences of the patterns, all verified against the pinned mago 1.51.0:
 - `\Event\*` and `\Listener\*` match direct children only. A listener's DI factory therefore belongs
   in `Listener\Container\`, the same nesting the Http boundary requires for
   `Http\Middleware\Container\`, because a factory is named for the class it builds and cannot
-  satisfy `*Listener` otherwise. Every package sits this way now — webware-log's factory moved to
+  satisfy `*Listener` otherwise. Every package sits this way now - webware-log's factory moved to
   `Listener\Container\`.
 - A class whose name repeats its namespace segment is accepted, because `*` matches an empty run:
   `Webware\Event\Event` is not a finding.
@@ -96,7 +96,7 @@ scope while its event classes are bus types under the bus root
 (`Webware\MessageBus\Event\...`); reconciling that package against webware-event is tracked in
 webinertia/webware-tools#21; the parent boundary doctrine landed as constitution Principle VIII.
 `Webware\Event\**` excludes the
-contract package itself, because its ROOT namespace is `Webware\Event` — the `\**\Event\*` pattern
+contract package itself, because its ROOT namespace is `Webware\Event` - the `\**\Event\*` pattern
 matches its root classes as though they were events, and `ConfigProvider` does not end in `Event`.
 Excluding the package is the fix; renaming its `ConfigProvider` to satisfy the rule is not. That is a
 namespace collision, not an exemption: an application's `App\Event\` really is its event bucket and
@@ -113,14 +113,14 @@ Three things go wrong in this order. Plan for all of them before the first commi
 2. **Baseline entries are keyed by file path.** A move does not carry suppressions with it: the
    moved file's entries stop matching, its findings reappear, and the entries left at the old path
    go stale (mago reports them as issues that no longer exist). Regenerate both baselines with the
-   files in their new location, then diff against the committed files — the expected diff is the
+   files in their new location, then diff against the committed files - the expected diff is the
    moved paths and nothing else. Do not reach for `--remove-outdated-baseline-entries` to tidy up
    after a move: it prunes the orphaned entries but cannot add the findings the moved file now
    carries, so the move would silently lose its suppressions.
 3. **Decouple rather than relocate when the class is not an implementation.** A class that merely
    names a PSR interface as an event-identifier string is not an implementation of it, and moving it
    under the boundary is the wrong fix. Leave the class where it belongs and move the class-strings
-   into a holder the boundary owns — the `Webware\Log\Http\PipelineIdentifiers` pattern.
+   into a holder the boundary owns - the `Webware\Log\Http\PipelineIdentifiers` pattern.
 
 ## Rule semantics (verified against the pinned mago 1.51.0)
 
@@ -150,14 +150,14 @@ Three things go wrong in this order. Plan for all of them before the first commi
   `Webware\**\Command\*` also matches `Webware\MessageBus\Command\CommandInterface`.
 - **A rule pattern matches a package whose root namespace collides with the namespace segment it
   looks for.** `{App,Webware}\**\Event\*` matches every class directly in `Webware\Event`, because
-  that is a real namespace and `**` matches zero segments — so the contract package's own
+  that is a real namespace and `**` matches zero segments - so the contract package's own
   `ConfigProvider` was reported the first time the Event rule ran against webware-event, while the
   committed rules reported nothing. The fix belongs in the `not-on`, not in the package's class
   names. Expect the same shape wherever a rule keys on a segment a package uses as its root
   (`Webware\Event`, and any future `Webware\Listener`).
 - `not-on` takes a **single string**. A list is rejected outright (`invalid type: sequence,
   expected a string`), which is invisible until the config is loaded, so an exclusion set has to be
-  expressed as brace alternation — `not-on = "{Webware\MessageBus,Webware\Event}\**"` — or the
+  expressed as brace alternation - `not-on = "{Webware\MessageBus,Webware\Event}\**"` - or the
   more specific of the two has to be dropped.
 - `must-be-final` inspects classes only. Interfaces and traits are never reported, with or without
   `target = "class"`. Keep `target = "class"` for consistency with the centre.
@@ -174,8 +174,8 @@ Three things go wrong in this order. Plan for all of them before the first commi
 - **An empty `allow-from` restricts nothing; a non-matching one bans everything.** Omitting the key
   and writing `allow-from = []` are the same: no restriction at all, so an "empty list, to be filled
   in later" silently enforces nothing. A list whose every entry fails to match (a placeholder
-  namespace, say) is the opposite extreme — it excludes every source, which is how a total ban has
-  to be expressed. Verified by probing `Psr\Http\Server\**` on 1.48.1 — 13 findings
+  namespace, say) is the opposite extreme - it excludes every source, which is how a total ban has
+  to be expressed. Verified by probing `Psr\Http\Server\**` on 1.48.1 - 13 findings
   and 3 `disallowed-use` under a non-matching list, none under an empty one; re-confirmed on the
   pinned 1.51.0, where an empty `allow-from` flags nothing and a non-matching one flags the
   dependency. When a restriction is

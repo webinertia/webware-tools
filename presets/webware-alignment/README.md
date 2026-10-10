@@ -1,4 +1,4 @@
-# Webware Tools Alignment — Spec Kit Preset
+# Webware Tools Alignment: Spec Kit Preset
 
 Spec Kit preset for aligning a Webware package's CI/CD pipeline and dev tooling with the
 organization's required CI workflow.
@@ -11,7 +11,7 @@ Four template overrides for Spec Kit:
 |---|---|
 | `spec-template` | Alignment spec skeleton: purpose, scope, Package Parameters table, functional requirements, success criteria |
 | `plan-template` | Plan prefilled with the required-workflow contract (`webware-ci.json` keys, jobs, consumer obligations) and 6 implementation phases |
-| `tasks-template` | Task list T001–T027: composer, phpunit, mago, infection/codecov/renovate/phpbench, `webware-ci.json`, README badges, containerized dev environment |
+| `tasks-template` | Task list T001 - T027: composer, phpunit, mago, infection/codecov/renovate/phpbench, `webware-ci.json`, README badges, containerized dev environment |
 | `constitution-template` | Webware constitution: CI alignment, PHPUnit 13 strict mode, Mago gates, PHP compatibility, naming |
 
 ## Reference artifacts (`artifacts/`)
@@ -32,14 +32,14 @@ inspecting another package:
 | `gitattributes.txt` | merge into `.gitattributes` |
 | `readme-badges.md` | badge block in `README.md` (replace `{{PACKAGE_NAME}}`, `{{ORG}}`, `{{REPO}}`, `{{DEFAULT_BRANCH}}`) |
 | `Dockerfile` | `Dockerfile` (PHP + Composer + Mago + Xdebug dev image) |
-| `compose.yml` | `compose.yml` (persistent, interactive `tooling` service — the source of truth) |
+| `compose.yml` | `compose.yml` (persistent, interactive `tooling` service - the source of truth) |
 | `.dockerignore` | `.dockerignore` (exclude `vendor/`, `.git/`, `.devcontainer/`, caches from build context) |
 | `devcontainer.json` | `.devcontainer/devcontainer.json` (thin VS Code wrapper around `compose.yml`) |
 
 Each task names the `artifacts/` file it copies.
 
 `webware-ci.json` is read at run time by the required workflow, which is bound to every repository
-by the organization ruleset — there is no per-package wrapper workflow and no workflow ref to bump.
+by the organization ruleset - there is no per-package wrapper workflow and no workflow ref to bump.
 GitHub invokes the required workflow directly, so it cannot receive `with:` inputs; this file is how
 a package varies its pipeline.
 
@@ -77,7 +77,7 @@ From an installed dependency (the preset ships inside the package):
 specify preset add --dev vendor/webware/webware-tools/presets/webware-alignment
 ```
 
-From a release archive (substitute the tag — webware-tools tags carry no `v` prefix):
+From a release archive (substitute the tag - webware-tools tags carry no `v` prefix):
 
 ```bash
 specify preset add --from https://github.com/webinertia/webware-tools/archive/refs/tags/<tag>.zip
@@ -106,15 +106,15 @@ specify preset remove webware-alignment
 
 1. `specify init --here --force --integration copilot` (or your agent) in the target package.
 2. Install this preset (one of the commands above).
-3. `/speckit-specify "Align CI/CD and tooling with webware-tools"` — template is prefilled;
+3. `/speckit-specify "Align CI/CD and tooling with webware-tools"` - template is prefilled;
    fill the Package Parameters table with the package's values.
-4. `/speckit-plan` — produces the artifact-by-artifact plan with the package's inputs.
-5. `/speckit-tasks` — produces T001–T027.
-6. `/speckit-implement` — creates `webware-ci.json`, `phpunit.xml.dist`, `mago.toml`
+4. `/speckit-plan` - produces the artifact-by-artifact plan with the package's inputs.
+5. `/speckit-tasks` - produces T001 - T027.
+6. `/speckit-implement` - creates `webware-ci.json`, `phpunit.xml.dist`, `mago.toml`
    (extends `vendor/webware/webware-tools/mago.toml`), baselines, `infection.json5.dist`,
    `codecov.yml`, `renovate.json`, `phpbench.json.dist`, `Dockerfile`, `compose.yml`,
    `.dockerignore`, `.devcontainer/devcontainer.json`, composer changes + lock,
-   `.github/copilot-instructions.md`, and README badges — all copied from the preset's
+   `.github/copilot-instructions.md`, and README badges - all copied from the preset's
    `artifacts/` directory.
 
 ## Containerized development environment
@@ -143,18 +143,18 @@ docker compose exec tooling mago guard
 docker compose down                  # stop it
 ```
 
-`vendor/` is the host's own copy — the project is bind-mounted at `/app`, so `composer install`
+`vendor/` is the host's own copy - the project is bind-mounted at `/app`, so `composer install`
 inside the container writes dependencies straight into the developer's working tree on disk. The
 Composer cache lives in a named volume (Linux-native I/O, fast on Windows) so downloads survive
 container rebuilds; it is only a cache.
-Xdebug is installed but off by default — enable step debugging with `XDEBUG_MODE=debug`.
+Xdebug is installed but off by default - enable step debugging with `XDEBUG_MODE=debug`.
 
 The Dockerfile derives Mago's version from the central `mago.toml` `version =` pin at build
 time, resolved through `composer.lock`, so there is no `MAGO_VERSION` build arg to keep in sync.
 `PHP_VERSION` tracks the package's latest supported 8.4 patch release.
 
 For packages whose tests need MySQL (e.g. anything using `php-db/phpdb-mysql`), `compose.yml`
-ships an opt-in `mysql` service — uncomment the
+ships an opt-in `mysql` service - uncomment the
 `mysql` service and the `depends_on` block on `tooling`, then point the package's local DB config
 (e.g. `config/autoload/mysql.local.php`) at host `mysql`, port `3306`, using the service's
 `MYSQL_*` credentials. The service mirrors the CI `db_image` / `db_env_json` Package Parameters,

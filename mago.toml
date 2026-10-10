@@ -159,7 +159,7 @@ reason = "Traits must follow the *Trait naming convention."
 # symbol name, not the namespace: a trailing `\**` also matches the root class itself
 # (`Webware\MessageBus\MessageBus`, `Webware\Event\Event`, `Webware\Mailer\Mailer`), which are
 # correct names. `must-be = []` bans every symbol kind in the namespace, which is why `target` is
-# omitted — `target = "class"` would let an interface, enum or function in the same namespace escape.
+# omitted: `target = "class"` would let an interface, enum or function in the same namespace escape.
 [[guard.structural.rules]]
 on = "{App,Webware,AppTest,AppTestIntegration,WebwareTest,WebwareTestIntegration}\\{Acl\\Acl,Admin\\Admin,Async\\Async,Console\\Console,Core\\Core,Event\\Event,Htmx\\Htmx,Log\\Log,Mailer\\Mailer,Message\\Message,MessageBus\\MessageBus,Migration\\Migration,Navigation\\Navigation,ResultSet\\ResultSet,Theme\\Theme,Traccio\\Traccio,UserManager\\UserManager,Validator\\Validator}\\**\\*"
 must-be = []

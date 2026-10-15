@@ -1,5 +1,5 @@
-#:schema https://mago.carthage.software/1.55.0/schema.json
-version = "1.55.0"
+#:schema https://mago.carthage.software/1.57.0/schema.json
+version = "1.57.0"
 php-version = "8.4.1"
 
 [source]
@@ -18,7 +18,6 @@ literal-separator = false
 preset = "default"
 method-chain-breaking-style = "same_line"
 preserve-breaking-member-access-chain = true
-preserve-breaking-member-access-chain-first-method-on-same-line = true
 preserve-breaking-argument-list = true
 preserve-breaking-array-like = true
 preserve-breaking-parameter-list = true

@@ -30,6 +30,7 @@ inspecting another package:
 | `webware-ci.json` | `webware-ci.json` in the repository root, beside `mago.toml` (replace `{{PLACEHOLDER}}`s with Package Parameters) |
 | `copilot-instructions.md` | `.github/copilot-instructions.md` (replace `{{PACKAGE_TITLE}}`) |
 | `gitattributes.txt` | merge into `.gitattributes` |
+| `gitignore.txt` | `.gitignore` (copy verbatim; includes the Windows `/mago.bat` shim) |
 | `readme-badges.md` | badge block in `README.md` (replace `{{PACKAGE_NAME}}`, `{{ORG}}`, `{{REPO}}`, `{{DEFAULT_BRANCH}}`) |
 | `Dockerfile` | `Dockerfile` (PHP + Composer + Mago + Xdebug dev image) |
 | `compose.yml` | `compose.yml` (persistent, interactive `tooling` service - the source of truth) |

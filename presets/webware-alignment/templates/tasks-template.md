@@ -58,8 +58,10 @@ and are not a package parameter.
   file: the organization ruleset binds the required workflow to the repository.
 - [ ] T016 Create `.github/copilot-instructions.md` from the preset's
   `artifacts/copilot-instructions.md`, replacing `{{PACKAGE_TITLE}}`
-- [ ] T017 Add `/.specify/` and `/specs/` to `.gitignore` so spec-kit
-  scaffolding stays local dev tooling and is never pushed to the remote
+- [ ] T017 Create `.gitignore` by copying the preset's `artifacts/gitignore.txt`
+  verbatim, replacing the existing file. It carries the tool caches, the
+  `.specify/` and `/specs/` scaffolding, and `/mago.bat`, the per-machine shim
+  Infection needs on Windows (see webinertia/webware-tools issue 59)
 
 ## Phase 6: README badges
 

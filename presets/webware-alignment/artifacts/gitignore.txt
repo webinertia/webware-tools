@@ -13,11 +13,9 @@
 /mago-results.txt
 *:Zone.Identifier
 
-# Windows shim for Infection's Mago static analysis tool. Infection probes for a
-# `.bat` before the extensionless binary, which is the only supported way to stop
-# it prefixing PHP_BINARY to a native Rust executable. Local to the machine, so
-# never committed. See webinertia/webware-tools issue 59.
-/mago.bat
+# `/mago.bat` is deliberately NOT listed here. It is a tracked artifact, shipped
+# by the alignment task list and present in the repository template, because
+# Infection cannot run Mago on Windows without it. See issue 59.
 
 # Spec Kit infrastructure is tracked deliberately: `.specify/` and
 # `.github/skills/` are what seed the workflow in a derived repository, and they

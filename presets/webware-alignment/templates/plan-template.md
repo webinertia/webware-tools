@@ -165,8 +165,12 @@ Consumer obligations derived from the contract:
 
 ### Phase 2: phpunit.xml.dist (new)
 
-- Schema 13.1 (`https://schema.phpunit.de/13.1/phpunit.xsd`), `bootstrap="vendor/autoload.php"`,
-  `colors="true"`, `cacheDirectory=".phpunit.cache"`.
+- Schema pointer `vendor/phpunit/phpunit/phpunit.xsd`. The relative path is deliberate:
+  Infection validates `phpunit.xml.dist` against this schema before running a single
+  mutant, so an `https://schema.phpunit.de/...` URL makes the mutation job fail whenever
+  that host is unreachable, and it silently pins a schema series that drifts away from the
+  installed PHPUnit. This is the value `phpunit --generate-configuration` writes itself.
+- `bootstrap="vendor/autoload.php"`, `colors="true"`, `cacheDirectory=".phpunit.cache"`.
 - Strict flags: `requireCoverageMetadata="true"`, `failOnNotice="true"`,
   `failOnDeprecation="true"`, `failOnWarning="true"`.
 - Testsuites: `unit test` → `test/unit`; `integration test` → `test/integration`.

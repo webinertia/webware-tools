@@ -1,5 +1,5 @@
-#:schema https://mago.carthage.software/1.57.0/schema.json
-version = "1.57.0"
+#:schema https://mago.carthage.software/1.58.2/schema.json
+version = "1.58.2"
 php-version = "8.4.1"
 
 [source]

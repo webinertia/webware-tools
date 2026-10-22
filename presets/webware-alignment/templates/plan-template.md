@@ -230,7 +230,7 @@ Consumer obligations derived from the contract:
 ### Phase 7: Containerized development environment
 
 - `Dockerfile` (new): copy from the preset's `artifacts/Dockerfile`. Base image
-  `php:8.4.24-cli` (latest 8.4 patch, in sync with `require.php`); install Composer from the
+  `php:8.5.12-cli` (latest 8.5 patch, in sync with `require.php`); install Composer from the
   official `composer` image; download the Mago release asset for `${TARGETARCH}` (amd64 →
   `x86_64`, arm64 → `aarch64`) at the Mago version derived from the webware-tools `mago.toml`
   pin (`version =`, resolved through `composer.lock`) and install to `/usr/local/bin/mago`;

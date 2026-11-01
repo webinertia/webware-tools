@@ -98,9 +98,10 @@ organization's required workflow, not a per-package file to re-point.
 ### Edge Cases
 
 - No `db_image` set: both DB steps of the required workflow are skipped at zero cost.
-- Integration tests do not exist yet: `test-integration` leg runs an empty suite; acceptable
-  temporarily, but at least one test per suite is required for a green pipeline.
-- Zero tests: PHPUnit 13 errors, and Infection cannot score an empty suite; pipeline is red until
+- The integration suite is required and must contain the coupling test between the package's
+  components. An empty integration suite fails `test-integration` and `test-all` by design, and
+  that failure is the gate, not a problem to suppress. Zero tests in any suite also make PHPUnit
+  13 error and leave Infection with no suite to score, so the pipeline is red until the
   scaffolding tests exist.
 
 ## Requirements

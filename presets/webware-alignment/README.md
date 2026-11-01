@@ -145,6 +145,35 @@ docker compose exec tooling mago guard
 docker compose down                  # stop it
 ```
 
+### Container lifecycle
+
+The `tooling` service runs `command: sleep infinity`, so the container never exits on its own. It
+idles at a few MiB, but it stays up until something stops it.
+
+- Run `docker compose down` when you are finished with container work. Do not leave the container
+  running.
+- Never remove volumes as part of routine container hygiene. Do not run `docker compose down -v`,
+  `docker volume prune`, or `docker system prune --volumes`. Volumes are handled case by case by
+  the operator.
+
+  This host carries 126 volumes. Named volumes are the ones that matter: the ten database data
+  volumes (`webware_mysql-data`, `webware-acl_mysql-data`, `webware-core_mysql-data`,
+  `webware-core_pgsql-data`, `webware-log_mysql-data`, `webware-usermanager_mysql-data`,
+  `ims_mysql_data`, `message_bus_test_mysql_data`, `messagebus_event_test_mysql_data`,
+  `mysql8-prepared-statements-ddl-support_mysql-data`) and the docker-in-docker `var-lib` volume
+  are all named. Anonymous hash-named volumes are not expected to hold anything worth keeping.
+
+  Lower risk is not authorization. Do not remove anonymous volumes either. Volume cleanup is the
+  operator's decision, made case by case, and an agent reports rather than reclaims. If disk usage
+  looks wrong, report what you see and do not reclaim space on your own initiative.
+- For a one-off command, prefer `docker compose run --rm tooling <cmd>` over `up -d` followed by
+  `exec`, so nothing persists.
+- If a bare `docker run` is unavoidable, pass `--rm`.
+- `compose.yml` deliberately has no top-level `name:` key. Do not add one. Compose deriving the
+  project name from the directory is what keeps separate checkouts on separate containers. A
+  hardcoded `name:` makes every checkout of a branch share one project and collide over one
+  container.
+
 `vendor/` is the host's own copy - the project is bind-mounted at `/app`, so `composer install`
 inside the container writes dependencies straight into the developer's working tree on disk. The
 Composer cache lives in a named volume (Linux-native I/O, fast on Windows) so downloads survive

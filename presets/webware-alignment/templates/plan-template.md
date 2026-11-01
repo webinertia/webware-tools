@@ -138,8 +138,9 @@ Consumer obligations derived from the contract:
 - `phpunit.xml.dist` must define suites named `unit test` and `integration test`.
 - `composer.lock` must be committed.
 - `mago.toml` must be present.
-- Pipeline is red until at least one test exists per suite (PHPUnit errors on zero tests;
-  Infection cannot score an empty suite).
+- Pipeline is red until at least one unit test exists (PHPUnit errors on zero tests for the unit
+  suite; Infection cannot score an empty suite). The integration suite may be empty: an empty
+  suite is a legitimate state, not a defect, and placeholder tests are forbidden.
 
 ## Implementation Phases
 
@@ -156,9 +157,26 @@ Consumer obligations derived from the contract:
 - `scripts`:
   - `test`: `phpunit --no-coverage --colors=always --testsuite "unit test"`
   - `test-coverage`: `phpunit --colors=always --coverage-clover clover.xml --coverage-text`
-  - `test-integration`: `phpunit --no-coverage --colors=always --testsuite "integration test"`
+  - `test-integration`: `phpunit --no-coverage --colors=always --testsuite "integration test"
+    --do-not-fail-on-empty-test-suite`
   - `mutation-test`: `infection`
-  - `test-all`: `@test && @test-integration && @mutation-test`
+  - `test-all`: the JSON array `["@test", "@test-integration", "@mutation-test"]`. Do not write it
+    as the string `@test && @test-integration && @mutation-test`: Composer 2.11.1 passes `&&` to
+    the shell as a literal argument, so only the first script runs. The array form runs each
+    script in sequence and stops on the first failure.
+- `test-integration` carries `--do-not-fail-on-empty-test-suite` because a package may legitimately
+  have no integration tests yet, and an empty integration suite is acceptable; it must not be
+  filled with placeholder tests. The mechanism is non-obvious: `Merger.php` sets
+  `failOnEmptyTestSuite` from `hasExplicitTestSelection()`, and `--testsuite` counts as an explicit
+  selection, so the failure is on by default even though a bare run would not fail. The flag
+  affects only the empty case, so it self-corrects once a genuine composed test lands.
+- Composer scripts wrap PHP tooling only: PHPUnit, Infection, coverage upload, and the package's
+  own `bin/` entry points. Mago is a standalone binary, so it is never proxied through a Composer
+  script. Invoke its gates directly as `mago format --check`, `mago lint`, `mago analyze`, and
+  `mago guard`, and generate baselines with `mago lint --generate-baseline` and
+  `mago analyze --generate-baseline`. The owner's rule, quoted verbatim: "mago does not use them
+  and since its not php tooling there is no sense is proxying to mago through php". Renaming a
+  wrapper script is not a fix.
 - No PHPStan package, no PHPStan script; remove legacy `check-all`/`cs-check`/`cs-fix`/`sa`
   scripts.
 - Regenerate + commit `composer.lock`.
@@ -214,8 +232,9 @@ Consumer obligations derived from the contract:
 - `.github/copilot-instructions.md`: PHPUnit 13 mock-vs-stub rules (`createStub()` for
   value-returning doubles, `createMock()` only with `expects()`) and
   `requireCoverageMetadata="true"` rules (`#[CoversClass]` / `#[CoversMethod]` per test class).
-- `test/`: scaffolding with at least one test per suite so the pipeline is green (PHPUnit
-  errors on zero executed tests; Infection cannot score an empty suite).
+- `test/`: scaffolding with at least one unit test so the pipeline is green (PHPUnit errors on
+  zero executed tests; Infection cannot score an empty suite). Do not add placeholder integration
+  tests: an empty integration suite is acceptable and `test-integration` passes on it.
 - `.gitignore`: add `/.specify/` and `/specs/` - spec-kit scaffolding is local dev tooling and
   is never pushed to the remote; `/.github/` is already ignored and covers agent skill dirs.
 

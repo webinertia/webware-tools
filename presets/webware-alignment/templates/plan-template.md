@@ -206,7 +206,7 @@ Consumer obligations derived from the contract:
 
 ### Phase 4: Infection / Codecov / Renovate / PHPBench configs
 
-- `infection.json5.dist`: `source.directories = ["src"]`, `timeout = 10`, `threads = "max"`,
+- `infection.json5.dist`: `source.directories = ["src"]`, `timeout = 10`, `threads = 4`,
   logs `text: infection.log`, `summary: summary.log`, stryker badge regex `/^\d+\.\d+\.x$/`,
   `mutators: {"@default": true}`, `staticAnalysisTool: "mago"`.
 - `codecov.yml`: copy from the preset's `artifacts/codecov.yml` (targets `auto`, threshold

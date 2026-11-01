@@ -62,6 +62,20 @@ The Package Parameters table in the generated spec is empty by design. Fill in p
 values before planning, reading the package's `composer.json` and `mago.toml` for the values it
 already carries.
 
+### Infection thread cap
+
+`artifacts/infection.json5.dist` pins `threads` to `4` rather than `"max"`:
+
+- `"max"` resolves to the number of logical processors. A developer machine commonly has 16
+  logical processors across 8 physical cores, so `"max"` means 16 concurrent threads.
+- Because the preset sets `staticAnalysisTool: "mago"`, Infection spawns one `mago analyze`
+  subprocess per mutant. At `"max"` that is 16 concurrent Mago processes contending for 8
+  physical cores, which saturates the host for tens of minutes and makes the machine unusable
+  for anything else.
+- A cap of 4 matches the vCPU count of the GitHub-hosted `ubuntu-latest` runner, so local and CI
+  runs behave identically instead of diverging in both speed and resource shape.
+- `webware-acl` and `webware-migration` already use 4, so this makes the fleet uniform.
+
 ## Install
 
 Requirements: `specify` CLI (`spec-kit` ≥ 0.16.0) and an initialized Spec Kit project

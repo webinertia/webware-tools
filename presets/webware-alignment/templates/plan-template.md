@@ -139,7 +139,9 @@ Consumer obligations derived from the contract:
 - `composer.lock` must be committed.
 - `mago.toml` must be present.
 - Pipeline is red until at least one test exists per suite (PHPUnit errors on zero tests;
-  Infection cannot score an empty suite).
+  Infection cannot score an empty suite). The integration suite is not optional: it exists for
+  composed behaviour, and where a package has two components the test that belongs there is the
+  coupling test between them.
 
 ## Implementation Phases
 
@@ -158,7 +160,17 @@ Consumer obligations derived from the contract:
   - `test-coverage`: `phpunit --colors=always --coverage-clover clover.xml --coverage-text`
   - `test-integration`: `phpunit --no-coverage --colors=always --testsuite "integration test"`
   - `mutation-test`: `infection`
-  - `test-all`: `@test && @test-integration && @mutation-test`
+  - `test-all`: the JSON array `["@test", "@test-integration", "@mutation-test"]`. Do not write it
+    as the string `@test && @test-integration && @mutation-test`: Composer 2.11.1 passes `&&` to
+    the shell as a literal argument, so only the first script runs. The array form runs each
+    script in sequence and stops on the first failure.
+- Composer scripts wrap PHP tooling only: PHPUnit, Infection, coverage upload, and the package's
+  own `bin/` entry points. Mago is a standalone binary, so it is never proxied through a Composer
+  script. Invoke its gates directly as `mago format --check`, `mago lint`, `mago analyze`, and
+  `mago guard`, and generate baselines with `mago lint --generate-baseline` and
+  `mago analyze --generate-baseline`. The owner's rule, quoted verbatim: "mago does not use them
+  and since its not php tooling there is no sense is proxying to mago through php". Renaming a
+  wrapper script is not a fix.
 - No PHPStan package, no PHPStan script; remove legacy `check-all`/`cs-check`/`cs-fix`/`sa`
   scripts.
 - Regenerate + commit `composer.lock`.
@@ -215,7 +227,8 @@ Consumer obligations derived from the contract:
   value-returning doubles, `createMock()` only with `expects()`) and
   `requireCoverageMetadata="true"` rules (`#[CoversClass]` / `#[CoversMethod]` per test class).
 - `test/`: scaffolding with at least one test per suite so the pipeline is green (PHPUnit
-  errors on zero executed tests; Infection cannot score an empty suite).
+  errors on zero executed tests; Infection cannot score an empty suite). The integration test is
+  the coupling test between the package's components, not a placeholder.
 - `.gitignore`: add `/.specify/` and `/specs/` - spec-kit scaffolding is local dev tooling and
   is never pushed to the remote; `/.github/` is already ignored and covers agent skill dirs.
 

@@ -128,8 +128,8 @@ organization's required workflow, not a per-package file to re-point.
   maintainer-approved intentional suppressions.
 - **FR-006**: `infection.json5.dist` MUST configure `source.directories = ["src"]` and
   `staticAnalysisTool: "mago"`.
-- **FR-007**: `codecov.yml` MUST be copied from the preset's `artifacts/codecov.yml` (targets
-  `auto`, threshold `0%`).
+- **FR-007**: `codecov.yml` MUST be copied from the preset's `artifacts/codecov.yml` (project
+  target `auto`, patch target `95%`, threshold `0%`).
 - **FR-008**: `renovate.json` MUST extend `local>webinertia/.github:renovate-config`.
 - **FR-009**: `phpbench.json.dist` MUST exist with runner config; a `benchmarks/` directory is not
   required.

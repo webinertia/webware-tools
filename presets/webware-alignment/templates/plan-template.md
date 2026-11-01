@@ -209,8 +209,8 @@ Consumer obligations derived from the contract:
 - `infection.json5.dist`: `source.directories = ["src"]`, `timeout = 10`, `threads = 4`,
   logs `text: infection.log`, `summary: summary.log`, stryker badge regex `/^\d+\.\d+\.x$/`,
   `mutators: {"@default": true}`, `staticAnalysisTool: "mago"`.
-- `codecov.yml`: copy from the preset's `artifacts/codecov.yml` (targets `auto`, threshold
-  `0%`, comment layout `diff, flags, files`).
+- `codecov.yml`: copy from the preset's `artifacts/codecov.yml` (project target `auto`, patch
+  target `95%`, threshold `0%`, comment layout `diff, flags, files`).
 - `renovate.json`: `"extends": ["local>webinertia/.github:renovate-config"]`.
 - `phpbench.json.dist`: `runner.path: benchmarks`, `*Bench.php`; config only, no
   `benchmarks/` directory, no CI job.

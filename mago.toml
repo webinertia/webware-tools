@@ -179,15 +179,19 @@ must-be-named = "*Handler"
 must-implement = "Psr\\Http\\Server\\RequestHandlerInterface"
 reason = "Http request handlers live in Http\\RequestHandler and implement PSR-15 RequestHandlerInterface."
 
-# PSR-15 is usable only from Http\ and tests. `Webware\Async\**` is a deliberate permit: a runner must
-# accept a request handler. The App permit is `App\**\Http\**` only, so PSR-15 classes elsewhere in an app
-# fail; that is the forcing function.
+# PSR-15 is usable only from Http\ and tests. Two permits are deliberate. `Webware\Async\**`: a runner
+# must accept a request handler. `Webware\Router\**`: a router must hand PSR-15 middleware around, and a
+# route is dispatchable by design, because Mezzio's dispatch middleware calls `process()` on the route
+# itself. That is a hard requirement rather than a preference: a route that cannot implement
+# `MiddlewareInterface` is unusable by a dispatching consumer. The App permit is `App\**\Http\**` only, so
+# PSR-15 classes elsewhere in an app fail; that is the forcing function.
 [[guard.perimeter.restrictions]]
 dependency = "Psr\\Http\\Server\\**"
 allow-from = [
     "{App,Webware}\\**\\Http\\**",
     "{AppTest,AppTestIntegration,WebwareTest,WebwareTestIntegration}\\**",
     "Webware\\Async\\**",
+    "Webware\\Router\\**",
 ]
 
 # Message bus

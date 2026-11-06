@@ -1,0 +1,36 @@
+# Runs the guard fixture corpus, which is the only thing that proves a guard rule
+# still matches something. A rule whose `on` pattern selects nothing passes
+# silently, so this job asserts the recorded verdict for every boundary rather
+# than trusting a clean run.
+#
+# The check runs in the tooling container, never on the runner's PHP: the Mago
+# version is read from the `version =` pin in mago.toml by the Dockerfile, so the
+# version under test always matches the version the config enforces.
+name: Guard corpus
+
+on:
+  pull_request:
+    paths:
+      - 'mago.toml'
+      - 'guard-fixtures/**'
+      - 'compose.yml'
+      - 'Dockerfile'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  corpus:
+    name: guard-fixtures/check.php
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Build the tooling image
+        run: docker compose build tooling
+
+      - name: Assert every guard boundary
+        run: docker compose run --rm -T tooling php guard-fixtures/check.php

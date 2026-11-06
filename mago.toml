@@ -128,20 +128,29 @@ class-initializers = [
 ]
 
 # Ecosystem-wide guard rules. Every consumer extends this file, so a rule added here applies to every
-# package after its next dependency update. Roots use `{App,Webware}` so consumer applications (`App\`)
-# are held to the same conventions as packages. `**` matches zero or more namespace segments.
+# package after its next dependency update. No rule names a host root. `**` matches zero or more
+# namespace segments, so `**\Http\**\Middleware\*` holds `App\`, `Webware\` and a third-party root to
+# the same convention without `Webware\` needing an entry of its own. Test roots are recognised by shape
+# (`*Test\**`, `*TestIntegration\**`) rather than by name.
+#
+# What stays literal is a package name, never a host root: `not-on`, `Webware\*`, `Webware\Core\**` and
+# the other single-package permits exempt one package from one rule. Those are not enumeration of host
+# roots and adding a host root must never be the fix for a finding.
+#
+# `guard-fixtures/` pins every boundary in this file. `php guard-fixtures/check.php` runs mago over that
+# corpus and asserts each verdict, so a change here that alters enforcement fails the check.
 [guard]
 mode = "default"
 
 # Naming
 [[guard.structural.rules]]
-on = "{App,Webware}\\**"
+on = "**"
 target = "interface"
 must-be-named = "*Interface"
 reason = "Interfaces must follow the *Interface naming convention."
 
 [[guard.structural.rules]]
-on = "{App,Webware}\\**"
+on = "**"
 target = "trait"
 must-be-named = "*Trait"
 reason = "Traits must follow the *Trait naming convention."
@@ -150,9 +159,11 @@ reason = "Traits must follow the *Trait naming convention."
 # same name in the parent namespace: `Webware\Acl\Acl` collided with the root `Webware\Acl\Acl` class
 # and forced `ConfigProvider` to use `Acl` as both a class alias and a namespace prefix.
 #
-# Every entry is a two-segment package root repeating itself, so a leaf namespace that shares a name
-# with its parent at depth (`Webware\Log\Handler\Handler`) is deliberately not swept in. A new package
-# root is added here, the same maintenance obligation the PhpDb enumeration carries.
+# Every entry is a package name rather than a host root, so the list stays literal and no consumer adds
+# anything to it. The leading `**` catches the repeated pair at any depth: `Acme\Acl\Acl\X` and
+# `Acme\Blog\Fixtures\Repeat\Acl\Acl\X` are the same collision hazard. A package name absent from the
+# list is still not swept in, so `Acme\Blog\Handler\Handler\X` stays clean and adding a package name is
+# the only maintenance this rule carries.
 #
 # The pattern ends `\**\*` rather than `\**` because `on` is matched against the fully qualified
 # symbol name, not the namespace: a trailing `\**` also matches the root class itself
@@ -160,20 +171,20 @@ reason = "Traits must follow the *Trait naming convention."
 # correct names. `must-be = []` bans every symbol kind in the namespace, which is why `target` is
 # omitted: `target = "class"` would let an interface, enum or function in the same namespace escape.
 [[guard.structural.rules]]
-on = "{App,Webware,AppTest,AppTestIntegration,WebwareTest,WebwareTestIntegration}\\{Acl\\Acl,Admin\\Admin,Async\\Async,Console\\Console,Core\\Core,Event\\Event,Htmx\\Htmx,Log\\Log,Mailer\\Mailer,Message\\Message,MessageBus\\MessageBus,Migration\\Migration,Navigation\\Navigation,ResultSet\\ResultSet,Theme\\Theme,Traccio\\Traccio,UserManager\\UserManager,Validator\\Validator}\\**\\*"
+on = "**\\{Acl\\Acl,Admin\\Admin,Async\\Async,Console\\Console,Core\\Core,Event\\Event,Htmx\\Htmx,Log\\Log,Mailer\\Mailer,Message\\Message,MessageBus\\MessageBus,Migration\\Migration,Navigation\\Navigation,ResultSet\\ResultSet,Theme\\Theme,Traccio\\Traccio,UserManager\\UserManager,Validator\\Validator}\\**\\*"
 must-be = []
 reason = "A namespace segment must not repeat its parent segment."
 
 # Http
 [[guard.structural.rules]]
-on = "{App,Webware}\\**\\Http\\**\\Middleware\\*"
+on = "**\\Http\\**\\Middleware\\*"
 target = "class"
 must-be-named = "*Middleware"
 must-implement = "Psr\\Http\\Server\\MiddlewareInterface"
 reason = "Http middleware lives in Http\\Middleware and implements PSR-15 MiddlewareInterface."
 
 [[guard.structural.rules]]
-on = "{App,Webware}\\**\\Http\\**\\RequestHandler\\*"
+on = "**\\Http\\**\\RequestHandler\\*"
 target = "class"
 must-be-named = "*Handler"
 must-implement = "Psr\\Http\\Server\\RequestHandlerInterface"
@@ -183,13 +194,14 @@ reason = "Http request handlers live in Http\\RequestHandler and implement PSR-1
 # must accept a request handler. `Webware\Router\**`: a router must hand PSR-15 middleware around, and a
 # route is dispatchable by design, because Mezzio's dispatch middleware calls `process()` on the route
 # itself. That is a hard requirement rather than a preference: a route that cannot implement
-# `MiddlewareInterface` is unusable by a dispatching consumer. The App permit is `App\**\Http\**` only, so
-# PSR-15 classes elsewhere in an app fail; that is the forcing function.
+# `MiddlewareInterface` is unusable by a dispatching consumer. The source permit is `**\Http\**` only, so
+# PSR-15 classes elsewhere fail; that is the forcing function.
 [[guard.perimeter.restrictions]]
 dependency = "Psr\\Http\\Server\\**"
 allow-from = [
-    "{App,Webware}\\**\\Http\\**",
-    "{AppTest,AppTestIntegration,WebwareTest,WebwareTestIntegration}\\**",
+    "**\\Http\\**",
+    "*Test\\**",
+    "*TestIntegration\\**",
     "Webware\\Async\\**",
     "Webware\\Router\\**",
 ]
@@ -199,7 +211,7 @@ allow-from = [
 # the bus package, which the `Webware` half of the brace would otherwise match. `must-implement` sees directly
 # declared interfaces only, so commands are held to `NamedCommandInterface`.
 [[guard.structural.rules]]
-on = "{App,Webware}\\**\\Command\\*"
+on = "**\\Command\\*"
 not-on = "Webware\\MessageBus\\**"
 target = "class"
 must-be-named = "*Command"
@@ -208,7 +220,7 @@ must-implement = "Webware\\MessageBus\\Command\\NamedCommandInterface"
 reason = "Commands live in Command\\, are named *Command, implement NamedCommandInterface, and are final."
 
 [[guard.structural.rules]]
-on = "{App,Webware}\\**\\CommandHandler\\*"
+on = "**\\CommandHandler\\*"
 not-on = "Webware\\MessageBus\\**"
 target = "class"
 must-be-named = "*Handler"
@@ -216,7 +228,7 @@ must-implement = "Webware\\MessageBus\\CommandHandlerInterface"
 reason = "Command handlers live in CommandHandler\\, are named *Handler, and implement CommandHandlerInterface."
 
 [[guard.structural.rules]]
-on = "{App,Webware}\\**\\Query\\*"
+on = "**\\Query\\*"
 not-on = "Webware\\MessageBus\\**"
 target = "class"
 must-be-named = "*Query"
@@ -225,7 +237,7 @@ must-implement = "Webware\\MessageBus\\Query\\QueryInterface"
 reason = "Queries live in Query\\, are named *Query, implement QueryInterface, and are final."
 
 [[guard.structural.rules]]
-on = "{App,Webware}\\**\\QueryHandler\\*"
+on = "**\\QueryHandler\\*"
 not-on = "Webware\\MessageBus\\**"
 target = "class"
 must-be-named = "*Handler"
@@ -233,7 +245,7 @@ must-implement = "Webware\\MessageBus\\QueryHandlerInterface"
 reason = "Query handlers live in QueryHandler\\, are named *Handler, and implement QueryHandlerInterface."
 
 [[guard.structural.rules]]
-on = "{App,Webware}\\**\\MessageBus\\Middleware\\*"
+on = "**\\MessageBus\\Middleware\\*"
 target = "class"
 must-be-named = "*Middleware"
 must-implement = "Webware\\MessageBus\\MiddlewareInterface"
@@ -245,7 +257,7 @@ reason = "Bus middleware lives in MessageBus\\Middleware and implements the bus 
 # webware-console, whose root namespace would otherwise match; it keeps its commands at its package root.
 # `must-use-attribute` identifies a Symfony command, since a parent class cannot be expressed.
 [[guard.structural.rules]]
-on = "{App,Webware}\\**\\Console\\*"
+on = "**\\Console\\*"
 not-on = "Webware\\Console\\**"
 target = "class"
 must-be-named = "*Command"
@@ -259,14 +271,14 @@ reason = "Console commands live in Console\\, are named *Command, are final, and
 # the bus package and webware-event itself, whose root namespace is `Webware\Event` and would match its own
 # classes. `not-on` takes a single string (a list is a config error) and accepts brace alternation.
 [[guard.structural.rules]]
-on = "{App,Webware}\\**\\Event\\*"
+on = "**\\Event\\*"
 not-on = "{Webware\\MessageBus,Webware\\Event}\\**"
 target = "class"
 must-be-named = "*Event"
 reason = "Events live in Event\\ and are named *Event."
 
 [[guard.structural.rules]]
-on = "{App,Webware}\\**\\Listener\\*"
+on = "**\\Listener\\*"
 not-on = "Webware\\MessageBus\\**"
 target = "class"
 must-be-named = "*Listener"
@@ -275,36 +287,29 @@ reason = "Listeners live in Listener\\ and are named *Listener, with factories i
 # Persistence boundary
 # Repositories are reached only from the handlers that use them (reads in query handlers, writes in command
 # handlers), DI factories, the composition root, console commands, `Webware\Migration\**` (the migration
-# runner) and tests. Every restriction is mirrored for `App\`.
+# runner) and tests. One restriction covers every root, because `**\Repository\**` describes the boundary by
+# shape. The two root-specific restrictions it replaces could not: each named one root, so a host application
+# that is neither `App\` nor `Webware\` had no persistence boundary over its own repositories at all.
 #
-# `allow-from` selects source namespaces. `Webware\*` is the two-segment composition root (`Webware\Acl`). A
-# one-segment root has no equivalent: `App` or `App\` admits everything beneath it and `App\*` admits every
-# first-level namespace, so the App composition root is not permitted. A consumer that needs it adds a local rule.
-# An exact symbol entry permits nothing.
+# `allow-from` selects source namespaces. `Webware\*` is the two-segment composition root (`Webware\Acl`) and
+# stays literal because a one-segment root has no root-agnostic equivalent: `**` admits everything beneath it
+# and `*\*` admits every first-level namespace. An exact symbol entry permits nothing.
+#
+# Merging the pair makes a repository permitted to use another repository across roots, which the mirrored
+# restrictions denied. That is intended: the repository namespace is the persistence boundary, and the pair
+# only drew the line where the root enumeration happened to fall.
 [[guard.perimeter.restrictions]]
-dependency = "Webware\\**\\Repository\\**"
+dependency = "**\\Repository\\**"
 allow-from = [
+    "**\\Repository\\**",
+    "**\\QueryHandler\\**",
+    "**\\CommandHandler\\**",
+    "**\\Container\\**",
+    "**\\Console\\**",
     "Webware\\*",
-    "Webware\\**\\Repository\\**",
-    "Webware\\**\\QueryHandler\\**",
-    "Webware\\**\\CommandHandler\\**",
-    "Webware\\**\\Container\\**",
-    "Webware\\**\\Console\\**",
     "Webware\\Migration\\**",
-    "WebwareTest\\**",
-    "WebwareTestIntegration\\**",
-]
-
-[[guard.perimeter.restrictions]]
-dependency = "App\\**\\Repository\\**"
-allow-from = [
-    "App\\**\\Repository\\**",
-    "App\\**\\QueryHandler\\**",
-    "App\\**\\CommandHandler\\**",
-    "App\\**\\Container\\**",
-    "App\\**\\Console\\**",
-    "AppTest\\**",
-    "AppTestIntegration\\**",
+    "*Test\\**",
+    "*TestIntegration\\**",
 ]
 
 # PhpDb stays behind the persistence boundary, except `ResultSet` (a legitimate return type) and `Validator`.
@@ -321,13 +326,12 @@ allow-from = [
 dependency = "PhpDb\\{Adapter,ConfigProvider,Container,Exception,Feature,Metadata,Mysql,Pgsql,RowGateway,SchemaFactory,SchemaInterface,Session,Sql,Sqlite,TableGateway,WebwareProvider}\\**"
 allow-from = [
     "PhpDb\\**",
-    "App\\**\\Entity\\**",
-    "App\\**\\Repository\\**",
-    "App\\**\\QueryHandler\\**",
-    "App\\**\\CommandHandler\\**",
-    "App\\**\\Console\\**",
-    "AppTest\\**",
-    "AppTestIntegration\\**",
+    "**\\Entity\\**",
+    "**\\Repository\\**",
+    "**\\QueryHandler\\**",
+    "**\\CommandHandler\\**",
+    "**\\Console\\**",
+    "**\\Validator\\**",
     "Webware\\*",
     "Webware\\Core\\**",
     "Webware\\Log\\Handler\\**",
@@ -335,14 +339,8 @@ allow-from = [
     "Webware\\Traccio\\Debug\\**",
     "Webware\\Traccio\\Http\\**",
     "Webware\\Traccio\\PhpDb\\**",
-    "Webware\\**\\Entity\\**",
-    "Webware\\**\\Repository\\**",
-    "Webware\\**\\QueryHandler\\**",
-    "Webware\\**\\CommandHandler\\**",
-    "Webware\\**\\Console\\**",
-    "WebwareTest\\**",
-    "WebwareTestIntegration\\**",
-    "Webware\\**\\Validator\\**",
+    "*Test\\**",
+    "*TestIntegration\\**",
 ]
 
 # Validators are attached to input filters.
@@ -350,13 +348,10 @@ allow-from = [
 dependency = "PhpDb\\Validator\\**"
 allow-from = [
     "PhpDb\\**",
-    "Webware\\**\\InputFilter\\**",
-    "Webware\\**\\Validator\\**",
-    "WebwareTest\\**",
-    "WebwareTestIntegration\\**",
-    "App\\**\\InputFilter\\**",
-    "AppTest\\**",
-    "AppTestIntegration\\**",
+    "**\\InputFilter\\**",
+    "**\\Validator\\**",
+    "*Test\\**",
+    "*TestIntegration\\**",
 ]
 
 # Symfony Console is the CLI surface. Commands and their support classes live under `Console\`, so the
@@ -366,13 +361,9 @@ allow-from = [
 [[guard.perimeter.restrictions]]
 dependency = "Symfony\\Component\\Console\\**"
 allow-from = [
-    "Webware\\**\\Console\\**",
-    "App\\**\\Console\\**",
-    "PhpDb\\**\\Console\\**",
-    "WebwareTest\\**",
-    "WebwareTestIntegration\\**",
-    "AppTest\\**",
-    "AppTestIntegration\\**",
+    "**\\Console\\**",
+    "*Test\\**",
+    "*TestIntegration\\**",
 ]
 
 # Request handlers are render-only. Data collection and mutation happen in PSR middleware, which composes
@@ -382,13 +373,13 @@ allow-from = [
 # which is where a handler's factory resolves the bus today; the factory comes off the bus with its handler.
 [[guard.perimeter.restrictions]]
 dependency = "Webware\\MessageBus\\{MessageBusInterface,MessageBus}"
-deny-from = ["{App,Webware}\\**\\Http\\**\\RequestHandler\\**"]
+deny-from = ["**\\Http\\**\\RequestHandler\\**"]
 
 # Repositories stay bus-agnostic: they persist rows and never speak the bus's message contracts. A write is
 # reached by dispatching a command from a command handler, not by handing a command object to a repository.
 [[guard.perimeter.restrictions]]
 dependency = "Webware\\MessageBus\\**"
-deny-from = ["{App,Webware}\\**\\Repository\\**"]
+deny-from = ["**\\Repository\\**"]
 
 # The two components are mutually independent: webware-acl must not depend on webware-usermanager, which
 # would be a circular dependency between the authorization layer and a consumer of it.

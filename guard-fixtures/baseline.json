@@ -1,0 +1,269 @@
+{
+    "description": "Verdicts recorded from the unmodified, enumerated guard configuration. check.php asserts these against expectBefore.",
+    "mago": "mago 1.59.0",
+    "command": "mago guard guard-fixtures/cases --reporting-format=json",
+    "config": "mago.toml before the root-agnostic transformation",
+    "verdicts": {
+        "guard-fixtures/cases/bus-middleware/app-must-implement.php": [
+            "must-implement"
+        ],
+        "guard-fixtures/cases/bus-middleware/webware-must-implement.php": [
+            "must-implement"
+        ],
+        "guard-fixtures/cases/command-handler/app-must-implement.php": [
+            "must-implement"
+        ],
+        "guard-fixtures/cases/command-handler/webware-must-implement.php": [
+            "must-implement"
+        ],
+        "guard-fixtures/cases/command/app-must-be-final.php": [
+            "must-be-final"
+        ],
+        "guard-fixtures/cases/command/app-must-be-named.php": [
+            "must-be-named"
+        ],
+        "guard-fixtures/cases/command/app-must-implement.php": [
+            "must-implement"
+        ],
+        "guard-fixtures/cases/command/webware-must-implement.php": [
+            "must-implement"
+        ],
+        "guard-fixtures/cases/console-command/app-must-be-final.php": [
+            "must-be-final"
+        ],
+        "guard-fixtures/cases/console-command/app-must-be-named.php": [
+            "must-be-named"
+        ],
+        "guard-fixtures/cases/console-command/app-must-use-attribute.php": [
+            "must-use-attribute"
+        ],
+        "guard-fixtures/cases/console-command/webware-must-use-attribute.php": [
+            "must-use-attribute"
+        ],
+        "guard-fixtures/cases/event/app-must-be-named.php": [
+            "must-be-named"
+        ],
+        "guard-fixtures/cases/event/webware-must-be-named.php": [
+            "must-be-named"
+        ],
+        "guard-fixtures/cases/http-middleware/acme-clean.php": [
+            "disallowed-implements",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/http-middleware/app-must-be-named.php": [
+            "must-be-named"
+        ],
+        "guard-fixtures/cases/http-middleware/app-must-implement.php": [
+            "must-implement"
+        ],
+        "guard-fixtures/cases/http-middleware/webware-must-implement.php": [
+            "must-implement"
+        ],
+        "guard-fixtures/cases/http-request-handler/app-must-implement.php": [
+            "must-implement"
+        ],
+        "guard-fixtures/cases/http-request-handler/webware-must-implement.php": [
+            "must-implement"
+        ],
+        "guard-fixtures/cases/interface-name/app-match.php": [
+            "must-be-named"
+        ],
+        "guard-fixtures/cases/interface-name/webware-match.php": [
+            "must-be-named"
+        ],
+        "guard-fixtures/cases/listener/app-must-be-named.php": [
+            "must-be-named"
+        ],
+        "guard-fixtures/cases/listener/webware-must-be-named.php": [
+            "must-be-named"
+        ],
+        "guard-fixtures/cases/messagebus-handler/acme-handler-denied.php": [
+            "disallowed-implements",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/messagebus-handler/app-handler-denied.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/messagebus-handler/webware-handler-denied.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/messagebus-repository/app-repository-denied.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/messagebus-repository/webware-repository-denied.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/phpdb-validator/acme-inputfilter-permitted.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/phpdb-validator/acme-service-denied.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/phpdb-validator/app-service-denied.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/phpdb-validator/my-test-app-trap.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/phpdb-validator/phpiidoctest-permitted.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/phpdb/acme-entity-permitted.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/phpdb/acme-repository-permitted.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/phpdb/acme-service-denied.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/phpdb/app-service-denied.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/phpdb/app-validator-permitted.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/phpdb/my-test-app-trap.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/phpdb/phpdbtest-permitted.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/phpdb/phpiidoctest-permitted.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/phpdb/phpiidoctestintegration-permitted.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/phpdb/webware-service-denied.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/psr15/acme-http-permitted.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/psr15/acme-nonhttp-denied.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/psr15/app-nonhttp-denied.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/psr15/my-test-app-trap.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/psr15/phpdbtest-permitted.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/psr15/phpiidoctest-permitted.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/psr15/phpiidoctestintegration-permitted.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/psr15/zero-segment-http-permitted.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/query-handler/app-must-implement.php": [
+            "must-implement"
+        ],
+        "guard-fixtures/cases/query-handler/webware-must-implement.php": [
+            "must-implement"
+        ],
+        "guard-fixtures/cases/query/app-must-be-final.php": [
+            "must-be-final"
+        ],
+        "guard-fixtures/cases/query/app-must-implement.php": [
+            "must-implement"
+        ],
+        "guard-fixtures/cases/query/webware-must-implement.php": [
+            "must-implement"
+        ],
+        "guard-fixtures/cases/repeat-segment/app-match.php": [
+            "must-be"
+        ],
+        "guard-fixtures/cases/repeat-segment/webware-match.php": [
+            "must-be"
+        ],
+        "guard-fixtures/cases/repeat-segment/webwaretest-match.php": [
+            "must-be"
+        ],
+        "guard-fixtures/cases/repository/acme-repository-permitted.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/repository/app-migration-denied.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/repository/app-service-denied.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/repository/cross-root-permitted.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/repository/phpiidoctest-permitted.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/repository/webware-service-denied.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/symfony-console/acme-console-permitted.php": [
+            "disallowed-attribute",
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/symfony-console/acme-service-denied.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/symfony-console/app-service-denied.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/symfony-console/my-test-app-trap.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/symfony-console/phpiidoctest-permitted.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ],
+        "guard-fixtures/cases/trait-name/app-match.php": [
+            "must-be-named"
+        ],
+        "guard-fixtures/cases/usermanager/acl-denied.php": [
+            "disallowed-parameter-type",
+            "disallowed-use"
+        ]
+    }
+}

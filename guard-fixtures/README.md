@@ -95,6 +95,25 @@ edited by hand, deliberately, never by a script.
 - **A fixture under an excluded path reports `No files found`.** `check.php` treats that as a hard
   failure rather than an empty corpus, because an empty corpus would otherwise pass.
 
+## The test-root shape residual
+
+Test roots are recognised by shape, not by an exact list: `*Test\**` and `*TestIntegration\**`. The
+first matches any root whose first segment ends in `Test`, so the set is not exact and the residual is
+accepted rather than closed. Recorded here so the shape rule is never read as an exact set.
+
+Measured, not inferred:
+
+- `MyTest\Service` importing `PhpDb\Adapter\Adapter` is clean. `MyTest` ends in `Test`, so it is
+  treated as a test root and permitted.
+- `MyTestApp\Unit\Trap` importing the same dependency is denied. `MyTestApp` does not end in `Test`,
+  so it is not a test root.
+
+A single `*Test*\**` form was rejected for this reason: it matches any root whose segment merely
+contains the substring, which permits a production root such as `MyTestApp\`. The split form narrows
+that to a suffix and stops there. A production package whose root genuinely ends in `Test` would be
+treated as a test root; that is the accepted residual, and it is not a reason to add a root to the
+config.
+
 ## What the transformation changed, as recorded
 
 157 cases, 83 clean, 74 flagged, and 40 verdicts differ from the recorded baseline. The full list is

@@ -1,0 +1,38 @@
+# ---------------------------------------------------------------------------
+# Webware tooling local development environment
+#
+# A persistent, interactive environment that runs the Webware toolchain for
+# this repository inside a container, so the host never needs a native install.
+# This repository ships configuration, not PHP, so the toolchain is Mago and
+# PHP alone.
+#
+# Usage:
+#
+#   docker compose up -d                 # start the persistent container
+#   docker compose exec tooling bash     # attach an interactive shell
+#   docker compose exec tooling mago --version
+#   docker compose exec tooling php guard-fixtures/check.php
+#   docker compose down                  # stop it
+#
+# The Mago version is not pinned here or in the Dockerfile. The image reads the
+# single pin from `version =` in this repository's own `mago.toml`, so the tool
+# inside the container always matches the version the config enforces.
+# ---------------------------------------------------------------------------
+
+services:
+  tooling:
+    build:
+      context: .
+      args:
+        # PHP version to base the image on. Keep in sync with the `php-version`
+        # value in mago.toml.
+        PHP_VERSION: "8.5.12"
+    # Keep the container alive so `docker compose exec` can attach to it.
+    command: sleep infinity
+    stdin_open: true
+    tty: true
+    volumes:
+      # Bind-mount the source so edits are visible on both the host and the
+      # container.
+      - .:/app
+    working_dir: /app

@@ -8,9 +8,34 @@ Boundary guard rules are enforced from the moment they land in the centre. A con
 response is to make the package compliant, never to disable, weaken, or copy a central rule into
 the consumer file.
 
-The rules address the package and the application it serves through the same `{App,Webware}` roots,
-so application code is held to the same conventions as a package's. Extending the centre is the
+The rules name no host root. A boundary is described by shape (`**\Http\**\Middleware\*`), so a
+package, an application and a third-party consumer are all held to the same conventions, and no
+repository adds its own namespace to the centre in order to be covered. Extending the centre is the
 opt-in: a repository built on webware-tools takes the rules, component or app.
+
+What stays literal is a package name, never a host root: `not-on` entries, `Webware\*`,
+`Webware\Core\**` and the other single-package permits exempt one package from one rule. Those lists
+do not grow because a consumer's root is unlisted, and adding a root is never the fix for a finding.
+
+## The fixture corpus pins the rules
+
+`guard-fixtures/` in `webware/webware-tools` is the proof that a rule change does not silently stop
+enforcing. It is a cross-root matrix: the same boundary is exercised from `App\`, from `Webware\`,
+from the fleet test roots the old enumeration missed (`PhpDbTest\`, `PhpiidocTest\`,
+`PhpiidocTestIntegration\`) and from a root that does not exist in the fleet (`Acme\`). Every
+structural rule has a matching case and a non-matching case, and every perimeter restriction has a
+permitted source and a denied source, so a clean result cannot be mistaken for "the rule never
+matched".
+
+`manifest.json` records the expected verdict per file, `baseline.json` records what the
+pre-root-agnostic configuration actually produced, and `check.php` asserts all three: the observed
+verdicts equal the manifest's `expectAfter`, the baseline equals its `expectBefore`, and no fixture is
+missing from the manifest. Run it from the tooling container:
+
+    docker compose exec -T tooling php guard-fixtures/check.php
+
+A rule that stops matching fails the check by case name with the verdict that changed, which is the
+difference between "the gate is green" and "no boundary was lost".
 
 ## When this applies
 
@@ -63,10 +88,11 @@ The centre's only PSR-14 rules are the two naming rules in Principle V:
 | `Event\` | `*Event` |
 | `Listener\` | `*Listener` |
 
-Both carry the `{App,Webware}` root, so they bind application code exactly as they bind a package:
-an application's `App\Event\SendWelcomeEvent` and `App\Listener\…` are held to the same convention,
+Both are root-agnostic (`**\Event\*`, `**\Listener\*`), so they bind application code exactly as
+they bind a package: an application's `App\Event\SendWelcomeEvent` and a third-party
+`Acme\Event\SendWelcomeEvent` are held to the same convention,
 whether the repository is a component or an app built on webware-tools. A consumer that extends the
-centre has opted in by doing so - there is no consumer-side disable and no App carve-out.
+centre has opted in by doing so - there is no consumer-side disable and no root carve-out.
 
 They are deliberately narrow. Nothing is enforced about behaviour: a listener may implement
 `Webware\Event\ListenerInterface` directly, extend a package base class, or be registered by its own
@@ -75,7 +101,7 @@ event library, so the mechanism can be adopted incrementally and a package is ne
 particular dispatch style. The rules exist so the event graph is readable, not so the mechanism is
 uniform - narrow scope means the rules are applied everywhere, not that the convention is optional.
 
-Three consequences of the patterns, all verified against the pinned mago 1.51.0:
+Three consequences of the patterns, all verified against mago 1.51.0:
 
 - `target = "class"` scopes both rules to classes. `EventInterface` and `ListenerInterface` are
   never reported, so the contract packages stay out of scope even where they occupy a matching
@@ -122,7 +148,8 @@ Three things go wrong in this order. Plan for all of them before the first commi
    under the boundary is the wrong fix. Leave the class where it belongs and move the class-strings
    into a holder the boundary owns - the `Webware\Log\Http\PipelineIdentifiers` pattern.
 
-## Rule semantics (verified against the pinned mago 1.51.0)
+## Rule semantics (verified against mago 1.51.0; the `**` and root-agnostic forms re-confirmed on
+the pinned 1.59.0)
 
 - **Matching is on the declared namespace, never the directory path.** A file under `src/Command/`
   whose namespace is `Webware\Thing\Domain\Command` matches `Webware\**\Domain\Command\*`. Matching
@@ -133,23 +160,26 @@ Three things go wrong in this order. Plan for all of them before the first commi
   does not match `Webware\Mailer\CommandHandler\SendEmailHandler`. An earlier revision of this file
   claimed `**` was one-or-more, which would leave a top-level `App\Command\X` or
   `Webware\Command\X` unreachable by an `**` rule and silently enforce nothing there.
-- **`on` accepts brace alternation.** `on = "{App,Webware}\**\Command\*"` is one rule covering
-  both roots, and it composes with `not-on`: a `Webware\MessageBus\Command\*` fixture stayed
-  excluded while the `App\` fixtures were reported. Prefer it over duplicating a rule per root.
+- **`on` accepts brace alternation.** `on = "{Webware\MessageBus,Webware\Event}\**"` is one rule
+  covering both package subtrees, and it composes with `not-on`: a `Webware\MessageBus\Command\*`
+  fixture stayed excluded while the `App\` fixtures were reported. Use it for a package pair, never
+  to enumerate host roots - a leading `**` already covers every root.
 - **Layer aliases are perimeter-only.** `@layer:<name>` from `[guard.perimeter.layers]` is
   referenced only by `permit` in `[[guard.perimeter.rules]]`. A layer reference in a structural
   `on` is accepted by the configuration and then matches nothing, with no error. A rule that
   enforces nothing is worse than a missing rule, so never write one.
 - `Webware\*` matches exactly a two-segment root namespace (`Webware\Acl`), which is the composition
-  root, and does not open up `Webware\Acl\Anything\Else`.
+  root, and does not open up `Webware\Acl\Anything\Else`. It is the one permit with no root-agnostic
+  equivalent: a one-segment composition root cannot be expressed, because `**` admits everything
+  beneath it and `*\*` admits every first-level namespace.
 - `allow-from` matches the source **namespace** and prefix-matches sub-namespaces. Use the
-  namespace form (`Webware\**\Http\**`), not a vendor-wide wildcard (`*\Http\**`), which does not
-  match.
+  root-agnostic namespace form (`**\Http\**`), not a single-star prefix (`*\Http\**`), which reaches
+  one leading segment and misses both a nested namespace and a zero-segment one.
 - `not-on` removes a namespace subtree from a rule's scope. It is load-bearing wherever a rule
   pattern would otherwise capture the contract package it is named after. For example,
   `Webware\**\Command\*` also matches `Webware\MessageBus\Command\CommandInterface`.
 - **A rule pattern matches a package whose root namespace collides with the namespace segment it
-  looks for.** `{App,Webware}\**\Event\*` matches every class directly in `Webware\Event`, because
+  looks for.** `**\Event\*` matches every class directly in `Webware\Event`, because
   that is a real namespace and `**` matches zero segments - so the contract package's own
   `ConfigProvider` was reported the first time the Event rule ran against webware-event, while the
   committed rules reported nothing. The fix belongs in the `not-on`, not in the package's class
@@ -164,20 +194,21 @@ Three things go wrong in this order. Plan for all of them before the first commi
 - **`allow-from` entries select source namespaces, not symbols.** An exact symbol entry
   (`App\ConfigProvider`) is accepted and then permits nothing, so it can never be used to carve out a
   false positive. This also makes a one-segment root behave differently from a two-segment root,
-  verified against the pinned mago 1.51.0: `Webware\*` matches the namespace `Webware\Acl` alone, so
+  verified against mago 1.51.0: `Webware\*` matches the namespace `Webware\Acl` alone, so
   `Webware\Acl\Http\RequestHandler\X` is still flagged, while `App\*` matches every first-level
   namespace under `App` (`App\Repository`, `App\RequestHandler`, `App\Middleware`) and therefore
   permits the whole application. Bare `App` and `App\` are broader still, permitting everything
-  beneath the root. There is no narrow App composition-root selector, so the App mirror omits it.
-  Never use `App\*` in an `allow-from` list; it silently disarms the restriction the list exists to
-  enforce.
+  beneath the root. There is no narrow one-segment composition-root selector, which is why the
+  centre keeps `Webware\*` literal and does not attempt a root-agnostic equivalent.
+  Never use `*\*` or a bare `*` in an `allow-from` list; it silently disarms the restriction the list
+  exists to enforce.
 - **An empty `allow-from` restricts nothing; a non-matching one bans everything.** Omitting the key
   and writing `allow-from = []` are the same: no restriction at all, so an "empty list, to be filled
   in later" silently enforces nothing. A list whose every entry fails to match (a placeholder
   namespace, say) is the opposite extreme - it excludes every source, which is how a total ban has
   to be expressed. Verified by probing `Psr\Http\Server\**` on 1.48.1 - 13 findings
-  and 3 `disallowed-use` under a non-matching list, none under an empty one; re-confirmed on the
-  pinned 1.51.0, where an empty `allow-from` flags nothing and a non-matching one flags the
+  and 3 `disallowed-use` under a non-matching list, none under an empty one; re-confirmed on
+  1.51.0, where an empty `allow-from` flags nothing and a non-matching one flags the
   dependency. When a restriction is
   meant to ban a dependency outright, say so in the comment above it, because the TOML on its own
   does not read like a ban.

@@ -96,6 +96,7 @@ switch-continue-to-break = { enabled = true }
 invalid-open-tag = { level = "Help" }
 
 [analyzer]
+minimum-fail-level = "Help"
 excludes = ["test", "bench"]
 plugins = ["psl", "psr-container"]
 find-unused-definitions = true

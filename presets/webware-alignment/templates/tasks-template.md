@@ -36,8 +36,8 @@ and are not a package parameter.
   (`extends = "vendor/webware/webware-tools/mago.toml"`, `php-version = "8.4.1"`, linter/analyzer
   baseline paths, source paths `["src", "test"]`); remove the legacy `mago.json`. The file stays the
   stub: no general settings and no general guard rules, since the centre owns them
-- [ ] T008a Create `mago.bat` at the repository root by copying the preset's
-  `artifacts/mago.bat` verbatim. It is a tracked file, not a local one, and it must be committed
+- [ ] T008a Create `bin/mago.bat` by copying the preset's
+  `artifacts/bin/mago.bat` verbatim. It is a tracked file, not a local one, and it must be committed
   with no executable bit. Without it Infection cannot run Mago on Windows: it prefixes
   `PHP_BINARY` to the static analysis executable and PHP then reports a parse error inside the
   Rust binary. Harmless everywhere else, because `ExecutableFinder` skips non-executable files
@@ -67,7 +67,7 @@ and are not a package parameter.
 - [ ] T017 Create `.gitignore` by copying the preset's `artifacts/gitignore.txt`
   verbatim, replacing the existing file. It carries the tool caches and the
   `.specify/` and `/specs/` scaffolding. It deliberately does not ignore
-  `/mago.bat`: that file is tracked, because Infection needs it on Windows (see
+  `/bin/mago.bat`: that file is tracked, because Infection needs it on Windows (see
   webinertia/webware-tools issue 59)
 
 ## Phase 6: README badges
@@ -107,8 +107,8 @@ and are not a package parameter.
 - [ ] T024 Run full local check: `mago format --check && mago lint && mago analyze && mago
   guard`, `composer test`, `composer test-coverage`, `composer test-integration`,
   `composer mutation-test`, and `composer test-all`
-- [ ] T025 Verify the ignore/track boundary: `git check-ignore mago.bat` reports nothing and
-  `git ls-files --error-unmatch mago.bat` succeeds, so the Windows shim is tracked;
+- [ ] T025 Verify the ignore/track boundary: `git check-ignore bin/mago.bat` reports nothing and
+  `git ls-files --error-unmatch bin/mago.bat` succeeds, so the Windows shim is tracked;
   `git ls-files .specify` and `git ls-files .github/skills` both list files, so the spec-kit
   scaffolding and installed presets are tracked rather than ignored
 - [ ] T026 Push branch, open PR, confirm all CI jobs green (mago, test matrix, codecov,

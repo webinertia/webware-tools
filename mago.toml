@@ -289,7 +289,7 @@ not-on = "{*Test,*TestAsset,*TestIntegration}\\**"
 target = "class"
 must-be-named = "*Middleware"
 must-implement = "Webware\\MessageBus\\MiddlewareInterface"
-reason = "Bus middleware lives in a Middleware\\ bucket and implements the bus MiddlewareInterface."
+reason = "Bus middleware lives in MessageBus\\Middleware and implements the bus MiddlewareInterface."
 
 # The outbound half of the five bus rules above. A structural rule only sees classes inside its own bucket, so
 # a class outside Command\, CommandHandler\, Query\, QueryHandler or a Middleware\ bucket that implements the

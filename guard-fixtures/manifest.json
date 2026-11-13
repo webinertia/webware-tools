@@ -84,7 +84,7 @@
       "subjectBefore": "{App,Webware}\\**\\MessageBus\\Middleware\\*",
       "subjectAfter": "**\\MessageBus\\Middleware\\*",
       "notOn": "{*Test,*TestAsset,*TestIntegration}\\**",
-      "note": "The bus middleware rule matches **\\MessageBus\\Middleware\\* and requires the bus MiddlewareInterface. Test roots are exempt: a PHPUnit class named *Test cannot also be named *Middleware."
+      "note": "Bus middleware lives in MessageBus\\Middleware and implements the bus MiddlewareInterface. Test roots are exempt: a PHPUnit class named *Test cannot also be named *Middleware."
     },
     "console-command": {
       "kind": "structural",

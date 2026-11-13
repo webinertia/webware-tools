@@ -116,13 +116,16 @@ config.
 
 ## What the transformation changed, as recorded
 
-157 cases, 83 clean, 74 flagged, and 40 verdicts differ from the recorded baseline. The full list is
+168 cases, 87 clean, 81 flagged, and 47 verdicts differ from the recorded baseline. The full list is
 the `check.php` change report; the shape of it is:
 
-- **18 structural gains.** Enforcement that did not exist now fires, on roots the enumeration never
+- **25 structural gains.** Enforcement that did not exist now fires, on roots the enumeration never
   named (`Acme\`, `Phpiidoc\`), on real fleet test roots (`PhpDbTest\`, `PhpiidocTest\`,
   `PhpiidocTestIntegration\`), at a namespace depth the enumerated form could not reach, and on
-  zero-segment namespaces (`Http\...`). No fleet-root case lost a finding.
+  zero-segment namespaces (`Http\...`). No fleet-root case lost a finding. Seven of the 25 belong to
+  the exception pair, which is new outright rather than widened: two naming findings and five
+  placement findings, the placements spread across a package root, a nested namespace, a plural
+  near-miss and the `App\`, `Webware\` and `Acme\` roots.
 - **2 gains of perimeter enforcement.** `repository/acme-service-denied` and
   `messagebus-repository/acme-repository-denied` were clean because no rule covered a third-party
   root. A host application had no persistence boundary over its own repositories.
@@ -133,7 +136,7 @@ the `check.php` change report; the shape of it is:
 - **1 reclassification.** `messagebus-handler/acme-handler-denied` is still denied, but by the bus
   `deny-from` rather than by the PSR-15 perimeter that used to deny its namespace outright.
 
-Two of the 40 are intended widenings rather than pure gains, and both are named here so they are not
+Two of the 47 are intended widenings rather than pure gains, and both are named here so they are not
 mistaken for a loss:
 
 - `repository/cross-root-permitted`. The two root-specific restrictions were ANDed, so a

@@ -1,8 +1,8 @@
 {
-    "description": "Verdicts recorded from the unmodified, enumerated guard configuration. check.php asserts these against expectBefore.",
+    "description": "Verdicts recorded from the guard configuration that predates each transformation recorded here. check.php asserts these against expectBefore.",
     "mago": "mago 1.59.0",
     "command": "mago guard guard-fixtures/cases --reporting-format=json",
-    "config": "mago.toml before the root-agnostic transformation",
+    "config": "mago.toml before the root-agnostic transformation, except the cases added with the test-root exemption, which were recorded against the root-agnostic mago.toml before not-on gained the test-root shapes",
     "verdicts": {
         "guard-fixtures/cases/bus-middleware/app-must-implement.php": [
             "must-implement"
@@ -10,11 +10,17 @@
         "guard-fixtures/cases/bus-middleware/webware-must-implement.php": [
             "must-implement"
         ],
+        "guard-fixtures/cases/bus-middleware/webwaretest-clean.php": [
+            "must-be-named"
+        ],
         "guard-fixtures/cases/command-handler/app-must-implement.php": [
             "must-implement"
         ],
         "guard-fixtures/cases/command-handler/webware-must-implement.php": [
             "must-implement"
+        ],
+        "guard-fixtures/cases/command-handler/webwaretestintegration-clean.php": [
+            "must-be-named"
         ],
         "guard-fixtures/cases/command/app-must-be-final.php": [
             "must-be-final"
@@ -25,8 +31,17 @@
         "guard-fixtures/cases/command/app-must-implement.php": [
             "must-implement"
         ],
+        "guard-fixtures/cases/command/my-test-app-trap.php": [
+            "must-be-named"
+        ],
+        "guard-fixtures/cases/command/nested-test-segment-must-be-named.php": [
+            "must-be-named"
+        ],
         "guard-fixtures/cases/command/webware-must-implement.php": [
             "must-implement"
+        ],
+        "guard-fixtures/cases/command/webwaretest-clean.php": [
+            "must-be-named"
         ],
         "guard-fixtures/cases/console-command/app-must-be-final.php": [
             "must-be-final"
@@ -40,10 +55,44 @@
         "guard-fixtures/cases/console-command/webware-must-use-attribute.php": [
             "must-use-attribute"
         ],
+        "guard-fixtures/cases/console-command/webwaretestasset-clean.php": [
+            "must-be-named",
+            "must-use-attribute"
+        ],
         "guard-fixtures/cases/event/app-must-be-named.php": [
             "must-be-named"
         ],
         "guard-fixtures/cases/event/webware-must-be-named.php": [
+            "must-be-named"
+        ],
+        "guard-fixtures/cases/event/webwaretest-clean.php": [
+            "must-be-named"
+        ],
+        "guard-fixtures/cases/event/webwaretestasset-consumer-shape-clean.php": [
+            "must-be-named"
+        ],
+        "guard-fixtures/cases/exception/my-test-app-trap.php": [
+            "must-be-named"
+        ],
+        "guard-fixtures/cases/exception/nested-test-segment-must-be-named.php": [
+            "must-be-named"
+        ],
+        "guard-fixtures/cases/exception/webwaretest-clean.php": [
+            "must-be-named"
+        ],
+        "guard-fixtures/cases/exception/webwaretest-messagebus-consumer-shape-clean.php": [
+            "must-be-named"
+        ],
+        "guard-fixtures/cases/exception/webwaretest-outside-clean.php": [
+            "must-be"
+        ],
+        "guard-fixtures/cases/exception/webwaretest-unsuffixed-clean.php": [
+            "must-be-named"
+        ],
+        "guard-fixtures/cases/exception/webwaretestasset-clean.php": [
+            "must-be-named"
+        ],
+        "guard-fixtures/cases/exception/webwaretestintegration-clean.php": [
             "must-be-named"
         ],
         "guard-fixtures/cases/http-middleware/acme-clean.php": [
@@ -75,6 +124,9 @@
             "must-be-named"
         ],
         "guard-fixtures/cases/listener/webware-must-be-named.php": [
+            "must-be-named"
+        ],
+        "guard-fixtures/cases/listener/webwaretestintegration-clean.php": [
             "must-be-named"
         ],
         "guard-fixtures/cases/messagebus-handler/acme-handler-denied.php": [
@@ -192,6 +244,9 @@
         "guard-fixtures/cases/query-handler/app-must-implement.php": [
             "must-implement"
         ],
+        "guard-fixtures/cases/query-handler/apptest-clean.php": [
+            "must-be-named"
+        ],
         "guard-fixtures/cases/query-handler/webware-must-implement.php": [
             "must-implement"
         ],
@@ -203,6 +258,9 @@
         ],
         "guard-fixtures/cases/query/webware-must-implement.php": [
             "must-implement"
+        ],
+        "guard-fixtures/cases/query/webwaretestasset-clean.php": [
+            "must-be-named"
         ],
         "guard-fixtures/cases/repeat-segment/app-match.php": [
             "must-be"

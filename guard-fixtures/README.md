@@ -153,6 +153,38 @@ segment. They carry the same shapes now, and the boundary is measured the same w
 Those trap cases are what keeps the exemption from swallowing a real violation, and they are the
 reason the three-way suffix form is used instead of a single `*Test*\**`.
 
+## The bus interface placement perimeter
+
+The five bus structural rules are inbound only. A rule matches classes already inside its bucket, so
+a class outside `Command\`, `CommandHandler\`, `Query\`, `QueryHandler\` or `MessageBus\Middleware\`
+that implements the matching interface was never examined, and the omission was silent rather than
+reported. Measured against the preset as shipped by the previous change:
+
+- `Webware\UserManager\Handler\CreateUserHandler implements Webware\MessageBus\CommandHandlerInterface`
+  was clean. The command handler rule lives on `**\CommandHandler\*`, which never reached a class in
+  a `Handler\` bucket.
+- `Webware\Core\Middleware\FooMiddleware implements Webware\MessageBus\MiddlewareInterface` was clean,
+  and the name satisfied nothing: the middleware rule only examines classes already inside
+  `MessageBus\Middleware\`.
+
+Each of the five interfaces now carries a perimeter restriction whose `allow-from` is the bucket that
+already owns the matching structural rule, the bus package itself, and the three test-root shapes.
+The perimeter is the outbound half of the same boundary: it fires wherever the class lives, and the
+structural rule keeps firing inside the bucket. PSR-15 has worked this way since the perimeter rules
+landed, so the bus side is now consistent with it rather than a new mechanism.
+
+Measured after the change:
+
+- `App\Fixtures\Command\CreateUserCommand` is clean, and the same class one namespace away in
+  `App\Fixtures\Service\` is flagged with `disallowed-use` and `disallowed-implements`.
+- `App\Fixtures\CommandHandler\CreateUserHandler`, `App\Fixtures\Query\FetchUserQuery`,
+  `App\Fixtures\QueryHandler\FetchUserHandler` and
+  `App\Fixtures\MessageBus\Middleware\LogRequestMiddleware` behave the same way, each with its own
+  in-bucket case and its own denied pair.
+- `AppTest\Fixtures\Service\CreateUserHandlerTest` and its four siblings are clean. They sit outside
+  every bucket, so `*Test\**` is the only clause that can permit them, which is why each interface
+  has its own test-root case instead of one shared case.
+
 ## The interface and trait rules stay unexempted
 
 The `target = "interface"` and `target = "trait"` rules use `on = "**"`, so a test root can match
@@ -209,3 +241,11 @@ With the Http exemption cases added as well, the corpus is 193 cases, 104 clean,
 verdicts differ from the recorded baseline. The 2 further differing verdicts are
 `http-middleware/webwaretest-clean` and `http-request-handler/webwaretest-clean`; the 4 new trap
 cases do not differ, which proves the Http exemption left both production clauses intact.
+
+With the bus interface placement cases added, the corpus is 208 cases, 114 clean, 94 flagged, and 69
+verdicts differ from the recorded baseline. The 5 further differing verdicts are the five
+`*-placement/app-denied` traps, each going from clean to `disallowed-implements` and `disallowed-use`.
+The 10 clean cases, one in-bucket and one test-root case per interface, do not differ, which is what
+proves the five restrictions fire outside the intended homes and nowhere else. All fifteen cases were
+clean before the change, so `baseline.json` gained no verdict entry; its `config` field grew one
+clause naming the generation they were recorded against.

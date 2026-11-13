@@ -291,6 +291,62 @@ must-be-named = "*Middleware"
 must-implement = "Webware\\MessageBus\\MiddlewareInterface"
 reason = "Bus middleware lives in MessageBus\\Middleware and implements the bus MiddlewareInterface."
 
+# The outbound half of the five bus rules above. A structural rule only sees classes inside its own bucket, so
+# a class outside Command\, CommandHandler\, Query\, QueryHandler or MessageBus\Middleware that implements the
+# matching interface was never examined: the rule that would have objected lives on the bucket the class is
+# not in. These restrictions close that. Each names one of the five interfaces and permits the bucket that
+# already owns the matching structural rule, the bus package itself and the test roots. Everything else that
+# implements the interface now fails, wherever it lives.
+[[guard.perimeter.restrictions]]
+dependency = "Webware\\MessageBus\\Command\\NamedCommandInterface"
+allow-from = [
+    "**\\Command\\**",
+    "Webware\\MessageBus\\**",
+    "*Test\\**",
+    "*TestIntegration\\**",
+    "*TestAsset\\**",
+]
+
+[[guard.perimeter.restrictions]]
+dependency = "Webware\\MessageBus\\CommandHandlerInterface"
+allow-from = [
+    "**\\CommandHandler\\**",
+    "Webware\\MessageBus\\**",
+    "*Test\\**",
+    "*TestIntegration\\**",
+    "*TestAsset\\**",
+]
+
+[[guard.perimeter.restrictions]]
+dependency = "Webware\\MessageBus\\Query\\QueryInterface"
+allow-from = [
+    "**\\Query\\**",
+    "Webware\\MessageBus\\**",
+    "*Test\\**",
+    "*TestIntegration\\**",
+    "*TestAsset\\**",
+]
+
+[[guard.perimeter.restrictions]]
+dependency = "Webware\\MessageBus\\QueryHandlerInterface"
+allow-from = [
+    "**\\QueryHandler\\**",
+    "Webware\\MessageBus\\**",
+    "*Test\\**",
+    "*TestIntegration\\**",
+    "*TestAsset\\**",
+]
+
+[[guard.perimeter.restrictions]]
+dependency = "Webware\\MessageBus\\MiddlewareInterface"
+allow-from = [
+    "**\\MessageBus\\Middleware\\**",
+    "Webware\\MessageBus\\**",
+    "*Test\\**",
+    "*TestIntegration\\**",
+    "*TestAsset\\**",
+]
+
 # Console
 # `Console\` is Symfony's CLI surface and `Command\` is the bus's; guard matches namespaces only, so each needs
 # its own rule. Direct children only: a command's factory nests in `Console\Container\`. `not-on` excludes

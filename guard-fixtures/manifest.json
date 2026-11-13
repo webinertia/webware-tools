@@ -9,7 +9,8 @@
     "must-implement": "The class does not implement the required interface.",
     "must-use-attribute": "The class does not carry the required attribute.",
     "disallowed-use": "A use statement names a dependency the perimeter restriction denies.",
-    "disallowed-parameter-type": "A parameter type names a dependency the perimeter restriction denies."
+    "disallowed-parameter-type": "A parameter type names a dependency the perimeter restriction denies.",
+    "disallowed-implements": "The class implements an interface the perimeter restriction denies."
   },
   "rules": {
     "interface-name": {
@@ -161,6 +162,41 @@
       "denyFromBefore": "Webware\\Acl\\**",
       "denyFromAfter": "Webware\\Acl\\**",
       "note": "webware-acl must not depend on webware-usermanager. Package names, not host roots, so unchanged."
+    },
+    "command-placement": {
+      "kind": "perimeter",
+      "dependency": "Webware\\MessageBus\\Command\\NamedCommandInterface",
+      "subjectBefore": "no rule",
+      "subjectAfter": "allow-from **\\Command\\**, Webware\\MessageBus\\**, *Test\\**, *TestIntegration\\**, *TestAsset\\**",
+      "note": "The outbound half of the command structural rule: NamedCommandInterface is reachable from a Command\\ bucket, the bus package and the test roots, and from nowhere else. Before, a class outside Command\\ could implement it freely."
+    },
+    "command-handler-placement": {
+      "kind": "perimeter",
+      "dependency": "Webware\\MessageBus\\CommandHandlerInterface",
+      "subjectBefore": "no rule",
+      "subjectAfter": "allow-from **\\CommandHandler\\**, Webware\\MessageBus\\**, *Test\\**, *TestIntegration\\**, *TestAsset\\**",
+      "note": "The outbound half of the command handler structural rule. A handler outside CommandHandler\\ was readable as a service; the perimeter is what stops it."
+    },
+    "query-placement": {
+      "kind": "perimeter",
+      "dependency": "Webware\\MessageBus\\Query\\QueryInterface",
+      "subjectBefore": "no rule",
+      "subjectAfter": "allow-from **\\Query\\**, Webware\\MessageBus\\**, *Test\\**, *TestIntegration\\**, *TestAsset\\**",
+      "note": "The outbound half of the query structural rule."
+    },
+    "query-handler-placement": {
+      "kind": "perimeter",
+      "dependency": "Webware\\MessageBus\\QueryHandlerInterface",
+      "subjectBefore": "no rule",
+      "subjectAfter": "allow-from **\\QueryHandler\\**, Webware\\MessageBus\\**, *Test\\**, *TestIntegration\\**, *TestAsset\\**",
+      "note": "The outbound half of the query handler structural rule."
+    },
+    "bus-middleware-placement": {
+      "kind": "perimeter",
+      "dependency": "Webware\\MessageBus\\MiddlewareInterface",
+      "subjectBefore": "no rule",
+      "subjectAfter": "allow-from **\\MessageBus\\Middleware\\**, Webware\\MessageBus\\**, *Test\\**, *TestIntegration\\**, *TestAsset\\**",
+      "note": "The outbound half of the bus middleware structural rule. A class named *Middleware outside MessageBus\\Middleware was the measured hole: the structural rule was satisfied or not depending on placement alone."
     }
   },
   "cases": [
@@ -356,6 +392,21 @@
     {"id":"exception/webwaretestasset-clean","file":"guard-fixtures/cases/exception/webwaretestasset-clean.php","namespace":"WebwareTestAsset\\MessageBus\\Exception","rule":"exception","root":"WebwareTestAsset","expectBefore":["must-be-named"],"expectAfter":[],"note":"Consumer shape under the WebwareTestAsset root, which needs the *TestAsset shape."},
     {"id":"exception/webwaretest-messagebus-consumer-shape-clean","file":"guard-fixtures/cases/exception/webwaretest-messagebus-consumer-shape-clean.php","namespace":"WebwareTest\\MessageBus\\Exception","rule":"exception","root":"WebwareTest","expectBefore":["must-be-named"],"expectAfter":[],"note":"Consumer shape: an exact stand-in for WebwareTest\\MessageBus\\Exception\\MessageExceptionTest, the class reported on webinertia/message-bus."},
     {"id":"exception/my-test-app-trap","file":"guard-fixtures/cases/exception/my-test-app-trap.php","namespace":"MyTestApp\\Unit\\Exception","rule":"exception","root":"MyTestApp","expectBefore":["must-be-named"],"expectAfter":["must-be-named"],"note":"Trap: *Test* would exempt MyTestApp and this case fails, which is why the exemption uses suffix shapes rather than the substring form."},
-    {"id":"exception/nested-test-segment-must-be-named","file":"guard-fixtures/cases/exception/nested-test-segment-must-be-named.php","namespace":"Acme\\Blog\\Test\\Exception","rule":"exception","root":"Acme","expectBefore":["must-be-named"],"expectAfter":["must-be-named"],"note":"Trap: a Test segment nested under a production root is not a test root."}
+    {"id":"exception/nested-test-segment-must-be-named","file":"guard-fixtures/cases/exception/nested-test-segment-must-be-named.php","namespace":"Acme\\Blog\\Test\\Exception","rule":"exception","root":"Acme","expectBefore":["must-be-named"],"expectAfter":["must-be-named"],"note":"Trap: a Test segment nested under a production root is not a test root."},
+    {"id":"command-placement/app-clean","file":"guard-fixtures/cases/command-placement/app-clean.php","namespace":"App\\Fixtures\\Command","rule":"command-placement","root":"App","expectBefore":[],"expectAfter":[],"note":"In-bucket command; the perimeter permits **\\Command\\** and the structural rule is satisfied at the same time."},
+    {"id":"command-placement/app-denied","file":"guard-fixtures/cases/command-placement/app-denied.php","namespace":"App\\Fixtures\\Service","rule":"command-placement","root":"App","expectBefore":[],"expectAfter":["disallowed-implements","disallowed-use"],"note":"Trap, and the measured hole: a NamedCommandInterface implementation outside Command\\ was silent before, because the structural rule only sees classes inside the bucket."},
+    {"id":"command-placement/apptest-permitted","file":"guard-fixtures/cases/command-placement/apptest-permitted.php","namespace":"AppTest\\Fixtures\\Service","rule":"command-placement","root":"AppTest","expectBefore":[],"expectAfter":[],"note":"Test root: outside every bucket, so *Test\\** is the only clause that permits it."},
+    {"id":"command-handler-placement/app-clean","file":"guard-fixtures/cases/command-handler-placement/app-clean.php","namespace":"App\\Fixtures\\CommandHandler","rule":"command-handler-placement","root":"App","expectBefore":[],"expectAfter":[],"note":"In-bucket command handler; permitted by **\\CommandHandler\\**."},
+    {"id":"command-handler-placement/app-denied","file":"guard-fixtures/cases/command-handler-placement/app-denied.php","namespace":"App\\Fixtures\\Service","rule":"command-handler-placement","root":"App","expectBefore":[],"expectAfter":["disallowed-implements","disallowed-use"],"note":"Trap, and the measured consumer shape: Webware\\UserManager\\Handler\\CreateUserHandler implementing CommandHandlerInterface was silent before."},
+    {"id":"command-handler-placement/apptest-permitted","file":"guard-fixtures/cases/command-handler-placement/apptest-permitted.php","namespace":"AppTest\\Fixtures\\Service","rule":"command-handler-placement","root":"AppTest","expectBefore":[],"expectAfter":[],"note":"Test root: a handler double outside CommandHandler\\ is clean by the *Test\\** permit alone."},
+    {"id":"query-placement/app-clean","file":"guard-fixtures/cases/query-placement/app-clean.php","namespace":"App\\Fixtures\\Query","rule":"query-placement","root":"App","expectBefore":[],"expectAfter":[],"note":"In-bucket query; permitted by **\\Query\\**."},
+    {"id":"query-placement/app-denied","file":"guard-fixtures/cases/query-placement/app-denied.php","namespace":"App\\Fixtures\\Service","rule":"query-placement","root":"App","expectBefore":[],"expectAfter":["disallowed-implements","disallowed-use"],"note":"Trap: a QueryInterface implementation outside Query\\ was silent before."},
+    {"id":"query-placement/apptest-permitted","file":"guard-fixtures/cases/query-placement/apptest-permitted.php","namespace":"AppTest\\Fixtures\\Service","rule":"query-placement","root":"AppTest","expectBefore":[],"expectAfter":[],"note":"Test root: a message double outside Query\\ is clean by the *Test\\** permit alone."},
+    {"id":"query-handler-placement/app-clean","file":"guard-fixtures/cases/query-handler-placement/app-clean.php","namespace":"App\\Fixtures\\QueryHandler","rule":"query-handler-placement","root":"App","expectBefore":[],"expectAfter":[],"note":"In-bucket query handler; permitted by **\\QueryHandler\\**."},
+    {"id":"query-handler-placement/app-denied","file":"guard-fixtures/cases/query-handler-placement/app-denied.php","namespace":"App\\Fixtures\\Service","rule":"query-handler-placement","root":"App","expectBefore":[],"expectAfter":["disallowed-implements","disallowed-use"],"note":"Trap: a QueryHandlerInterface implementation outside QueryHandler\\ was silent before."},
+    {"id":"query-handler-placement/apptest-permitted","file":"guard-fixtures/cases/query-handler-placement/apptest-permitted.php","namespace":"AppTest\\Fixtures\\Service","rule":"query-handler-placement","root":"AppTest","expectBefore":[],"expectAfter":[],"note":"Test root: a handler double outside QueryHandler\\ is clean by the *Test\\** permit alone."},
+    {"id":"bus-middleware-placement/app-clean","file":"guard-fixtures/cases/bus-middleware-placement/app-clean.php","namespace":"App\\Fixtures\\MessageBus\\Middleware","rule":"bus-middleware-placement","root":"App","expectBefore":[],"expectAfter":[],"note":"In-bucket bus middleware; permitted by **\\MessageBus\\Middleware\\**."},
+    {"id":"bus-middleware-placement/app-denied","file":"guard-fixtures/cases/bus-middleware-placement/app-denied.php","namespace":"App\\Fixtures\\Service","rule":"bus-middleware-placement","root":"App","expectBefore":[],"expectAfter":["disallowed-implements","disallowed-use"],"note":"Trap, and the measured consumer shape: a misnamed class in Webware\\Core\\Middleware implementing MiddlewareInterface was silent before because it is not in MessageBus\\Middleware."},
+    {"id":"bus-middleware-placement/apptest-permitted","file":"guard-fixtures/cases/bus-middleware-placement/apptest-permitted.php","namespace":"AppTest\\Fixtures\\Service","rule":"bus-middleware-placement","root":"AppTest","expectBefore":[],"expectAfter":[],"note":"Test root: bus middleware double outside MessageBus\\Middleware, clean by the *Test\\** permit alone."}
   ]
 }

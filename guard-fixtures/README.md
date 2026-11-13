@@ -37,7 +37,7 @@ docker compose exec -T tooling php guard-fixtures/check.php
 ```
 
 `check.php` runs `mago guard guard-fixtures/cases --reporting-format=json` and compares the result
-against the manifest. A comparison run asserts three things:
+against the manifest. A comparison run asserts four things:
 
 1. The observed verdicts equal `expectAfter` for every case. This is the shipped configuration's
    contract.
@@ -45,9 +45,17 @@ against the manifest. A comparison run asserts three things:
    unmodified, enumerated configuration, so a later edit cannot quietly rewrite history to match a
    regression.
 3. No fixture file is missing from the manifest and no manifest case is missing a file.
+4. Every guard block in `mago.toml` is exercised by at least one fixture. The rule list is read from
+   the preset at check time, so a rule added without a fixture fails the check instead of passing
+   unobserved. See "Every rule must have a fixture" below.
 
 It also prints every verdict that changed against the baseline, with the case's note, so the diff is
-reviewable rather than inferred. Exit code 1 means a case changed or a fixture is unaccounted for.
+reviewable rather than inferred. Exit code 1 means a case changed, a fixture is unaccounted for, or a
+guard block has no fixture.
+
+`--coverage` prints the per-block report the fourth assertion is built from: how many fixtures reach
+each structural selector, and how many references each perimeter restriction permits, denies and
+refuses by omission.
 
 To re-record the baseline against a configuration you are deliberately testing:
 
@@ -71,6 +79,52 @@ edited by hand, deliberately, never by a script.
 5. If the verdict differs from `expectAfter`, decide which is wrong: the fixture or the prediction.
    Fix the fixture when the intent was right, correct the prediction only when it misread which rule
    fires.
+
+A new rule in `mago.toml` is not finished until a case exercises it. `check.php` fails and names the
+selector otherwise.
+
+## Every rule must have a fixture
+
+`check.php` reads every `[[guard.structural.rules]]` and `[[guard.perimeter.restrictions]]` block out
+of `mago.toml` and fails when one has no fixture exercising it:
+
+```
+FAIL no fixture exercises the structural rule on = "**\Telemetry\*"
+FAIL no fixture references the perimeter dependency "Webware\Telemetry\**"
+```
+
+The block list is derived from the preset, never from a list kept here. A hand-maintained list of
+covered rules has the same failure mode as the missing fixture, because the edit that adds a rule is
+the same edit that forgets the list. The reader is a small TOML subset on purpose, and the count of
+block headers in the file is compared with the count it understood, so a block written in syntax the
+reader cannot read fails rather than disappearing from the census.
+
+Two signals are used, one per block kind.
+
+- **Structural rules.** A fixture proves the rule when its declared symbol name, the
+  `namespace\Name` of the class, interface, trait or enum in the file, matches `on` and does not match
+  `not-on`. When `target` is set only a declaration of that kind counts, so the two `on = "**"` naming
+  rules are proven by an interface fixture and a trait fixture rather than by any class. This proves
+  the rule reaches real input. It does not prove each clause of the block separately: a
+  `must-implement` and a `must-be-final` in the same rule are not distinguished, and whole-clause
+  coverage remains the corpus's job, which the paired case per clause in `manifest.json` is.
+- **Perimeter restrictions.** A fixture proves the restriction when one of its references matches
+  `dependency` and its own namespace is then classified by the block. A reference is a `use` import or
+  a name declared in `implements` or `extends`, which is what a perimeter restriction resolves from at
+  run time. `deny-from` needs a reference it denies, because a deny that never fires is the outcome
+  that goes unnoticed. `allow-from` needs two: a reference it permits, and one it refuses by omission.
+  A list that permits everything it is shown cannot be told apart from no list at all, which is why
+  the refused direction is required rather than optional.
+
+Selectors are matched with `*` as one segment that may be empty and `**` as zero or more segments,
+where `**` owns the separators around it so that `**\Http\**\Middleware\*` accepts
+`App\Http\Middleware\Foo` with the middle `**` matching nothing. Without that, the Http structural
+rules report no matching fixture at all and the coverage check would blame the corpus for a reader
+bug.
+
+No block in the preset is unprovable this way. All 15 structural and 18 perimeter blocks report at
+least one proving fixture, and `--coverage` prints the counts per block so the claim is checkable
+rather than asserted.
 
 ## Design rules, learned the hard way
 
@@ -315,3 +369,13 @@ new traps were clean against the recorded configuration, so `baseline.json` gain
 for them, and its `config` field grew one clause naming that generation. The 114 clean cases do not
 differ, which is what keeps the deny from reaching a bare `Middleware\` bucket or a test root that is
 not below `Http\`.
+
+With the bus middleware test double case added, the corpus is 215 cases, 114 clean, 101 flagged, and
+76 verdicts differ from the recorded baseline. The single further difference is
+`bus-middleware-placement/apptest-http-nested-trap`, clean before and flagged with
+`disallowed-implements` and `disallowed-use` after: `deny-from` is applied regardless of a matching
+`allow-from`, so `*Test\**` does not rescue a bus test double parked below `Http\`. That is the
+ruling rather than a side effect, because a bus double belongs in a bus bucket, and the case is where
+a reversal of the ruling would show. It was clean against the recorded configuration, so
+`baseline.json` gained no verdict entry for it and its `config` field is unchanged: the clause that
+names the pre-deny recording already covers the generation this case was recorded against.

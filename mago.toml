@@ -207,8 +207,15 @@ must-be = []
 reason = "A namespace segment must not repeat its parent segment."
 
 # Http
+# `on` is `**\Http\**` rather than `{App,Webware}\**\Http\**`, so a test root is matched by the same
+# prefix as a production root: `WebwareTest\Core\Http\Middleware\` sits under `**\Http\**\Middleware\`
+# exactly as `Webware\Core\Http\Middleware\` does. A test class must be named `*Test`, so the two naming
+# rules would flag every correctly named middleware and request handler test. Test roots are therefore
+# exempt with the same shapes the other structural rules use, anchored at the first namespace segment:
+# a later `Test` segment such as `Acme\Blog\Test\Http\Middleware\` is still enforced.
 [[guard.structural.rules]]
 on = "**\\Http\\**\\Middleware\\*"
+not-on = "{*Test,*TestAsset,*TestIntegration}\\**"
 target = "class"
 must-be-named = "*Middleware"
 must-implement = "Psr\\Http\\Server\\MiddlewareInterface"
@@ -216,6 +223,7 @@ reason = "Http middleware lives in Http\\Middleware and implements PSR-15 Middle
 
 [[guard.structural.rules]]
 on = "**\\Http\\**\\RequestHandler\\*"
+not-on = "{*Test,*TestAsset,*TestIntegration}\\**"
 target = "class"
 must-be-named = "*Handler"
 must-implement = "Psr\\Http\\Server\\RequestHandlerInterface"

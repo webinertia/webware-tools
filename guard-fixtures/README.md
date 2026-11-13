@@ -136,8 +136,31 @@ Measured, not inferred:
 - `Acme\Blog\Test\Command\SomethingTest` is still flagged. The exemption is anchored at the first
   segment, so a `Test` segment nested under a production root is not a test root.
 
-Those last two are the traps: they keep the exemption from swallowing a real violation, and they are
-the reason the three-way suffix form is used instead of a single `*Test*\**`.
+The two Http rules were missed when that exemption landed. Their `on` is `**\Http\**` rather than a
+root enumeration, so `WebwareTest\Core\Http\Middleware\` is reached by the same prefix as
+`Webware\Core\Http\Middleware\`, and both rules flagged every correctly named test class under that
+segment. They carry the same shapes now, and the boundary is measured the same way:
+
+- `WebwareTest\Core\Http\Middleware\AttachCoreServicesMiddlewareTest` is clean. This is the class
+  reported on webinertia/webware-core.
+- `WebwareTest\Acl\Http\Admin\RequestHandler\LoginHandlerTest` is clean. This is the shape reported on
+  webinertia/webware-acl.
+- `Acme\Blog\Http\Middleware\Handler` and `Acme\Blog\Http\RequestHandler\Dispatcher` are still flagged
+  with `must-be-named`. A production root in the matched namespace keeps both clauses.
+- `Acme\Blog\Test\Http\Middleware\Handler` and `Acme\Blog\Test\Http\RequestHandler\Dispatcher` are
+  still flagged. The first-segment anchoring holds for the Http prefix too.
+
+Those trap cases are what keeps the exemption from swallowing a real violation, and they are the
+reason the three-way suffix form is used instead of a single `*Test*\**`.
+
+## The interface and trait rules stay unexempted
+
+The `target = "interface"` and `target = "trait"` rules use `on = "**"`, so a test root can match
+them. They are deliberately left without `not-on`. A census of the sibling webinertia checkouts found
+every interface and trait declaration on a test path already named `*Interface` or `*Trait`, so no
+false positive exists to exempt. Those rules also cannot match a PHPUnit test class, because the
+target is the interface or trait keyword. Adding a `not-on` here would instead exempt on-the-fly test
+doubles and widen the rule without evidence.
 
 ## What the transformation changed, as recorded
 
@@ -181,3 +204,8 @@ That section describes the root-agnostic transformation alone. With the test-roo
 added, the corpus is 187 cases, 102 clean, 85 flagged, and 62 verdicts differ from the recorded
 baseline. The 15 extra differing verdicts are the test-root cases above; the 4 trap cases do not
 differ, which is what proves the exemption did not widen any production rule.
+
+With the Http exemption cases added as well, the corpus is 193 cases, 104 clean, 89 flagged, and 64
+verdicts differ from the recorded baseline. The 2 further differing verdicts are
+`http-middleware/webwaretest-clean` and `http-request-handler/webwaretest-clean`; the 4 new trap
+cases do not differ, which proves the Http exemption left both production clauses intact.

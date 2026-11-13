@@ -84,7 +84,7 @@
       "subjectBefore": "{App,Webware}\\**\\MessageBus\\Middleware\\*",
       "subjectAfter": "**\\MessageBus\\Middleware\\*",
       "notOn": "{*Test,*TestAsset,*TestIntegration}\\**",
-      "note": "Bus middleware lives in MessageBus\\Middleware and implements the bus MiddlewareInterface. Test roots are exempt: a PHPUnit class named *Test cannot also be named *Middleware."
+      "note": "The bus middleware rule matches **\\MessageBus\\Middleware\\* and requires the bus MiddlewareInterface. Test roots are exempt: a PHPUnit class named *Test cannot also be named *Middleware."
     },
     "console-command": {
       "kind": "structural",
@@ -195,8 +195,8 @@
       "kind": "perimeter",
       "dependency": "Webware\\MessageBus\\MiddlewareInterface",
       "subjectBefore": "no rule",
-      "subjectAfter": "allow-from **\\MessageBus\\Middleware\\**, Webware\\MessageBus\\**, *Test\\**, *TestIntegration\\**, *TestAsset\\**",
-      "note": "The outbound half of the bus middleware structural rule. A class named *Middleware outside MessageBus\\Middleware was the measured hole: the structural rule was satisfied or not depending on placement alone."
+      "subjectAfter": "allow-from **\\Middleware\\**, Webware\\MessageBus\\**, *Test\\**, *TestIntegration\\**, *TestAsset\\**",
+      "note": "The outbound half of the bus middleware structural rule. The bus home is a Middleware\\ bucket at any depth, so a class outside one was the measured hole: the structural rule was satisfied or not depending on placement alone. An Http\\Middleware\\ bucket is not a bus home; the Http structural rule keeps requiring PSR-15 there."
     }
   },
   "cases": [
@@ -405,8 +405,9 @@
     {"id":"query-handler-placement/app-clean","file":"guard-fixtures/cases/query-handler-placement/app-clean.php","namespace":"App\\Fixtures\\QueryHandler","rule":"query-handler-placement","root":"App","expectBefore":[],"expectAfter":[],"note":"In-bucket query handler; permitted by **\\QueryHandler\\**."},
     {"id":"query-handler-placement/app-denied","file":"guard-fixtures/cases/query-handler-placement/app-denied.php","namespace":"App\\Fixtures\\Service","rule":"query-handler-placement","root":"App","expectBefore":[],"expectAfter":["disallowed-implements","disallowed-use"],"note":"Trap: a QueryHandlerInterface implementation outside QueryHandler\\ was silent before."},
     {"id":"query-handler-placement/apptest-permitted","file":"guard-fixtures/cases/query-handler-placement/apptest-permitted.php","namespace":"AppTest\\Fixtures\\Service","rule":"query-handler-placement","root":"AppTest","expectBefore":[],"expectAfter":[],"note":"Test root: a handler double outside QueryHandler\\ is clean by the *Test\\** permit alone."},
-    {"id":"bus-middleware-placement/app-clean","file":"guard-fixtures/cases/bus-middleware-placement/app-clean.php","namespace":"App\\Fixtures\\MessageBus\\Middleware","rule":"bus-middleware-placement","root":"App","expectBefore":[],"expectAfter":[],"note":"In-bucket bus middleware; permitted by **\\MessageBus\\Middleware\\**."},
-    {"id":"bus-middleware-placement/app-denied","file":"guard-fixtures/cases/bus-middleware-placement/app-denied.php","namespace":"App\\Fixtures\\Service","rule":"bus-middleware-placement","root":"App","expectBefore":[],"expectAfter":["disallowed-implements","disallowed-use"],"note":"Trap, and the measured consumer shape: a misnamed class in Webware\\Core\\Middleware implementing MiddlewareInterface was silent before because it is not in MessageBus\\Middleware."},
-    {"id":"bus-middleware-placement/apptest-permitted","file":"guard-fixtures/cases/bus-middleware-placement/apptest-permitted.php","namespace":"AppTest\\Fixtures\\Service","rule":"bus-middleware-placement","root":"AppTest","expectBefore":[],"expectAfter":[],"note":"Test root: bus middleware double outside MessageBus\\Middleware, clean by the *Test\\** permit alone."}
+    {"id":"bus-middleware-placement/app-clean","file":"guard-fixtures/cases/bus-middleware-placement/app-clean.php","namespace":"App\\Fixtures\\Middleware","rule":"bus-middleware-placement","root":"App","expectBefore":[],"expectAfter":[],"note":"In-bucket bus middleware under a bare Middleware\\ bucket, which the perimeter permits at any depth without a MessageBus segment."},
+    {"id":"bus-middleware-placement/app-denied","file":"guard-fixtures/cases/bus-middleware-placement/app-denied.php","namespace":"App\\Fixtures\\Service","rule":"bus-middleware-placement","root":"App","expectBefore":[],"expectAfter":["disallowed-implements","disallowed-use"],"note":"Trap: a bus middleware outside any Middleware\\ bucket was silent before, because the structural rule only examines classes in MessageBus\\Middleware and no perimeter named the interface."},
+    {"id":"bus-middleware-placement/http-bucket-trap","file":"guard-fixtures/cases/bus-middleware-placement/http-bucket-trap.php","namespace":"App\\Fixtures\\Http\\Middleware","rule":"bus-middleware-placement","root":"App","expectBefore":["must-implement"],"expectAfter":["must-implement"],"note":"The other direction: an Http\\Middleware\\ bucket is not a bus home, so the Http structural rule still requires PSR-15 MiddlewareInterface. The perimeter permits the bus interface here, which is why the finding is the Http rule's and not a disallowed-use."},
+    {"id":"bus-middleware-placement/apptest-permitted","file":"guard-fixtures/cases/bus-middleware-placement/apptest-permitted.php","namespace":"AppTest\\Fixtures\\Service","rule":"bus-middleware-placement","root":"AppTest","expectBefore":[],"expectAfter":[],"note":"Test root: bus middleware double outside any Middleware\\ bucket, clean by the *Test\\** permit alone."}
   ]
 }

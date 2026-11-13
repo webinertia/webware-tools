@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Fixtures\MessageBus\Middleware;
+namespace App\Fixtures\Middleware;
 
 use Webware\MessageBus\MiddlewareInterface;
 final class LogRequestMiddleware implements MiddlewareInterface

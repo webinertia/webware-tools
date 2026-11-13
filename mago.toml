@@ -289,14 +289,15 @@ not-on = "{*Test,*TestAsset,*TestIntegration}\\**"
 target = "class"
 must-be-named = "*Middleware"
 must-implement = "Webware\\MessageBus\\MiddlewareInterface"
-reason = "Bus middleware lives in MessageBus\\Middleware and implements the bus MiddlewareInterface."
+reason = "Bus middleware lives in a Middleware\\ bucket and implements the bus MiddlewareInterface."
 
 # The outbound half of the five bus rules above. A structural rule only sees classes inside its own bucket, so
-# a class outside Command\, CommandHandler\, Query\, QueryHandler or MessageBus\Middleware that implements the
+# a class outside Command\, CommandHandler\, Query\, QueryHandler or a Middleware\ bucket that implements the
 # matching interface was never examined: the rule that would have objected lives on the bucket the class is
 # not in. These restrictions close that. Each names one of the five interfaces and permits the bucket that
 # already owns the matching structural rule, the bus package itself and the test roots. Everything else that
-# implements the interface now fails, wherever it lives.
+# implements the interface now fails, wherever it lives. `Middleware\` is the bus home at any depth; an
+# `Http\Middleware\` bucket is not a bus home, and the Http structural rule still requires PSR-15 there.
 [[guard.perimeter.restrictions]]
 dependency = "Webware\\MessageBus\\Command\\NamedCommandInterface"
 allow-from = [
@@ -340,7 +341,7 @@ allow-from = [
 [[guard.perimeter.restrictions]]
 dependency = "Webware\\MessageBus\\MiddlewareInterface"
 allow-from = [
-    "**\\MessageBus\\Middleware\\**",
+    "**\\Middleware\\**",
     "Webware\\MessageBus\\**",
     "*Test\\**",
     "*TestIntegration\\**",

@@ -156,31 +156,43 @@ reason the three-way suffix form is used instead of a single `*Test*\**`.
 ## The bus interface placement perimeter
 
 The five bus structural rules are inbound only. A rule matches classes already inside its bucket, so
-a class outside `Command\`, `CommandHandler\`, `Query\`, `QueryHandler\` or `MessageBus\Middleware\`
+a class outside `Command\`, `CommandHandler\`, `Query\`, `QueryHandler\` or any `Middleware\` bucket
 that implements the matching interface was never examined, and the omission was silent rather than
 reported. Measured against the preset as shipped by the previous change:
 
 - `Webware\UserManager\Handler\CreateUserHandler implements Webware\MessageBus\CommandHandlerInterface`
   was clean. The command handler rule lives on `**\CommandHandler\*`, which never reached a class in
   a `Handler\` bucket.
-- `Webware\Core\Middleware\FooMiddleware implements Webware\MessageBus\MiddlewareInterface` was clean,
-  and the name satisfied nothing: the middleware rule only examines classes already inside
-  `MessageBus\Middleware\`.
+- `Webware\UserManager\Handler\LogRequestMiddleware implements Webware\MessageBus\MiddlewareInterface`
+  was clean, in a handler bucket that is not a middleware bucket at all.
 
 Each of the five interfaces now carries a perimeter restriction whose `allow-from` is the bucket that
-already owns the matching structural rule, the bus package itself, and the three test-root shapes.
+already owns the matching structural rule, the bus package itself, and the three test-root shapes. For
+the four message roles the bucket is named explicitly. For the bus middleware it is `**\Middleware\**`:
+a `Middleware\` bucket is the bus home at any depth, so both `Acme\Middleware\SomeBusMiddleware` and
+`Webware\Core\Middleware\SomeBusMiddleware` are permitted, and a `MessageBus` segment is not required.
 The perimeter is the outbound half of the same boundary: it fires wherever the class lives, and the
 structural rule keeps firing inside the bucket. PSR-15 has worked this way since the perimeter rules
 landed, so the bus side is now consistent with it rather than a new mechanism.
+
+The split runs in both directions, and both are pinned:
+
+- `App\Fixtures\Middleware\LogRequestMiddleware` is clean. It sits in a bare `Middleware\` bucket,
+  outside `MessageBus\Middleware\`, and the perimeter permits it there.
+- `App\Fixtures\Http\Middleware\LogRequestMiddleware` is flagged with `must-implement`, by the Http
+  structural rule and not by the perimeter. An `Http\Middleware\` bucket demands PSR-15
+  `MiddlewareInterface`, so bus middleware parked in one is still caught. The perimeter permits the
+  bus interface in that bucket, which is exactly why the finding comes from the Http rule.
+- `App\Fixtures\Service\LogRequestMiddleware` is flagged with `disallowed-use` and
+  `disallowed-implements`. It is outside every `Middleware\` bucket, and it was silent before.
 
 Measured after the change:
 
 - `App\Fixtures\Command\CreateUserCommand` is clean, and the same class one namespace away in
   `App\Fixtures\Service\` is flagged with `disallowed-use` and `disallowed-implements`.
-- `App\Fixtures\CommandHandler\CreateUserHandler`, `App\Fixtures\Query\FetchUserQuery`,
-  `App\Fixtures\QueryHandler\FetchUserHandler` and
-  `App\Fixtures\MessageBus\Middleware\LogRequestMiddleware` behave the same way, each with its own
-  in-bucket case and its own denied pair.
+- `App\Fixtures\CommandHandler\CreateUserHandler`, `App\Fixtures\Query\FetchUserQuery` and
+  `App\Fixtures\QueryHandler\FetchUserHandler` behave the same way, each with its own in-bucket case
+  and its own denied pair.
 - `AppTest\Fixtures\Service\CreateUserHandlerTest` and its four siblings are clean. They sit outside
   every bucket, so `*Test\**` is the only clause that can permit them, which is why each interface
   has its own test-root case instead of one shared case.
@@ -242,10 +254,13 @@ verdicts differ from the recorded baseline. The 2 further differing verdicts are
 `http-middleware/webwaretest-clean` and `http-request-handler/webwaretest-clean`; the 4 new trap
 cases do not differ, which proves the Http exemption left both production clauses intact.
 
-With the bus interface placement cases added, the corpus is 208 cases, 114 clean, 94 flagged, and 69
+With the bus interface placement cases added, the corpus is 209 cases, 114 clean, 95 flagged, and 69
 verdicts differ from the recorded baseline. The 5 further differing verdicts are the five
 `*-placement/app-denied` traps, each going from clean to `disallowed-implements` and `disallowed-use`.
 The 10 clean cases, one in-bucket and one test-root case per interface, do not differ, which is what
-proves the five restrictions fire outside the intended homes and nowhere else. All fifteen cases were
-clean before the change, so `baseline.json` gained no verdict entry; its `config` field grew one
-clause naming the generation they were recorded against.
+proves the five restrictions fire outside the intended homes and nowhere else. The middleware group
+carries a fourth case, the Http bucket trap, whose `must-implement` verdict is unchanged by the
+perimeter: an `Http\Middleware\` bucket is not a bus home, so the Http structural rule keeps doing the
+objecting there. Fifteen of the sixteen placement cases were clean before the change, so
+`baseline.json` gained one verdict entry, for that trap, and its `config` field grew one clause naming
+the generation they were recorded against.

@@ -348,6 +348,33 @@ allow-from = [
     "*TestAsset\\**",
 ]
 
+# The deny half, closing the nested-bucket case. The allow-from globs above match their bucket at any depth,
+# so `App\Http\Middleware\Deep\BusMiddleware` was permitted by `**\Middleware\**` while the Http structural
+# rule, which matches direct children only, never examined it: a bus middleware one level below an Http
+# bucket was unfenced. The same holds for a command, handler or query nested below `Http\`, and for a
+# command or handler under `Repository\`. Nothing below `Http\` is a bus home, and a repository persists
+# rows without speaking the bus's message contracts. Middleware carries no `Repository\` deny because the
+# `Webware\MessageBus\**` restriction at the foot of this file already denies every bus symbol there.
+[[guard.perimeter.restrictions]]
+dependency = "Webware\\MessageBus\\Command\\NamedCommandInterface"
+deny-from = ["**\\Http\\**", "**\\Repository\\**"]
+
+[[guard.perimeter.restrictions]]
+dependency = "Webware\\MessageBus\\CommandHandlerInterface"
+deny-from = ["**\\Http\\**", "**\\Repository\\**"]
+
+[[guard.perimeter.restrictions]]
+dependency = "Webware\\MessageBus\\Query\\QueryInterface"
+deny-from = ["**\\Http\\**", "**\\Repository\\**"]
+
+[[guard.perimeter.restrictions]]
+dependency = "Webware\\MessageBus\\QueryHandlerInterface"
+deny-from = ["**\\Http\\**", "**\\Repository\\**"]
+
+[[guard.perimeter.restrictions]]
+dependency = "Webware\\MessageBus\\MiddlewareInterface"
+deny-from = ["**\\Http\\**"]
+
 # Console
 # `Console\` is Symfony's CLI surface and `Command\` is the bus's; guard matches namespaces only, so each needs
 # its own rule. Direct children only: a command's factory nests in `Console\Container\`. `not-on` excludes

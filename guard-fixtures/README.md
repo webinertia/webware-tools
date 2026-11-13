@@ -205,6 +205,39 @@ Measured after the change:
   every bucket, so `*Test\**` is the only clause that can permit them, which is why each interface
   has its own test-root case instead of one shared case.
 
+## The nested-bucket case those allow-from globs left open
+
+An `allow-from` entry is a glob, and `**\Command\**` matches a `Command\` segment at any depth, not
+only the one the matching structural rule governs. The Http structural rules are the reverse: `on` is
+`**\Http\**\Middleware\*` and `**\Http\**\RequestHandler\*`, which match direct children only. The two
+shapes compose into a class that is permitted by the perimeter and examined by no structural rule:
+
+- `App\Fixtures\Http\Middleware\Deep\NestedMiddleware implements Webware\MessageBus\MiddlewareInterface`
+  was clean. It matched `**\Middleware\**`, and the Http rule does not reach a `Middleware\` segment
+  that sits one segment below the bucket the class is in.
+- `App\Fixtures\Http\Command\Deep\NestedCommand` and the handler, query and query handler equivalents
+  were clean for the same reason, each matching its own `**\Bucket\**` entry below an `Http\` segment.
+
+Five `deny-from` restrictions close it. Each names the same interface as its `allow-from` counterpart
+and denies `**\Http\**`; the four message roles also deny `**\Repository\**`, because a repository
+persists rows and never speaks the bus's message contracts. The middleware interface carries no
+`Repository\` deny: the `Webware\MessageBus\**` restriction at the foot of the preset already denies
+every bus symbol there, and a denial is not restated.
+
+Measured after the change:
+
+- `App\Fixtures\Http\Middleware\Deep\NestedMiddleware` is flagged with `disallowed-use` and
+  `disallowed-implements`, and so is each of the four message-role traps.
+- `App\Fixtures\Middleware\LogRequestMiddleware` is still clean. The pair is the point: a bare
+  `Middleware\` bucket passes, and the same interface one segment below `Http\` does not.
+- `App\Fixtures\Http\Middleware\LogRequestMiddleware` now reports `must-implement` from the Http
+  structural rule and the two perimeter codes together. The structural finding was already there; the
+  deny is additive rather than a replacement.
+- A bus middleware test double under `AppTest\Core\Http\Middleware\Deep\` is flagged. `deny-from` is
+  applied regardless of a matching `allow-from` entry, so the `*Test\**` permit does not rescue a
+  namespace that is also below `Http\`. Nothing below `Http\` is a bus home, including a test double
+  parked there. The census records no consumer that relies on the shape.
+
 ## The interface and trait rules stay unexempted
 
 The `target = "interface"` and `target = "trait"` rules use `on = "**"`, so a test root can match
@@ -272,3 +305,13 @@ perimeter: an `Http\Middleware\` bucket is not a bus home, so the Http structura
 objecting there. Fifteen of the sixteen placement cases were clean before the change, so
 `baseline.json` gained one verdict entry, for that trap, and its `config` field grew one clause naming
 the generation they were recorded against.
+
+With the nested-bucket deny cases added, the corpus is 214 cases, 114 clean, 100 flagged, and 75
+verdicts differ from the recorded baseline. The 5 further traps are clean before and report
+`disallowed-implements` with `disallowed-use` after. The sixth new difference is
+`bus-middleware-placement/http-bucket-trap`, which gains the two perimeter codes while keeping its
+`must-implement`: the deny adds a second objection rather than replacing the structural one. All five
+new traps were clean against the recorded configuration, so `baseline.json` gained no verdict entry
+for them, and its `config` field grew one clause naming that generation. The 114 clean cases do not
+differ, which is what keeps the deny from reaching a bare `Middleware\` bucket or a test root that is
+not below `Http\`.

@@ -83,9 +83,10 @@ local overrides is `vendor/webware/webware-tools/mago-guard-realignment.md`.
   listener's DI factory nests one level deeper, in `Listener\Container\`, the same way
   `Http\Middleware\Container\` holds middleware factories.
 - `MessageBus\` is reserved for the types that intersect the bus contract in order to support
-  consumers - `AuthorizableCommandInterface`, `CommandResult`, `CommandStatus`, and middleware
-  under `MessageBus\Middleware\`. It is not a namespace for ordinary message classes, and keeping
-  bus middleware there is what distinguishes it from PSR middleware under `Http\Middleware\`.
+  consumers - `AuthorizableCommandInterface`, `CommandResult`, `CommandStatus`, and bus middleware.
+  It is not a namespace for ordinary message classes. Bus middleware also lives in a plain
+  `Middleware\` bucket: the bus `MiddlewareInterface` it implements is what decides placement, and
+  an `Http\Middleware\` bucket is PSR-15's, not the bus's.
 
 ### VI. Cross-Platform Development Environment
 
@@ -119,7 +120,9 @@ the rule and its rationale cannot drift apart.
   handler) and tests. Implementations live under `Http\` and carry the
   `*Middleware` / `*Handler` names.
 - **Message bus.** Message classes conform by per-type sub-namespace (Principle V) rather than by
-  relocating into a `MessageBus\` bucket. Bus middleware stays under `MessageBus\Middleware\`.
+  relocating into a `MessageBus\` bucket. Bus middleware lives in a `Middleware\` bucket, plain or
+  nested, and is identified by the bus `MiddlewareInterface` rather than by a `MessageBus` segment;
+  an `Http\Middleware\` bucket belongs to PSR-15.
 - **Events.** PSR-14 events live in `Event\` and listeners in `Listener\` (Principle V). The rules
   bind `App\` as well as `Webware\` and there is no consumer-side opt-out: a consumer that extends
   `webware-tools` takes them for its own application code, which is the point of building on the

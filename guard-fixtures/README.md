@@ -175,6 +175,14 @@ The perimeter is the outbound half of the same boundary: it fires wherever the c
 structural rule keeps firing inside the bucket. PSR-15 has worked this way since the perimeter rules
 landed, so the bus side is now consistent with it rather than a new mechanism.
 
+One existing line moved with it: the bus middleware rule's `reason`, which is the note printed with
+every `must-implement` finding from that rule. It read "Bus middleware lives in MessageBus\Middleware
+and implements the bus MiddlewareInterface", which overstated the rule once the perimeter permitted a
+plain `Middleware\` bucket. It now states that classes in a `MessageBus\Middleware` bucket implement
+the bus interface and that bus middleware may also live in any `Middleware\` bucket, pointing at the
+restriction that permits it. No `on`, `not-on`, `must-be-named`, `must-implement` or `allow-from`
+line changed, so the set of classes each rule examines and the verdict each receives are untouched.
+
 The split runs in both directions, and both are pinned:
 
 - `App\Fixtures\Middleware\LogRequestMiddleware` is clean. It sits in a bare `Middleware\` bucket,

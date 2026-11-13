@@ -156,6 +156,28 @@ target = "trait"
 must-be-named = "*Trait"
 reason = "Traits must follow the *Trait naming convention."
 
+# Exceptions
+# An exception class is named `*Exception` and lives in an `Exception` namespace segment. The two rules
+# are a closed pair, so the two statements are equivalent: everything in `Exception\\` carries the suffix,
+# and no suffixed class exists anywhere else. `on` matches the fully qualified symbol name, so the second
+# rule's `not-on` is what keeps the `Exception\\` classes themselves from tripping it.
+#
+# `must-extend` is not used: it is a constraint applied to every matched symbol rather than a selector,
+# and it inspects the direct parent only, so `must-extend = "Exception"` fails a class extending
+# `RuntimeException`. The consequence is that a class extending an exception under some other name
+# outside `Exception\\` is not detectable here; that case is caught at review.
+[[guard.structural.rules]]
+on = "**\\Exception\\**\\*"
+target = "class"
+must-be-named = "*Exception"
+reason = "Exceptions live in an Exception namespace and are named *Exception."
+
+[[guard.structural.rules]]
+on = "**\\*Exception"
+not-on = "**\\Exception\\**\\*"
+must-be = []
+reason = "A class named *Exception lives in an Exception namespace."
+
 # A namespace segment never repeats its parent segment. The repeated segment shadows any class of the
 # same name in the parent namespace: `Webware\Acl\Acl` collided with the root `Webware\Acl\Acl` class
 # and forced `ConfigProvider` to use `Acl` as both a class alias and a namespace prefix.

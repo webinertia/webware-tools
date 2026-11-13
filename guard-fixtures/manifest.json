@@ -3,7 +3,7 @@
   "mago": "1.59.0",
   "command": "mago guard guard-fixtures/cases --reporting-format=json",
   "codes": {
-    "must-be": "A symbol exists in a namespace segment that repeats its parent segment.",
+    "must-be": "A symbol is barred from its namespace by a rule with must-be = []: a segment that repeats its parent, or a class named *Exception outside an Exception namespace.",
     "must-be-final": "The symbol is not final.",
     "must-be-named": "The symbol name does not match the rule's naming pattern.",
     "must-implement": "The class does not implement the required interface.",
@@ -23,6 +23,12 @@
       "subjectBefore": "{App,Webware}\\**",
       "subjectAfter": "**",
       "note": "Traits must follow the *Trait naming convention."
+    },
+    "exception": {
+      "kind": "structural",
+      "subjectBefore": "no rule",
+      "subjectAfter": "**\\Exception\\**\\*",
+      "note": "New rule, and one statement in two halves: every class under Exception\\ is named *Exception, and every class named *Exception lives under Exception\\. The second half is a **\\*Exception subject whose notOn is the Exception\\ pattern."
     },
     "repeat-segment": {
       "kind": "structural",
@@ -163,6 +169,14 @@
     {"id":"trait-name/app-match","file":"guard-fixtures/cases/trait-name/app-match.php","namespace":"App\\Fixtures\\TraitName","rule":"trait-name","root":"App","expectBefore":["must-be-named"],"expectAfter":["must-be-named"],"note":"Fleet root, enforced before and after."},
     {"id":"trait-name/app-clean","file":"guard-fixtures/cases/trait-name/app-clean.php","namespace":"App\\Fixtures\\TraitName","rule":"trait-name","root":"App","expectBefore":[],"expectAfter":[],"note":"Discriminator: one name away from app-match."},
     {"id":"trait-name/acme-match","file":"guard-fixtures/cases/trait-name/acme-match.php","namespace":"Acme\\Blog\\Fixtures\\TraitName","rule":"trait-name","root":"Acme","expectBefore":[],"expectAfter":["must-be-named"],"note":"Gain: an unnamed root now gets structural enforcement."},
+    {"id":"exception/app-clean","file":"guard-fixtures/cases/exception/app-clean.php","namespace":"App\\Fixtures\\Exception","rule":"exception","root":"App","expectBefore":[],"expectAfter":[],"note":"A *Exception inside Exception\\, extending RuntimeException. This is the case a must-extend rule would have failed wrongly."},
+    {"id":"exception/app-must-be-named","file":"guard-fixtures/cases/exception/app-must-be-named.php","namespace":"App\\Fixtures\\Exception","rule":"exception","root":"App","expectBefore":[],"expectAfter":["must-be-named"],"note":"Paired with app-clean: same namespace, suffix missing, so the fall of the naming half is attributable to the name alone."},
+    {"id":"exception/app-outside-must-be","file":"guard-fixtures/cases/exception/app-outside-must-be.php","namespace":"App\\Fixtures\\Service","rule":"exception","root":"App","expectBefore":[],"expectAfter":["must-be"],"note":"Paired with app-clean: the suffix without the namespace. Flagged by the placement half only."},
+    {"id":"exception/webware-clean","file":"guard-fixtures/cases/exception/webware-clean.php","namespace":"Webware\\Fixtures\\Exception","rule":"exception","root":"Webware","expectBefore":[],"expectAfter":[],"note":"Fleet package root, clean before and after."},
+    {"id":"exception/webware-must-be-named","file":"guard-fixtures/cases/exception/webware-must-be-named.php","namespace":"Webware\\Fixtures\\Exception","rule":"exception","root":"Webware","expectBefore":[],"expectAfter":["must-be-named"],"note":"Fleet package root, naming half."},
+    {"id":"exception/webware-outside-must-be","file":"guard-fixtures/cases/exception/webware-outside-must-be.php","namespace":"Webware\\Fixtures\\Service","rule":"exception","root":"Webware","expectBefore":[],"expectAfter":["must-be"],"note":"Fleet package root, placement half."},
+    {"id":"exception/acme-outside-must-be","file":"guard-fixtures/cases/exception/acme-outside-must-be.php","namespace":"Acme\\Blog\\Service","rule":"exception","root":"Acme","expectBefore":[],"expectAfter":["must-be"],"note":"A root the fleet does not have: the placement half names no root, so a third-party consumer is held to the same convention."},
+    {"id":"exception/zero-segment-clean","file":"guard-fixtures/cases/exception/zero-segment-clean.php","namespace":"Exception","rule":"exception","root":"Exception","expectBefore":[],"expectAfter":[],"note":"Zero-segment form: the leading ** matches nothing, so a package whose own root is Exception\\ is covered."},
     {"id":"repeat-segment/webware-match","file":"guard-fixtures/cases/repeat-segment/webware-match.php","namespace":"Webware\\Acl\\Acl\\Fixtures","rule":"repeat-segment","root":"Webware","expectBefore":["must-be"],"expectAfter":["must-be"],"note":"Repeated package segment directly under an enumerated root. Flagged before and after."},
     {"id":"repeat-segment/app-match","file":"guard-fixtures/cases/repeat-segment/app-match.php","namespace":"App\\Log\\Log\\Fixtures","rule":"repeat-segment","root":"App","expectBefore":["must-be"],"expectAfter":["must-be"],"note":"Same collision under the App root. Flagged before and after."},
     {"id":"repeat-segment/webwaretest-match","file":"guard-fixtures/cases/repeat-segment/webwaretest-match.php","namespace":"WebwareTest\\Message\\Message\\Fixtures","rule":"repeat-segment","root":"WebwareTest","expectBefore":["must-be"],"expectAfter":["must-be"],"note":"The enumerated test root keeps its repeat-segment enforcement through the split test-root form."},

@@ -289,7 +289,91 @@ not-on = "{*Test,*TestAsset,*TestIntegration}\\**"
 target = "class"
 must-be-named = "*Middleware"
 must-implement = "Webware\\MessageBus\\MiddlewareInterface"
-reason = "Bus middleware lives in MessageBus\\Middleware and implements the bus MiddlewareInterface."
+reason = "Classes in a MessageBus\\Middleware bucket implement the bus MiddlewareInterface. Bus middleware may also live in any Middleware\\ bucket; see the MessageBus\\MiddlewareInterface restriction below."
+
+# The outbound half of the five bus rules above. A structural rule only sees classes inside its own bucket, so
+# a class outside Command\, CommandHandler\, Query\, QueryHandler or a Middleware\ bucket that implements the
+# matching interface was never examined: the rule that would have objected lives on the bucket the class is
+# not in. These restrictions close that. Each names one of the five interfaces and permits the bucket that
+# already owns the matching structural rule, the bus package itself and the test roots. Everything else that
+# implements the interface now fails, wherever it lives. `Middleware\` is the bus home at any depth; an
+# `Http\Middleware\` bucket is not a bus home, and the Http structural rule still requires PSR-15 there.
+[[guard.perimeter.restrictions]]
+dependency = "Webware\\MessageBus\\Command\\NamedCommandInterface"
+allow-from = [
+    "**\\Command\\**",
+    "Webware\\MessageBus\\**",
+    "*Test\\**",
+    "*TestIntegration\\**",
+    "*TestAsset\\**",
+]
+
+[[guard.perimeter.restrictions]]
+dependency = "Webware\\MessageBus\\CommandHandlerInterface"
+allow-from = [
+    "**\\CommandHandler\\**",
+    "Webware\\MessageBus\\**",
+    "*Test\\**",
+    "*TestIntegration\\**",
+    "*TestAsset\\**",
+]
+
+[[guard.perimeter.restrictions]]
+dependency = "Webware\\MessageBus\\Query\\QueryInterface"
+allow-from = [
+    "**\\Query\\**",
+    "Webware\\MessageBus\\**",
+    "*Test\\**",
+    "*TestIntegration\\**",
+    "*TestAsset\\**",
+]
+
+[[guard.perimeter.restrictions]]
+dependency = "Webware\\MessageBus\\QueryHandlerInterface"
+allow-from = [
+    "**\\QueryHandler\\**",
+    "Webware\\MessageBus\\**",
+    "*Test\\**",
+    "*TestIntegration\\**",
+    "*TestAsset\\**",
+]
+
+[[guard.perimeter.restrictions]]
+dependency = "Webware\\MessageBus\\MiddlewareInterface"
+allow-from = [
+    "**\\Middleware\\**",
+    "Webware\\MessageBus\\**",
+    "*Test\\**",
+    "*TestIntegration\\**",
+    "*TestAsset\\**",
+]
+
+# The deny half, closing the nested-bucket case. The allow-from globs above match their bucket at any depth,
+# so `App\Http\Middleware\Deep\BusMiddleware` was permitted by `**\Middleware\**` while the Http structural
+# rule, which matches direct children only, never examined it: a bus middleware one level below an Http
+# bucket was unfenced. The same holds for a command, handler or query nested below `Http\`, and for a
+# command or handler under `Repository\`. Nothing below `Http\` is a bus home, and a repository persists
+# rows without speaking the bus's message contracts. Middleware carries no `Repository\` deny because the
+# `Webware\MessageBus\**` restriction at the foot of this file already denies every bus symbol there.
+[[guard.perimeter.restrictions]]
+dependency = "Webware\\MessageBus\\Command\\NamedCommandInterface"
+deny-from = ["**\\Http\\**", "**\\Repository\\**"]
+
+[[guard.perimeter.restrictions]]
+dependency = "Webware\\MessageBus\\CommandHandlerInterface"
+deny-from = ["**\\Http\\**", "**\\Repository\\**"]
+
+[[guard.perimeter.restrictions]]
+dependency = "Webware\\MessageBus\\Query\\QueryInterface"
+deny-from = ["**\\Http\\**", "**\\Repository\\**"]
+
+[[guard.perimeter.restrictions]]
+dependency = "Webware\\MessageBus\\QueryHandlerInterface"
+deny-from = ["**\\Http\\**", "**\\Repository\\**"]
+
+[[guard.perimeter.restrictions]]
+dependency = "Webware\\MessageBus\\MiddlewareInterface"
+deny-from = ["**\\Http\\**"]
 
 # Console
 # `Console\` is Symfony's CLI surface and `Command\` is the bus's; guard matches namespaces only, so each needs

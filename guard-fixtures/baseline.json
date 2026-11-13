@@ -2,7 +2,7 @@
     "description": "Verdicts recorded from the guard configuration that predates each transformation recorded here. check.php asserts these against expectBefore.",
     "mago": "mago 1.59.0",
     "command": "mago guard guard-fixtures/cases --reporting-format=json",
-    "config": "mago.toml before the root-agnostic transformation, except the cases added with the test-root exemption, which were recorded against the root-agnostic mago.toml before not-on gained the test-root shapes, and the cases added with the Http test-root exemption, which were recorded against the same mago.toml before the two Http rules gained not-on",
+    "config": "mago.toml before the root-agnostic transformation, except the cases added with the test-root exemption, which were recorded against the root-agnostic mago.toml before not-on gained the test-root shapes, and the cases added with the Http test-root exemption, which were recorded against the same mago.toml before the two Http rules gained not-on, and the cases added with the bus interface placement perimeter, which were recorded against the same mago.toml before the five bus interface restrictions were added, with the bus middleware allow-from at **\\Middleware\\** as amended: fifteen of the sixteen were clean then, and the Http middleware bucket trap already carried the Http structural rule's must-implement verdict, and the cases added with the nested-bucket denies, which were recorded against the same mago.toml before the five deny-from restrictions were added: all five were clean then",
     "verdicts": {
         "guard-fixtures/cases/bus-middleware/app-must-implement.php": [
             "must-implement"
@@ -12,6 +12,9 @@
         ],
         "guard-fixtures/cases/bus-middleware/webwaretest-clean.php": [
             "must-be-named"
+        ],
+        "guard-fixtures/cases/bus-middleware-placement/http-bucket-trap.php": [
+            "must-implement"
         ],
         "guard-fixtures/cases/command-handler/app-must-implement.php": [
             "must-implement"

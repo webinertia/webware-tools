@@ -37,7 +37,7 @@ docker compose exec -T tooling php guard-fixtures/check.php
 ```
 
 `check.php` runs `mago guard guard-fixtures/cases --reporting-format=json` and compares the result
-against the manifest. A comparison run asserts three things:
+against the manifest. A comparison run asserts four things:
 
 1. The observed verdicts equal `expectAfter` for every case. This is the shipped configuration's
    contract.
@@ -45,9 +45,17 @@ against the manifest. A comparison run asserts three things:
    unmodified, enumerated configuration, so a later edit cannot quietly rewrite history to match a
    regression.
 3. No fixture file is missing from the manifest and no manifest case is missing a file.
+4. Every guard block in `mago.toml` is exercised by at least one fixture. The rule list is read from
+   the preset at check time, so a rule added without a fixture fails the check instead of passing
+   unobserved. See "Every rule must have a fixture" below.
 
 It also prints every verdict that changed against the baseline, with the case's note, so the diff is
-reviewable rather than inferred. Exit code 1 means a case changed or a fixture is unaccounted for.
+reviewable rather than inferred. Exit code 1 means a case changed, a fixture is unaccounted for, or a
+guard block has no fixture.
+
+`--coverage` prints the per-block report the fourth assertion is built from: how many fixtures reach
+each structural selector, and how many references each perimeter restriction permits, denies and
+refuses by omission.
 
 To re-record the baseline against a configuration you are deliberately testing:
 
@@ -71,6 +79,52 @@ edited by hand, deliberately, never by a script.
 5. If the verdict differs from `expectAfter`, decide which is wrong: the fixture or the prediction.
    Fix the fixture when the intent was right, correct the prediction only when it misread which rule
    fires.
+
+A new rule in `mago.toml` is not finished until a case exercises it. `check.php` fails and names the
+selector otherwise.
+
+## Every rule must have a fixture
+
+`check.php` reads every `[[guard.structural.rules]]` and `[[guard.perimeter.restrictions]]` block out
+of `mago.toml` and fails when one has no fixture exercising it:
+
+```
+FAIL no fixture exercises the structural rule on = "**\Telemetry\*"
+FAIL no fixture references the perimeter dependency "Webware\Telemetry\**"
+```
+
+The block list is derived from the preset, never from a list kept here. A hand-maintained list of
+covered rules has the same failure mode as the missing fixture, because the edit that adds a rule is
+the same edit that forgets the list. The reader is a small TOML subset on purpose, and the count of
+block headers in the file is compared with the count it understood, so a block written in syntax the
+reader cannot read fails rather than disappearing from the census.
+
+Two signals are used, one per block kind.
+
+- **Structural rules.** A fixture proves the rule when its declared symbol name, the
+  `namespace\Name` of the class, interface, trait or enum in the file, matches `on` and does not match
+  `not-on`. When `target` is set only a declaration of that kind counts, so the two `on = "**"` naming
+  rules are proven by an interface fixture and a trait fixture rather than by any class. This proves
+  the rule reaches real input. It does not prove each clause of the block separately: a
+  `must-implement` and a `must-be-final` in the same rule are not distinguished, and whole-clause
+  coverage remains the corpus's job, which the paired case per clause in `manifest.json` is.
+- **Perimeter restrictions.** A fixture proves the restriction when one of its references matches
+  `dependency` and its own namespace is then classified by the block. A reference is a `use` import or
+  a name declared in `implements` or `extends`, which is what a perimeter restriction resolves from at
+  run time. `deny-from` needs a reference it denies, because a deny that never fires is the outcome
+  that goes unnoticed. `allow-from` needs two: a reference it permits, and one it refuses by omission.
+  A list that permits everything it is shown cannot be told apart from no list at all, which is why
+  the refused direction is required rather than optional.
+
+Selectors are matched with `*` as one segment that may be empty and `**` as zero or more segments,
+where `**` owns the separators around it so that `**\Http\**\Middleware\*` accepts
+`App\Http\Middleware\Foo` with the middle `**` matching nothing. Without that, the Http structural
+rules report no matching fixture at all and the coverage check would blame the corpus for a reader
+bug.
+
+No block in the preset is unprovable this way. All 15 structural and 18 perimeter blocks report at
+least one proving fixture, and `--coverage` prints the counts per block so the claim is checkable
+rather than asserted.
 
 ## Design rules, learned the hard way
 
@@ -153,6 +207,91 @@ segment. They carry the same shapes now, and the boundary is measured the same w
 Those trap cases are what keeps the exemption from swallowing a real violation, and they are the
 reason the three-way suffix form is used instead of a single `*Test*\**`.
 
+## The bus interface placement perimeter
+
+The five bus structural rules are inbound only. A rule matches classes already inside its bucket, so
+a class outside `Command\`, `CommandHandler\`, `Query\`, `QueryHandler\` or any `Middleware\` bucket
+that implements the matching interface was never examined, and the omission was silent rather than
+reported. Measured against the preset as shipped by the previous change:
+
+- `Webware\UserManager\Handler\CreateUserHandler implements Webware\MessageBus\CommandHandlerInterface`
+  was clean. The command handler rule lives on `**\CommandHandler\*`, which never reached a class in
+  a `Handler\` bucket.
+- `Webware\UserManager\Handler\LogRequestMiddleware implements Webware\MessageBus\MiddlewareInterface`
+  was clean, in a handler bucket that is not a middleware bucket at all.
+
+Each of the five interfaces now carries a perimeter restriction whose `allow-from` is the bucket that
+already owns the matching structural rule, the bus package itself, and the three test-root shapes. For
+the four message roles the bucket is named explicitly. For the bus middleware it is `**\Middleware\**`:
+a `Middleware\` bucket is the bus home at any depth, so both `Acme\Middleware\SomeBusMiddleware` and
+`Webware\Core\Middleware\SomeBusMiddleware` are permitted, and a `MessageBus` segment is not required.
+The perimeter is the outbound half of the same boundary: it fires wherever the class lives, and the
+structural rule keeps firing inside the bucket. PSR-15 has worked this way since the perimeter rules
+landed, so the bus side is now consistent with it rather than a new mechanism.
+
+One existing line moved with it: the bus middleware rule's `reason`, which is the note printed with
+every `must-implement` finding from that rule. It read "Bus middleware lives in MessageBus\Middleware
+and implements the bus MiddlewareInterface", which overstated the rule once the perimeter permitted a
+plain `Middleware\` bucket. It now states that classes in a `MessageBus\Middleware` bucket implement
+the bus interface and that bus middleware may also live in any `Middleware\` bucket, pointing at the
+restriction that permits it. No `on`, `not-on`, `must-be-named`, `must-implement` or `allow-from`
+line changed, so the set of classes each rule examines and the verdict each receives are untouched.
+
+The split runs in both directions, and both are pinned:
+
+- `App\Fixtures\Middleware\LogRequestMiddleware` is clean. It sits in a bare `Middleware\` bucket,
+  outside `MessageBus\Middleware\`, and the perimeter permits it there.
+- `App\Fixtures\Http\Middleware\LogRequestMiddleware` is flagged with `must-implement`, by the Http
+  structural rule and not by the perimeter. An `Http\Middleware\` bucket demands PSR-15
+  `MiddlewareInterface`, so bus middleware parked in one is still caught. The perimeter permits the
+  bus interface in that bucket, which is exactly why the finding comes from the Http rule.
+- `App\Fixtures\Service\LogRequestMiddleware` is flagged with `disallowed-use` and
+  `disallowed-implements`. It is outside every `Middleware\` bucket, and it was silent before.
+
+Measured after the change:
+
+- `App\Fixtures\Command\CreateUserCommand` is clean, and the same class one namespace away in
+  `App\Fixtures\Service\` is flagged with `disallowed-use` and `disallowed-implements`.
+- `App\Fixtures\CommandHandler\CreateUserHandler`, `App\Fixtures\Query\FetchUserQuery` and
+  `App\Fixtures\QueryHandler\FetchUserHandler` behave the same way, each with its own in-bucket case
+  and its own denied pair.
+- `AppTest\Fixtures\Service\CreateUserHandlerTest` and its four siblings are clean. They sit outside
+  every bucket, so `*Test\**` is the only clause that can permit them, which is why each interface
+  has its own test-root case instead of one shared case.
+
+## The nested-bucket case those allow-from globs left open
+
+An `allow-from` entry is a glob, and `**\Command\**` matches a `Command\` segment at any depth, not
+only the one the matching structural rule governs. The Http structural rules are the reverse: `on` is
+`**\Http\**\Middleware\*` and `**\Http\**\RequestHandler\*`, which match direct children only. The two
+shapes compose into a class that is permitted by the perimeter and examined by no structural rule:
+
+- `App\Fixtures\Http\Middleware\Deep\NestedMiddleware implements Webware\MessageBus\MiddlewareInterface`
+  was clean. It matched `**\Middleware\**`, and the Http rule does not reach a `Middleware\` segment
+  that sits one segment below the bucket the class is in.
+- `App\Fixtures\Http\Command\Deep\NestedCommand` and the handler, query and query handler equivalents
+  were clean for the same reason, each matching its own `**\Bucket\**` entry below an `Http\` segment.
+
+Five `deny-from` restrictions close it. Each names the same interface as its `allow-from` counterpart
+and denies `**\Http\**`; the four message roles also deny `**\Repository\**`, because a repository
+persists rows and never speaks the bus's message contracts. The middleware interface carries no
+`Repository\` deny: the `Webware\MessageBus\**` restriction at the foot of the preset already denies
+every bus symbol there, and a denial is not restated.
+
+Measured after the change:
+
+- `App\Fixtures\Http\Middleware\Deep\NestedMiddleware` is flagged with `disallowed-use` and
+  `disallowed-implements`, and so is each of the four message-role traps.
+- `App\Fixtures\Middleware\LogRequestMiddleware` is still clean. The pair is the point: a bare
+  `Middleware\` bucket passes, and the same interface one segment below `Http\` does not.
+- `App\Fixtures\Http\Middleware\LogRequestMiddleware` now reports `must-implement` from the Http
+  structural rule and the two perimeter codes together. The structural finding was already there; the
+  deny is additive rather than a replacement.
+- A bus middleware test double under `AppTest\Core\Http\Middleware\Deep\` is flagged. `deny-from` is
+  applied regardless of a matching `allow-from` entry, so the `*Test\**` permit does not rescue a
+  namespace that is also below `Http\`. Nothing below `Http\` is a bus home, including a test double
+  parked there. The census records no consumer that relies on the shape.
+
 ## The interface and trait rules stay unexempted
 
 The `target = "interface"` and `target = "trait"` rules use `on = "**"`, so a test root can match
@@ -209,3 +348,34 @@ With the Http exemption cases added as well, the corpus is 193 cases, 104 clean,
 verdicts differ from the recorded baseline. The 2 further differing verdicts are
 `http-middleware/webwaretest-clean` and `http-request-handler/webwaretest-clean`; the 4 new trap
 cases do not differ, which proves the Http exemption left both production clauses intact.
+
+With the bus interface placement cases added, the corpus is 209 cases, 114 clean, 95 flagged, and 69
+verdicts differ from the recorded baseline. The 5 further differing verdicts are the five
+`*-placement/app-denied` traps, each going from clean to `disallowed-implements` and `disallowed-use`.
+The 10 clean cases, one in-bucket and one test-root case per interface, do not differ, which is what
+proves the five restrictions fire outside the intended homes and nowhere else. The middleware group
+carries a fourth case, the Http bucket trap, whose `must-implement` verdict is unchanged by the
+perimeter: an `Http\Middleware\` bucket is not a bus home, so the Http structural rule keeps doing the
+objecting there. Fifteen of the sixteen placement cases were clean before the change, so
+`baseline.json` gained one verdict entry, for that trap, and its `config` field grew one clause naming
+the generation they were recorded against.
+
+With the nested-bucket deny cases added, the corpus is 214 cases, 114 clean, 100 flagged, and 75
+verdicts differ from the recorded baseline. The 5 further traps are clean before and report
+`disallowed-implements` with `disallowed-use` after. The sixth new difference is
+`bus-middleware-placement/http-bucket-trap`, which gains the two perimeter codes while keeping its
+`must-implement`: the deny adds a second objection rather than replacing the structural one. All five
+new traps were clean against the recorded configuration, so `baseline.json` gained no verdict entry
+for them, and its `config` field grew one clause naming that generation. The 114 clean cases do not
+differ, which is what keeps the deny from reaching a bare `Middleware\` bucket or a test root that is
+not below `Http\`.
+
+With the bus middleware test double case added, the corpus is 215 cases, 114 clean, 101 flagged, and
+76 verdicts differ from the recorded baseline. The single further difference is
+`bus-middleware-placement/apptest-http-nested-trap`, clean before and flagged with
+`disallowed-implements` and `disallowed-use` after: `deny-from` is applied regardless of a matching
+`allow-from`, so `*Test\**` does not rescue a bus test double parked below `Http\`. That is the
+ruling rather than a side effect, because a bus double belongs in a bus bucket, and the case is where
+a reversal of the ruling would show. It was clean against the recorded configuration, so
+`baseline.json` gained no verdict entry for it and its `config` field is unchanged: the clause that
+names the pre-deny recording already covers the generation this case was recorded against.

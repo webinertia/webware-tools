@@ -9,7 +9,8 @@
     "must-implement": "The class does not implement the required interface.",
     "must-use-attribute": "The class does not carry the required attribute.",
     "disallowed-use": "A use statement names a dependency the perimeter restriction denies.",
-    "disallowed-parameter-type": "A parameter type names a dependency the perimeter restriction denies."
+    "disallowed-parameter-type": "A parameter type names a dependency the perimeter restriction denies.",
+    "disallowed-implements": "The class implements an interface the perimeter restriction denies."
   },
   "rules": {
     "interface-name": {
@@ -83,7 +84,7 @@
       "subjectBefore": "{App,Webware}\\**\\MessageBus\\Middleware\\*",
       "subjectAfter": "**\\MessageBus\\Middleware\\*",
       "notOn": "{*Test,*TestAsset,*TestIntegration}\\**",
-      "note": "Bus middleware lives in MessageBus\\Middleware and implements the bus MiddlewareInterface. Test roots are exempt: a PHPUnit class named *Test cannot also be named *Middleware."
+      "note": "Classes in a MessageBus\\Middleware bucket implement the bus MiddlewareInterface, and bus middleware may also live in any Middleware\\ bucket. Test roots are exempt: a PHPUnit class named *Test cannot also be named *Middleware."
     },
     "console-command": {
       "kind": "structural",
@@ -161,6 +162,51 @@
       "denyFromBefore": "Webware\\Acl\\**",
       "denyFromAfter": "Webware\\Acl\\**",
       "note": "webware-acl must not depend on webware-usermanager. Package names, not host roots, so unchanged."
+    },
+    "command-placement": {
+      "kind": "perimeter",
+      "dependency": "Webware\\MessageBus\\Command\\NamedCommandInterface",
+      "subjectBefore": "no rule",
+      "subjectAfter": "allow-from **\\Command\\**, Webware\\MessageBus\\**, *Test\\**, *TestIntegration\\**, *TestAsset\\**",
+      "denyFromBefore": "no rule",
+      "denyFromAfter": "**\\Http\\**, **\\Repository\\**",
+      "note": "The outbound half of the command structural rule: NamedCommandInterface is reachable from a Command\\ bucket, the bus package and the test roots, and from nowhere else. Before, a class outside Command\\ could implement it freely. The deny half closes the nested-bucket case, where the allow-from glob matched a Command\\ segment below Http\\ that the structural rule and the Http rule both missed."
+    },
+    "command-handler-placement": {
+      "kind": "perimeter",
+      "dependency": "Webware\\MessageBus\\CommandHandlerInterface",
+      "subjectBefore": "no rule",
+      "subjectAfter": "allow-from **\\CommandHandler\\**, Webware\\MessageBus\\**, *Test\\**, *TestIntegration\\**, *TestAsset\\**",
+      "denyFromBefore": "no rule",
+      "denyFromAfter": "**\\Http\\**, **\\Repository\\**",
+      "note": "The outbound half of the command handler structural rule. A handler outside CommandHandler\\ was readable as a service; the perimeter is what stops it. The deny half closes the nested-bucket case, where the allow-from glob matched a CommandHandler\\ segment below Http\\ that neither structural rule could see."
+    },
+    "query-placement": {
+      "kind": "perimeter",
+      "dependency": "Webware\\MessageBus\\Query\\QueryInterface",
+      "subjectBefore": "no rule",
+      "subjectAfter": "allow-from **\\Query\\**, Webware\\MessageBus\\**, *Test\\**, *TestIntegration\\**, *TestAsset\\**",
+      "denyFromBefore": "no rule",
+      "denyFromAfter": "**\\Http\\**, **\\Repository\\**",
+      "note": "The outbound half of the query structural rule. The deny half closes the nested-bucket case, where the allow-from glob matched a Query\\ segment below Http\\ that neither structural rule could see."
+    },
+    "query-handler-placement": {
+      "kind": "perimeter",
+      "dependency": "Webware\\MessageBus\\QueryHandlerInterface",
+      "subjectBefore": "no rule",
+      "subjectAfter": "allow-from **\\QueryHandler\\**, Webware\\MessageBus\\**, *Test\\**, *TestIntegration\\**, *TestAsset\\**",
+      "denyFromBefore": "no rule",
+      "denyFromAfter": "**\\Http\\**, **\\Repository\\**",
+      "note": "The outbound half of the query handler structural rule. The deny half closes the nested-bucket case, where the allow-from glob matched a QueryHandler\\ segment below Http\\ that neither structural rule could see."
+    },
+    "bus-middleware-placement": {
+      "kind": "perimeter",
+      "dependency": "Webware\\MessageBus\\MiddlewareInterface",
+      "subjectBefore": "no rule",
+      "subjectAfter": "allow-from **\\Middleware\\**, Webware\\MessageBus\\**, *Test\\**, *TestIntegration\\**, *TestAsset\\**",
+      "denyFromBefore": "no rule",
+      "denyFromAfter": "**\\Http\\**",
+      "note": "The outbound half of the bus middleware structural rule. The bus home is a Middleware\\ bucket at any depth, so a class outside one was the measured hole: the structural rule was satisfied or not depending on placement alone. An Http\\Middleware\\ bucket is not a bus home; the Http structural rule keeps requiring PSR-15 there. The deny half closes the nested-bucket case, where **\\Middleware\\** matched a Middleware\\ segment below Http\\ that the Http structural rule, matching direct children only, never examined. Middleware carries no Repository deny because the Webware\\MessageBus\\** restriction already denies every bus symbol there."
     }
   },
   "cases": [
@@ -356,6 +402,28 @@
     {"id":"exception/webwaretestasset-clean","file":"guard-fixtures/cases/exception/webwaretestasset-clean.php","namespace":"WebwareTestAsset\\MessageBus\\Exception","rule":"exception","root":"WebwareTestAsset","expectBefore":["must-be-named"],"expectAfter":[],"note":"Consumer shape under the WebwareTestAsset root, which needs the *TestAsset shape."},
     {"id":"exception/webwaretest-messagebus-consumer-shape-clean","file":"guard-fixtures/cases/exception/webwaretest-messagebus-consumer-shape-clean.php","namespace":"WebwareTest\\MessageBus\\Exception","rule":"exception","root":"WebwareTest","expectBefore":["must-be-named"],"expectAfter":[],"note":"Consumer shape: an exact stand-in for WebwareTest\\MessageBus\\Exception\\MessageExceptionTest, the class reported on webinertia/message-bus."},
     {"id":"exception/my-test-app-trap","file":"guard-fixtures/cases/exception/my-test-app-trap.php","namespace":"MyTestApp\\Unit\\Exception","rule":"exception","root":"MyTestApp","expectBefore":["must-be-named"],"expectAfter":["must-be-named"],"note":"Trap: *Test* would exempt MyTestApp and this case fails, which is why the exemption uses suffix shapes rather than the substring form."},
-    {"id":"exception/nested-test-segment-must-be-named","file":"guard-fixtures/cases/exception/nested-test-segment-must-be-named.php","namespace":"Acme\\Blog\\Test\\Exception","rule":"exception","root":"Acme","expectBefore":["must-be-named"],"expectAfter":["must-be-named"],"note":"Trap: a Test segment nested under a production root is not a test root."}
+    {"id":"exception/nested-test-segment-must-be-named","file":"guard-fixtures/cases/exception/nested-test-segment-must-be-named.php","namespace":"Acme\\Blog\\Test\\Exception","rule":"exception","root":"Acme","expectBefore":["must-be-named"],"expectAfter":["must-be-named"],"note":"Trap: a Test segment nested under a production root is not a test root."},
+    {"id":"command-placement/app-clean","file":"guard-fixtures/cases/command-placement/app-clean.php","namespace":"App\\Fixtures\\Command","rule":"command-placement","root":"App","expectBefore":[],"expectAfter":[],"note":"In-bucket command; the perimeter permits **\\Command\\** and the structural rule is satisfied at the same time."},
+    {"id":"command-placement/app-denied","file":"guard-fixtures/cases/command-placement/app-denied.php","namespace":"App\\Fixtures\\Service","rule":"command-placement","root":"App","expectBefore":[],"expectAfter":["disallowed-implements","disallowed-use"],"note":"Trap, and the measured hole: a NamedCommandInterface implementation outside Command\\ was silent before, because the structural rule only sees classes inside the bucket."},
+    {"id":"command-placement/http-nested-trap","file":"guard-fixtures/cases/command-placement/http-nested-trap.php","namespace":"App\\Fixtures\\Http\\Command\\Deep","rule":"command-placement","root":"App","expectBefore":[],"expectAfter":["disallowed-implements","disallowed-use"],"note":"The nested-bucket trap: below an Http bucket, and one level too deep for the Command structural rule's direct-children pattern, so **\\Command\\** permitted it while nothing else looked. The **\\Http\\** deny is the only rule that can catch this shape."},
+    {"id":"command-placement/apptest-permitted","file":"guard-fixtures/cases/command-placement/apptest-permitted.php","namespace":"AppTest\\Fixtures\\Service","rule":"command-placement","root":"AppTest","expectBefore":[],"expectAfter":[],"note":"Test root: outside every bucket, so *Test\\** is the only clause that permits it."},
+    {"id":"command-handler-placement/app-clean","file":"guard-fixtures/cases/command-handler-placement/app-clean.php","namespace":"App\\Fixtures\\CommandHandler","rule":"command-handler-placement","root":"App","expectBefore":[],"expectAfter":[],"note":"In-bucket command handler; permitted by **\\CommandHandler\\**."},
+    {"id":"command-handler-placement/app-denied","file":"guard-fixtures/cases/command-handler-placement/app-denied.php","namespace":"App\\Fixtures\\Service","rule":"command-handler-placement","root":"App","expectBefore":[],"expectAfter":["disallowed-implements","disallowed-use"],"note":"Trap, and the measured consumer shape: Webware\\UserManager\\Handler\\CreateUserHandler implementing CommandHandlerInterface was silent before."},
+    {"id":"command-handler-placement/http-nested-trap","file":"guard-fixtures/cases/command-handler-placement/http-nested-trap.php","namespace":"App\\Fixtures\\Http\\CommandHandler\\Deep","rule":"command-handler-placement","root":"App","expectBefore":[],"expectAfter":["disallowed-implements","disallowed-use"],"note":"The nested-bucket trap for a handler: below an Http bucket and too deep for the CommandHandler structural rule, so **\\CommandHandler\\** permitted it and nothing objected."},
+    {"id":"command-handler-placement/apptest-permitted","file":"guard-fixtures/cases/command-handler-placement/apptest-permitted.php","namespace":"AppTest\\Fixtures\\Service","rule":"command-handler-placement","root":"AppTest","expectBefore":[],"expectAfter":[],"note":"Test root: a handler double outside CommandHandler\\ is clean by the *Test\\** permit alone."},
+    {"id":"query-placement/app-clean","file":"guard-fixtures/cases/query-placement/app-clean.php","namespace":"App\\Fixtures\\Query","rule":"query-placement","root":"App","expectBefore":[],"expectAfter":[],"note":"In-bucket query; permitted by **\\Query\\**."},
+    {"id":"query-placement/app-denied","file":"guard-fixtures/cases/query-placement/app-denied.php","namespace":"App\\Fixtures\\Service","rule":"query-placement","root":"App","expectBefore":[],"expectAfter":["disallowed-implements","disallowed-use"],"note":"Trap: a QueryInterface implementation outside Query\\ was silent before."},
+    {"id":"query-placement/http-nested-trap","file":"guard-fixtures/cases/query-placement/http-nested-trap.php","namespace":"App\\Fixtures\\Http\\Query\\Deep","rule":"query-placement","root":"App","expectBefore":[],"expectAfter":["disallowed-implements","disallowed-use"],"note":"The nested-bucket trap for a query: below an Http bucket and too deep for the Query structural rule, so **\\Query\\** permitted it and nothing objected."},
+    {"id":"query-placement/apptest-permitted","file":"guard-fixtures/cases/query-placement/apptest-permitted.php","namespace":"AppTest\\Fixtures\\Service","rule":"query-placement","root":"AppTest","expectBefore":[],"expectAfter":[],"note":"Test root: a message double outside Query\\ is clean by the *Test\\** permit alone."},
+    {"id":"query-handler-placement/app-clean","file":"guard-fixtures/cases/query-handler-placement/app-clean.php","namespace":"App\\Fixtures\\QueryHandler","rule":"query-handler-placement","root":"App","expectBefore":[],"expectAfter":[],"note":"In-bucket query handler; permitted by **\\QueryHandler\\**."},
+    {"id":"query-handler-placement/app-denied","file":"guard-fixtures/cases/query-handler-placement/app-denied.php","namespace":"App\\Fixtures\\Service","rule":"query-handler-placement","root":"App","expectBefore":[],"expectAfter":["disallowed-implements","disallowed-use"],"note":"Trap: a QueryHandlerInterface implementation outside QueryHandler\\ was silent before."},
+    {"id":"query-handler-placement/http-nested-trap","file":"guard-fixtures/cases/query-handler-placement/http-nested-trap.php","namespace":"App\\Fixtures\\Http\\QueryHandler\\Deep","rule":"query-handler-placement","root":"App","expectBefore":[],"expectAfter":["disallowed-implements","disallowed-use"],"note":"The nested-bucket trap for a query handler: below an Http bucket and too deep for the QueryHandler structural rule, so **\\QueryHandler\\** permitted it and nothing objected."},
+    {"id":"query-handler-placement/apptest-permitted","file":"guard-fixtures/cases/query-handler-placement/apptest-permitted.php","namespace":"AppTest\\Fixtures\\Service","rule":"query-handler-placement","root":"AppTest","expectBefore":[],"expectAfter":[],"note":"Test root: a handler double outside QueryHandler\\ is clean by the *Test\\** permit alone."},
+    {"id":"bus-middleware-placement/app-clean","file":"guard-fixtures/cases/bus-middleware-placement/app-clean.php","namespace":"App\\Fixtures\\Middleware","rule":"bus-middleware-placement","root":"App","expectBefore":[],"expectAfter":[],"note":"In-bucket bus middleware under a bare Middleware\\ bucket, which the perimeter permits at any depth without a MessageBus segment."},
+    {"id":"bus-middleware-placement/app-denied","file":"guard-fixtures/cases/bus-middleware-placement/app-denied.php","namespace":"App\\Fixtures\\Service","rule":"bus-middleware-placement","root":"App","expectBefore":[],"expectAfter":["disallowed-implements","disallowed-use"],"note":"Trap: a bus middleware outside any Middleware\\ bucket was silent before, because the structural rule only examines classes in MessageBus\\Middleware and no perimeter named the interface."},
+    {"id":"bus-middleware-placement/http-bucket-trap","file":"guard-fixtures/cases/bus-middleware-placement/http-bucket-trap.php","namespace":"App\\Fixtures\\Http\\Middleware","rule":"bus-middleware-placement","root":"App","expectBefore":["must-implement"],"expectAfter":["disallowed-implements","disallowed-use","must-implement"],"note":"The other direction: an Http\\Middleware\\ bucket is not a bus home, so the Http structural rule still requires PSR-15 MiddlewareInterface. Before the deny half the perimeter permitted the bus interface here, which is why the finding was the Http rule's alone; the **\\Http\\** deny now reports the interface as well, and the structural finding is still present."},
+    {"id":"bus-middleware-placement/http-nested-trap","file":"guard-fixtures/cases/bus-middleware-placement/http-nested-trap.php","namespace":"App\\Fixtures\\Http\\Middleware\\Deep","rule":"bus-middleware-placement","root":"App","expectBefore":[],"expectAfter":["disallowed-implements","disallowed-use"],"note":"The nested-bucket trap for bus middleware, and the case that pairs with app-clean: a bare Middleware\\ bucket still passes, a Middleware\\ segment one level below Http\\ does not. The Http structural rule matches direct children only, so nothing objected before; **\\Http\\** is the only deny that reaches it."},
+    {"id":"bus-middleware-placement/apptest-permitted","file":"guard-fixtures/cases/bus-middleware-placement/apptest-permitted.php","namespace":"AppTest\\Fixtures\\Service","rule":"bus-middleware-placement","root":"AppTest","expectBefore":[],"expectAfter":[],"note":"Test root: bus middleware double outside any Middleware\\ bucket, clean by the *Test\\** permit alone."},
+    {"id":"bus-middleware-placement/apptest-http-nested-trap","file":"guard-fixtures/cases/bus-middleware-placement/apptest-http-nested-trap.php","namespace":"AppTest\\Core\\Http\\Middleware\\Deep","rule":"bus-middleware-placement","root":"AppTest","expectBefore":[],"expectAfter":["disallowed-implements","disallowed-use"],"note":"The test-double ruling, pinned: a bus middleware double below Http\\ is flagged even though *Test\\** permits test roots, because deny-from is applied regardless of a matching allow-from. A bus double belongs in a bus bucket, so this is intended rather than collateral. If the owner ever reverses it, this case is where the reversal shows."}
   ]
 }

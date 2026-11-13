@@ -2,7 +2,7 @@
     "description": "Verdicts recorded from the guard configuration that predates each transformation recorded here. check.php asserts these against expectBefore.",
     "mago": "mago 1.59.0",
     "command": "mago guard guard-fixtures/cases --reporting-format=json",
-    "config": "mago.toml before the root-agnostic transformation, except the cases added with the test-root exemption, which were recorded against the root-agnostic mago.toml before not-on gained the test-root shapes",
+    "config": "mago.toml before the root-agnostic transformation, except the cases added with the test-root exemption, which were recorded against the root-agnostic mago.toml before not-on gained the test-root shapes, and the cases added with the Http test-root exemption, which were recorded against the same mago.toml before the two Http rules gained not-on",
     "verdicts": {
         "guard-fixtures/cases/bus-middleware/app-must-implement.php": [
             "must-implement"
@@ -99,19 +99,39 @@
             "disallowed-implements",
             "disallowed-use"
         ],
+        "guard-fixtures/cases/http-middleware/acme-must-be-named.php": [
+            "must-be-named"
+        ],
         "guard-fixtures/cases/http-middleware/app-must-be-named.php": [
             "must-be-named"
         ],
         "guard-fixtures/cases/http-middleware/app-must-implement.php": [
             "must-implement"
         ],
+        "guard-fixtures/cases/http-middleware/nested-test-segment-must-be-named.php": [
+            "must-be-named"
+        ],
         "guard-fixtures/cases/http-middleware/webware-must-implement.php": [
             "must-implement"
+        ],
+        "guard-fixtures/cases/http-middleware/webwaretest-clean.php": [
+            "must-be-named",
+            "must-implement"
+        ],
+        "guard-fixtures/cases/http-request-handler/acme-must-be-named.php": [
+            "must-be-named"
         ],
         "guard-fixtures/cases/http-request-handler/app-must-implement.php": [
             "must-implement"
         ],
+        "guard-fixtures/cases/http-request-handler/nested-test-segment-must-be-named.php": [
+            "must-be-named"
+        ],
         "guard-fixtures/cases/http-request-handler/webware-must-implement.php": [
+            "must-implement"
+        ],
+        "guard-fixtures/cases/http-request-handler/webwaretest-clean.php": [
+            "must-be-named",
             "must-implement"
         ],
         "guard-fixtures/cases/interface-name/app-match.php": [

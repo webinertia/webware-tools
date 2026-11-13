@@ -1,5 +1,5 @@
 {
-  "description": "Expected guard verdicts for every boundary in the ecosystem configuration, exercised as a cross-root matrix. expectBefore is the verdict under the enumerated configuration and must equal baseline.json; expectAfter is the verdict under the root-agnostic configuration and is what check.php enforces.",
+  "description": "Expected guard verdicts for every boundary in the ecosystem configuration, exercised as a cross-root matrix. expectBefore is the verdict under the configuration that predates the transformation being recorded, and must equal baseline.json; expectAfter is the verdict under the current configuration and is what check.php enforces.",
   "mago": "1.59.0",
   "command": "mago guard guard-fixtures/cases --reporting-format=json",
   "codes": {
@@ -28,7 +28,7 @@
       "kind": "structural",
       "subjectBefore": "no rule",
       "subjectAfter": "**\\Exception\\**\\*",
-      "note": "New rule, and one statement in two halves: every class under Exception\\ is named *Exception, and every class named *Exception lives under Exception\\. The second half is a **\\*Exception subject whose notOn is the Exception\\ pattern."
+      "note": "New rule, and one statement in two halves: every class under Exception\\ is named *Exception, and every class named *Exception lives under Exception\\. The second half is a **\\*Exception subject whose notOn is the Exception\\ pattern. Both halves exclude the test roots, which cannot satisfy either clause: a PHPUnit class must end in Test."
     },
     "repeat-segment": {
       "kind": "structural",
@@ -52,55 +52,56 @@
       "kind": "structural",
       "subjectBefore": "{App,Webware}\\**\\Command\\*",
       "subjectAfter": "**\\Command\\*",
-      "notOn": "Webware\\MessageBus\\**",
+      "notOn": "{Webware\\MessageBus,*Test,*TestAsset,*TestIntegration}\\**",
       "note": "Commands live in Command\\, are named *Command, implement NamedCommandInterface, and are final."
     },
     "command-handler": {
       "kind": "structural",
       "subjectBefore": "{App,Webware}\\**\\CommandHandler\\*",
       "subjectAfter": "**\\CommandHandler\\*",
-      "notOn": "Webware\\MessageBus\\**",
+      "notOn": "{Webware\\MessageBus,*Test,*TestAsset,*TestIntegration}\\**",
       "note": "Command handlers live in CommandHandler\\, are named *Handler, and implement CommandHandlerInterface."
     },
     "query": {
       "kind": "structural",
       "subjectBefore": "{App,Webware}\\**\\Query\\*",
       "subjectAfter": "**\\Query\\*",
-      "notOn": "Webware\\MessageBus\\**",
+      "notOn": "{Webware\\MessageBus,*Test,*TestAsset,*TestIntegration}\\**",
       "note": "Queries live in Query\\, are named *Query, implement QueryInterface, and are final."
     },
     "query-handler": {
       "kind": "structural",
       "subjectBefore": "{App,Webware}\\**\\QueryHandler\\*",
       "subjectAfter": "**\\QueryHandler\\*",
-      "notOn": "Webware\\MessageBus\\**",
+      "notOn": "{Webware\\MessageBus,*Test,*TestAsset,*TestIntegration}\\**",
       "note": "Query handlers live in QueryHandler\\, are named *Handler, and implement QueryHandlerInterface."
     },
     "bus-middleware": {
       "kind": "structural",
       "subjectBefore": "{App,Webware}\\**\\MessageBus\\Middleware\\*",
       "subjectAfter": "**\\MessageBus\\Middleware\\*",
-      "note": "Bus middleware lives in MessageBus\\Middleware and implements the bus MiddlewareInterface."
+      "notOn": "{*Test,*TestAsset,*TestIntegration}\\**",
+      "note": "Bus middleware lives in MessageBus\\Middleware and implements the bus MiddlewareInterface. Test roots are exempt: a PHPUnit class named *Test cannot also be named *Middleware."
     },
     "console-command": {
       "kind": "structural",
       "subjectBefore": "{App,Webware}\\**\\Console\\*",
       "subjectAfter": "**\\Console\\*",
-      "notOn": "Webware\\Console\\**",
+      "notOn": "{Webware\\Console,*Test,*TestAsset,*TestIntegration}\\**",
       "note": "Console commands live in Console\\, are named *Command, are final, and carry #[AsCommand]."
     },
     "event": {
       "kind": "structural",
       "subjectBefore": "{App,Webware}\\**\\Event\\*",
       "subjectAfter": "**\\Event\\*",
-      "notOn": "{Webware\\MessageBus,Webware\\Event}\\**",
+      "notOn": "{Webware\\MessageBus,Webware\\Event,*Test,*TestAsset,*TestIntegration}\\**",
       "note": "Events live in Event\\ and are named *Event."
     },
     "listener": {
       "kind": "structural",
       "subjectBefore": "{App,Webware}\\**\\Listener\\*",
       "subjectAfter": "**\\Listener\\*",
-      "notOn": "Webware\\MessageBus\\**",
+      "notOn": "{Webware\\MessageBus,*Test,*TestAsset,*TestIntegration}\\**",
       "note": "Listeners live in Listener\\ and are named *Listener, with factories in Listener\\Container\\."
     },
     "psr15": {
@@ -328,6 +329,25 @@
     {"id":"messagebus-repository/acme-repository-denied","file":"guard-fixtures/cases/messagebus-repository/acme-repository-denied.php","namespace":"Acme\\Blog\\Repository","rule":"messagebus-repository","root":"Acme","expectBefore":[],"expectAfter":["disallowed-use","disallowed-parameter-type"],"note":"Gain of enforcement: a third-party repository was outside the deny list entirely."},
     {"id":"usermanager/acl-denied","file":"guard-fixtures/cases/usermanager/acl-denied.php","namespace":"Webware\\Acl\\Fixtures","rule":"usermanager","root":"Webware\\Acl","expectBefore":["disallowed-use","disallowed-parameter-type"],"expectAfter":["disallowed-use","disallowed-parameter-type"],"note":"Package-level deny, unaffected by root-agnosticism."},
     {"id":"usermanager/webware-permitted","file":"guard-fixtures/cases/usermanager/webware-permitted.php","namespace":"Webware\\Fixtures\\Service","rule":"usermanager","root":"Webware","expectBefore":[],"expectAfter":[],"note":"Discriminator: one namespace step from acl-denied, permitted."},
-    {"id":"usermanager/acme-permitted","file":"guard-fixtures/cases/usermanager/acme-permitted.php","namespace":"Acme\\Blog\\Service","rule":"usermanager","root":"Acme","expectBefore":[],"expectAfter":[],"note":"A third-party root was never part of this deny list and stays permitted."}
+    {"id":"usermanager/acme-permitted","file":"guard-fixtures/cases/usermanager/acme-permitted.php","namespace":"Acme\\Blog\\Service","rule":"usermanager","root":"Acme","expectBefore":[],"expectAfter":[],"note":"A third-party root was never part of this deny list and stays permitted."},
+    {"id":"command/webwaretest-clean","file":"guard-fixtures/cases/command/webwaretest-clean.php","namespace":"WebwareTest\\Fixtures\\Command","rule":"command","root":"WebwareTest","expectBefore":["must-be-named"],"expectAfter":[],"note":"Test root: a PHPUnit class named *Test cannot also be named *Command. Clean by the test-root exemption; the class is final and implements NamedCommandInterface, so naming is the only clause it fails."},
+    {"id":"command/my-test-app-trap","file":"guard-fixtures/cases/command/my-test-app-trap.php","namespace":"MyTestApp\\Unit\\Command","rule":"command","root":"MyTestApp","expectBefore":["must-be-named"],"expectAfter":["must-be-named"],"note":"Trap: a production root containing Test is not a test root. The exemption shape is a suffix, so MyTestApp stays enforced."},
+    {"id":"command/nested-test-segment-must-be-named","file":"guard-fixtures/cases/command/nested-test-segment-must-be-named.php","namespace":"Acme\\Blog\\Test\\Command","rule":"command","root":"Acme","expectBefore":["must-be-named"],"expectAfter":["must-be-named"],"note":"Trap: the exemption is anchored at the first segment. A Test segment below a production root is not a test root."},
+    {"id":"command-handler/webwaretestintegration-clean","file":"guard-fixtures/cases/command-handler/webwaretestintegration-clean.php","namespace":"WebwareTestIntegration\\Fixtures\\CommandHandler","rule":"command-handler","root":"WebwareTestIntegration","expectBefore":["must-be-named"],"expectAfter":[],"note":"Test root: *TestIntegration shape exempted, so the only clause it fails, naming, is not reported."},
+    {"id":"query/webwaretestasset-clean","file":"guard-fixtures/cases/query/webwaretestasset-clean.php","namespace":"WebwareTestAsset\\Fixtures\\Query","rule":"query","root":"WebwareTestAsset","expectBefore":["must-be-named"],"expectAfter":[],"note":"Test root: WebwareTestAsset ends in Asset rather than Test, so it needs the *TestAsset shape."},
+    {"id":"query-handler/apptest-clean","file":"guard-fixtures/cases/query-handler/apptest-clean.php","namespace":"AppTest\\Fixtures\\QueryHandler","rule":"query-handler","root":"AppTest","expectBefore":["must-be-named"],"expectAfter":[],"note":"Test root: the *Test shape is root-agnostic, so AppTest is exempted without an entry for it."},
+    {"id":"bus-middleware/webwaretest-clean","file":"guard-fixtures/cases/bus-middleware/webwaretest-clean.php","namespace":"WebwareTest\\Fixtures\\MessageBus\\Middleware","rule":"bus-middleware","root":"WebwareTest","expectBefore":["must-be-named"],"expectAfter":[],"note":"Test root: the bus Middleware rule gained its first exemption; naming is the only clause it fails."},
+    {"id":"console-command/webwaretestasset-clean","file":"guard-fixtures/cases/console-command/webwaretestasset-clean.php","namespace":"WebwareTestAsset\\Fixtures\\Console","rule":"console-command","root":"WebwareTestAsset","expectBefore":["must-be-named","must-use-attribute"],"expectAfter":[],"note":"Test root: two clauses were unsatisfiable for a test double, naming and the AsCommand attribute."},
+    {"id":"event/webwaretestasset-consumer-shape-clean","file":"guard-fixtures/cases/event/webwaretestasset-consumer-shape-clean.php","namespace":"WebwareTestAsset\\MessageBus\\Event","rule":"event","root":"WebwareTestAsset","expectBefore":["must-be-named"],"expectAfter":[],"note":"Consumer shape: the class name and namespace reported on webinertia/messagebus-event, reduced to one class."},
+    {"id":"event/webwaretest-clean","file":"guard-fixtures/cases/event/webwaretest-clean.php","namespace":"WebwareTest\\Fixtures\\Event","rule":"event","root":"WebwareTest","expectBefore":["must-be-named"],"expectAfter":[],"note":"Test root: *Test exempted, merged with the existing bus and event package exclusions by brace alternation."},
+    {"id":"listener/webwaretestintegration-clean","file":"guard-fixtures/cases/listener/webwaretestintegration-clean.php","namespace":"WebwareTestIntegration\\Fixtures\\Listener","rule":"listener","root":"WebwareTestIntegration","expectBefore":["must-be-named"],"expectAfter":[],"note":"Test root: *TestIntegration exempted."},
+    {"id":"exception/webwaretest-clean","file":"guard-fixtures/cases/exception/webwaretest-clean.php","namespace":"WebwareTest\\Fixtures\\Exception","rule":"exception","root":"WebwareTest","expectBefore":["must-be-named"],"expectAfter":[],"note":"Consumer shape: a PHPUnit test class inside Exception\\ must be named *Test, so the suffix clause is unsatisfiable. Clean by the test-root exemption."},
+    {"id":"exception/webwaretest-unsuffixed-clean","file":"guard-fixtures/cases/exception/webwaretest-unsuffixed-clean.php","namespace":"WebwareTest\\Fixtures\\Exception","rule":"exception","root":"WebwareTest","expectBefore":["must-be-named"],"expectAfter":[],"note":"Test root: an unsuffixed test double under Exception\\ is likewise exempt from the naming clause."},
+    {"id":"exception/webwaretest-outside-clean","file":"guard-fixtures/cases/exception/webwaretest-outside-clean.php","namespace":"WebwareTest\\Fixtures\\Service","rule":"exception","root":"WebwareTest","expectBefore":["must-be"],"expectAfter":[],"note":"Test root: the placement half is exempt too, so a test exception outside Exception\\ is clean. Paired with exception/app-outside-must-be."},
+    {"id":"exception/webwaretestintegration-clean","file":"guard-fixtures/cases/exception/webwaretestintegration-clean.php","namespace":"WebwareTestIntegration\\MessageBus\\Exception","rule":"exception","root":"WebwareTestIntegration","expectBefore":["must-be-named"],"expectAfter":[],"note":"Consumer shape: the class reported on webinertia/message-bus, MessageExceptionTest and its siblings, reduced to one class."},
+    {"id":"exception/webwaretestasset-clean","file":"guard-fixtures/cases/exception/webwaretestasset-clean.php","namespace":"WebwareTestAsset\\MessageBus\\Exception","rule":"exception","root":"WebwareTestAsset","expectBefore":["must-be-named"],"expectAfter":[],"note":"Consumer shape under the WebwareTestAsset root, which needs the *TestAsset shape."},
+    {"id":"exception/webwaretest-messagebus-consumer-shape-clean","file":"guard-fixtures/cases/exception/webwaretest-messagebus-consumer-shape-clean.php","namespace":"WebwareTest\\MessageBus\\Exception","rule":"exception","root":"WebwareTest","expectBefore":["must-be-named"],"expectAfter":[],"note":"Consumer shape: an exact stand-in for WebwareTest\\MessageBus\\Exception\\MessageExceptionTest, the class reported on webinertia/message-bus."},
+    {"id":"exception/my-test-app-trap","file":"guard-fixtures/cases/exception/my-test-app-trap.php","namespace":"MyTestApp\\Unit\\Exception","rule":"exception","root":"MyTestApp","expectBefore":["must-be-named"],"expectAfter":["must-be-named"],"note":"Trap: *Test* would exempt MyTestApp and this case fails, which is why the exemption uses suffix shapes rather than the substring form."},
+    {"id":"exception/nested-test-segment-must-be-named","file":"guard-fixtures/cases/exception/nested-test-segment-must-be-named.php","namespace":"Acme\\Blog\\Test\\Exception","rule":"exception","root":"Acme","expectBefore":["must-be-named"],"expectAfter":["must-be-named"],"note":"Trap: a Test segment nested under a production root is not a test root."}
   ]
 }

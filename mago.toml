@@ -132,7 +132,9 @@ class-initializers = [
 # package after its next dependency update. No rule names a host root. `**` matches zero or more
 # namespace segments, so `**\Http\**\Middleware\*` holds `App\`, `Webware\` and a third-party root to
 # the same convention without `Webware\` needing an entry of its own. Test roots are recognised by shape
-# (`*Test\**`, `*TestIntegration\**`) rather than by name.
+# (`*Test\**`, `*TestIntegration\**`, `*TestAsset\**`) rather than by name. Three suffixes are the measured
+# minimum: `WebwareTestAsset\` does not end in `Test`, and `*Test*\**` was measured to exempt a production
+# root such as `MyTestApp\`, so the substring form is not used.
 #
 # What stays literal is a package name, never a host root: `not-on`, `Webware\*`, `Webware\Core\**` and
 # the other single-package permits exempt one package from one rule. Those are not enumeration of host
@@ -166,15 +168,21 @@ reason = "Traits must follow the *Trait naming convention."
 # and it inspects the direct parent only, so `must-extend = "Exception"` fails a class extending
 # `RuntimeException`. The consequence is that a class extending an exception under some other name
 # outside `Exception\\` is not detectable here; that case is caught at review.
+#
+# Test roots are exempt from both halves, because a PHPUnit test class must be named `*Test` and cannot
+# carry `*Exception` for the sake of a naming rule. The exemption is merged into `not-on` by brace
+# alternation rather than replacing an existing exclusion. The second rule needs the test shapes written
+# in full, since its `not-on` already holds a wildcard pattern and the two cannot share one segment tail.
 [[guard.structural.rules]]
 on = "**\\Exception\\**\\*"
+not-on = "{*Test,*TestAsset,*TestIntegration}\\**"
 target = "class"
 must-be-named = "*Exception"
 reason = "Exceptions live in an Exception namespace and are named *Exception."
 
 [[guard.structural.rules]]
 on = "**\\*Exception"
-not-on = "**\\Exception\\**\\*"
+not-on = "{**\\Exception\\**\\*,*Test\\**,*TestAsset\\**,*TestIntegration\\**}"
 must-be = []
 reason = "A class named *Exception lives in an Exception namespace."
 
@@ -231,11 +239,11 @@ allow-from = [
 
 # Message bus
 # Messages live in per-type namespaces of their own domain, never in a MessageBus\ bucket. `not-on` excludes
-# the bus package, which the `Webware` half of the brace would otherwise match. `must-implement` sees directly
-# declared interfaces only, so commands are held to `NamedCommandInterface`.
+# the bus package, which the `Webware` half of the brace would otherwise match, and the test roots.
+# `must-implement` sees directly declared interfaces only, so commands are held to `NamedCommandInterface`.
 [[guard.structural.rules]]
 on = "**\\Command\\*"
-not-on = "Webware\\MessageBus\\**"
+not-on = "{Webware\\MessageBus,*Test,*TestAsset,*TestIntegration}\\**"
 target = "class"
 must-be-named = "*Command"
 must-be-final = true
@@ -244,7 +252,7 @@ reason = "Commands live in Command\\, are named *Command, implement NamedCommand
 
 [[guard.structural.rules]]
 on = "**\\CommandHandler\\*"
-not-on = "Webware\\MessageBus\\**"
+not-on = "{Webware\\MessageBus,*Test,*TestAsset,*TestIntegration}\\**"
 target = "class"
 must-be-named = "*Handler"
 must-implement = "Webware\\MessageBus\\CommandHandlerInterface"
@@ -252,7 +260,7 @@ reason = "Command handlers live in CommandHandler\\, are named *Handler, and imp
 
 [[guard.structural.rules]]
 on = "**\\Query\\*"
-not-on = "Webware\\MessageBus\\**"
+not-on = "{Webware\\MessageBus,*Test,*TestAsset,*TestIntegration}\\**"
 target = "class"
 must-be-named = "*Query"
 must-be-final = true
@@ -261,7 +269,7 @@ reason = "Queries live in Query\\, are named *Query, implement QueryInterface, a
 
 [[guard.structural.rules]]
 on = "**\\QueryHandler\\*"
-not-on = "Webware\\MessageBus\\**"
+not-on = "{Webware\\MessageBus,*Test,*TestAsset,*TestIntegration}\\**"
 target = "class"
 must-be-named = "*Handler"
 must-implement = "Webware\\MessageBus\\QueryHandlerInterface"
@@ -269,6 +277,7 @@ reason = "Query handlers live in QueryHandler\\, are named *Handler, and impleme
 
 [[guard.structural.rules]]
 on = "**\\MessageBus\\Middleware\\*"
+not-on = "{*Test,*TestAsset,*TestIntegration}\\**"
 target = "class"
 must-be-named = "*Middleware"
 must-implement = "Webware\\MessageBus\\MiddlewareInterface"
@@ -278,10 +287,11 @@ reason = "Bus middleware lives in MessageBus\\Middleware and implements the bus 
 # `Console\` is Symfony's CLI surface and `Command\` is the bus's; guard matches namespaces only, so each needs
 # its own rule. Direct children only: a command's factory nests in `Console\Container\`. `not-on` excludes
 # webware-console, whose root namespace would otherwise match; it keeps its commands at its package root.
-# `must-use-attribute` identifies a Symfony command, since a parent class cannot be expressed.
+# The test roots are exempt too. `must-use-attribute` identifies a Symfony command, since a parent class
+# cannot be expressed.
 [[guard.structural.rules]]
 on = "**\\Console\\*"
-not-on = "Webware\\Console\\**"
+not-on = "{Webware\\Console,*Test,*TestAsset,*TestIntegration}\\**"
 target = "class"
 must-be-named = "*Command"
 must-be-final = true
@@ -292,17 +302,18 @@ reason = "Console commands live in Console\\, are named *Command, are final, and
 # Only placement and naming are constrained, with no `must-implement`, so the mechanism can be adopted
 # incrementally. Direct children only: a listener's factory nests in `Listener\Container\`. `not-on` excludes
 # the bus package and webware-event itself, whose root namespace is `Webware\Event` and would match its own
-# classes. `not-on` takes a single string (a list is a config error) and accepts brace alternation.
+# classes. The test roots are exempt too. `not-on` takes a single string (a list is a config error) and
+# accepts brace alternation.
 [[guard.structural.rules]]
 on = "**\\Event\\*"
-not-on = "{Webware\\MessageBus,Webware\\Event}\\**"
+not-on = "{Webware\\MessageBus,Webware\\Event,*Test,*TestAsset,*TestIntegration}\\**"
 target = "class"
 must-be-named = "*Event"
 reason = "Events live in Event\\ and are named *Event."
 
 [[guard.structural.rules]]
 on = "**\\Listener\\*"
-not-on = "Webware\\MessageBus\\**"
+not-on = "{Webware\\MessageBus,*Test,*TestAsset,*TestIntegration}\\**"
 target = "class"
 must-be-named = "*Listener"
 reason = "Listeners live in Listener\\ and are named *Listener, with factories in Listener\\Container\\."

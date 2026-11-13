@@ -97,9 +97,10 @@ edited by hand, deliberately, never by a script.
 
 ## The test-root shape residual
 
-Test roots are recognised by shape, not by an exact list: `*Test\**` and `*TestIntegration\**`. The
-first matches any root whose first segment ends in `Test`, so the set is not exact and the residual is
-accepted rather than closed. Recorded here so the shape rule is never read as an exact set.
+Test roots are recognised by shape, not by an exact list: `*Test\**`, `*TestAsset\**` and
+`*TestIntegration\**`. The first matches any root whose first segment ends in `Test`, so the set is
+not exact and the residual is accepted rather than closed. Recorded here so the shape rule is never
+read as an exact set.
 
 Measured, not inferred:
 
@@ -113,6 +114,30 @@ contains the substring, which permits a production root such as `MyTestApp\`. Th
 that to a suffix and stops there. A production package whose root genuinely ends in `Test` would be
 treated as a test root; that is the accepted residual, and it is not a reason to add a root to the
 config.
+
+## The structural naming exemption for test roots
+
+The structural naming rules match on the namespace segment alone, so widening them to `**` made them
+match test roots too, where the naming clause cannot be satisfied: a PHPUnit class must end in `Test`
+and so cannot end in `Command`, `Query`, `Event`, `Listener`, `Middleware` or `Exception`. Every one
+of those rules now carries the three suffix shapes in `not-on`, merged by brace alternation with any
+exclusion it already had. `not-on` takes a single string, so the merge is alternation rather than a
+second key.
+
+Measured, not inferred:
+
+- `WebwareTest\Fixtures\Command\SomethingTest` is clean.
+- `WebwareTest\MessageBus\Exception\MessageExceptionTest` is clean. This is the shape reported on
+  webinertia/message-bus and webinertia/messagebus-event.
+- `WebwareTestAsset\Fixtures\Query\SomethingTest` is clean. `WebwareTestAsset` ends in `Asset`, so it
+  needs `*TestAsset\**` rather than `*Test\**`.
+- `MyTestApp\Unit\Command\SomethingTest` is still flagged. The exemption is a suffix, so a production
+  root containing the substring is not a test root.
+- `Acme\Blog\Test\Command\SomethingTest` is still flagged. The exemption is anchored at the first
+  segment, so a `Test` segment nested under a production root is not a test root.
+
+Those last two are the traps: they keep the exemption from swallowing a real violation, and they are
+the reason the three-way suffix form is used instead of a single `*Test*\**`.
 
 ## What the transformation changed, as recorded
 
@@ -151,3 +176,8 @@ No boundary was deleted or widened beyond those two, no finding is baselined or 
 entries that stay literal (`not-on`, `Webware\*`, and single-package permits such as
 `Webware\Async\**`, `Webware\Router\**`, `Webware\Migration\**` and `Webware\Traccio\**`) are package
 names, not host roots.
+
+That section describes the root-agnostic transformation alone. With the test-root exemption cases
+added, the corpus is 187 cases, 102 clean, 85 flagged, and 62 verdicts differ from the recorded
+baseline. The 15 extra differing verdicts are the test-root cases above; the 4 trap cases do not
+differ, which is what proves the exemption did not widen any production rule.

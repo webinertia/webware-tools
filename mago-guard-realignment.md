@@ -149,7 +149,7 @@ Three things go wrong in this order. Plan for all of them before the first commi
    into a holder the boundary owns - the `Webware\Log\Http\PipelineIdentifiers` pattern.
 
 ## Rule semantics (verified against mago 1.51.0; the `**` and root-agnostic forms re-confirmed on
-the pinned 1.59.0)
+the pinned 1.60.1)
 
 - **Matching is on the declared namespace, never the directory path.** A file under `src/Command/`
   whose namespace is `Webware\Thing\Domain\Command` matches `Webware\**\Domain\Command\*`. Matching

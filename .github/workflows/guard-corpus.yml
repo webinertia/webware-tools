@@ -15,6 +15,8 @@ on:
       - 'guard-fixtures/**'
       - 'compose.yml'
       - 'Dockerfile'
+      - '.github/workflows/**'
+      - 'presets/**'
   workflow_dispatch:
 
 permissions:

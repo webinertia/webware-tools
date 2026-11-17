@@ -60,6 +60,26 @@ required workflow rejects a copy of it in any of these forms:
 A Mago bump is therefore one line in one file, and every consumer container and CI job follows it
 through the revision its own `composer.lock` resolves.
 
+## Release and versioning policy
+
+The prerelease line is finished. `1.0.0-alpha.*`, `1.0.0-beta.*` and `1.0.0-rc.*` are history, and
+the package is on stable `1.0.0` and semantic versioning from here. A release number answers two
+questions: did the toolset change, and how disruptive is that change to a consumer.
+
+| Change | Release |
+|---|---|
+| Any tool releases a minor or patch, such as a Mago bump | Patch: `1.0.x` |
+| A new tool is added, or an existing tool gains a new capability | Minor: `1.x.0` |
+| One tool is replaced by another | Major: `x.0.0` |
+
+**Consumers take a caret range.** A dependent requires `^1.0` and never an exact pin, so patch and
+minor releases arrive on `composer update` without an edit in the consumer. Only a major release
+asks the consumer to act.
+
+**The pin has exactly one home.** A Mago version is written in `version =` in `mago.toml` in this
+repository, and nowhere else. A consumer that restates `version =` in its own `mago.toml` fails the
+reusable CI.
+
 ## License
 
 BSD-3-Clause. See [LICENSE](LICENSE).

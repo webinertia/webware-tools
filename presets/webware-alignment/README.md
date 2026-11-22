@@ -68,15 +68,20 @@ already carries.
 `artifacts/markdownlint-cli2.jsonc` lints every `**/*.md` file except these paths:
 
 - `vendor/**` and `node_modules/**`, which are not the package's own content.
-- `.github/skills/**` and `.specify/**`, which are spec-kit managed. Anything fixed there is
-  overwritten the next time spec-kit regenerates the tree, so the finding cannot be acted on.
+- `.github/**`, which is agent configuration. `copilot-instructions.md` is generated from this
+  preset's own artifact, and `skills/` plus `instructions/` are maintained by the agent tooling.
+  None of it is published documentation.
+- `.specify/**`, which is spec-kit managed. Anything fixed there is overwritten the next time
+  spec-kit regenerates the tree, so the finding cannot be acted on.
+- `specs/**`, which holds spec-kit feature specs. Those stay in the repository as working
+  artifacts that drive implementation, not as published documentation.
 - `plan/**`, which holds working plans and session handoffs that are never published.
 - `LICENSE.md` and `COPYRIGHT.md`, which start with prose by convention and are not documentation.
 
 Disabling rules wholesale was considered and rejected in favour of excluding paths. The full
 default rule set stays on, so a finding means the package's own documentation is inconsistent.
 
-Four adjustments exist, each chosen because it changes no rendered output:
+Five adjustments exist, each chosen because it changes no rendered output:
 
 | Setting | Why |
 |---|---|

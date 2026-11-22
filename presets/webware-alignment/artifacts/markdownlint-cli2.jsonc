@@ -8,12 +8,16 @@
 //   MD060 table-column-style - alignment padding, same reasoning
 //
 // Out of scope, because these trees are not documentation this package authors:
-//   .github/skills/** - spec-kit managed skills, overwritten on a spec-kit update
-//   .specify/**       - spec-kit managed templates, same reason
+//   .github/**        - agent configuration: copilot-instructions.md is generated
+//                       from the preset, skills/ and instructions/ are maintained
+//                       by the agent tooling, not by hand as documentation
+//   .specify/**       - spec-kit managed templates
+//   specs/**          - spec-kit feature specs; they stay in the repo as working
+//                       artifacts driving implementation, not as published docs
 //   plan/**           - working plans and session handoffs, never published
 //
-// Those trees accounted for 1885 of the 2032 findings measured across the fleet
-// before they were excluded, which is churn nobody can act on.
+// Measured across the fleet, these trees produced the large majority of findings,
+// and none of them were findings an author of published documentation could act on.
 //
 // Tuned rules, each verified to leave rendered output unchanged:
 //   MD024 siblings_only      - repeated heading text under different parents is
@@ -26,7 +30,9 @@
 // LICENSE.md and COPYRIGHT.md start with prose by convention, so MD041 would
 // always fire on them. They are not documentation and are ignored outright.
 //
-// The required workflow runs this by name as the `markdown` job.
+// The required workflow runs this by name as the `markdown` job, and it pins
+// markdownlint-cli2 0.24.2. This configuration is validated against that exact
+// version; an unpinned run can report a different set of findings.
 {
   "config": {
     "default": true,
@@ -46,8 +52,9 @@
   "ignores": [
     "vendor/**",
     "node_modules/**",
-    ".github/skills/**",
+    ".github/**",
     ".specify/**",
+    "specs/**",
     "plan/**",
     "LICENSE.md",
     "COPYRIGHT.md"

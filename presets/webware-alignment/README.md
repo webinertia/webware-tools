@@ -83,6 +83,7 @@ Four adjustments exist, each chosen because it changes no rendered output:
 | `MD013` off | Line wrapping and table padding produce identical HTML |
 | `MD060` off | Alignment padding, same reasoning |
 | `MD024` `siblings_only: true` | Repeating a heading such as "Parameters" under different parents is normal structure. Same-parent repeats still fail |
+| `MD025` `front_matter_title: ""` | A YAML `title:` is metadata, not a heading. Without this, a document that carries both it and its own H1 reports two top-level headings |
 | `MD033` allows `details` and `summary` | Disclosure blocks are authored deliberately, and the docs renderer permits raw HTML |
 
 ### Infection thread cap

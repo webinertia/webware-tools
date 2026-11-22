@@ -19,6 +19,9 @@
 //   MD024 siblings_only      - repeated heading text under different parents is
 //                              normal structure, so only same-parent repeats fail
 //   MD033 allowed details, summary - disclosure blocks are authored on purpose
+//   MD025 front_matter_title - a YAML `title:` is metadata, not a heading, so a
+//                              document carrying both it and its own H1 is one
+//                              title, not two
 //
 // LICENSE.md and COPYRIGHT.md start with prose by convention, so MD041 would
 // always fire on them. They are not documentation and are ignored outright.
@@ -30,6 +33,9 @@
     "MD013": false,
     "MD024": {
       "siblings_only": true
+    },
+    "MD025": {
+      "front_matter_title": ""
     },
     "MD033": {
       "allowed_elements": ["details", "summary"]

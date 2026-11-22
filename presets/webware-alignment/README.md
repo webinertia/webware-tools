@@ -65,17 +65,25 @@ already carries.
 
 ### Markdown lint scope
 
-`artifacts/markdownlint-cli2.jsonc` lints every `**/*.md` file except four trees:
+`artifacts/markdownlint-cli2.jsonc` lints every `**/*.md` file except these paths:
 
 - `vendor/**` and `node_modules/**`, which are not the package's own content.
 - `.github/skills/**` and `.specify/**`, which are spec-kit managed. Anything fixed there is
   overwritten the next time spec-kit regenerates the tree, so the finding cannot be acted on.
 - `plan/**`, which holds working plans and session handoffs that are never published.
+- `LICENSE.md` and `COPYRIGHT.md`, which start with prose by convention and are not documentation.
 
-Disabling rules was considered and rejected in favour of excluding paths. The full default rule
-set stays on, so a finding means the package's own documentation is inconsistent. The two rules
-that are off, `MD013` and `MD060`, are off because they are output neutral: line wrapping and
-table padding change no rendered result.
+Disabling rules wholesale was considered and rejected in favour of excluding paths. The full
+default rule set stays on, so a finding means the package's own documentation is inconsistent.
+
+Four adjustments exist, each chosen because it changes no rendered output:
+
+| Setting | Why |
+|---|---|
+| `MD013` off | Line wrapping and table padding produce identical HTML |
+| `MD060` off | Alignment padding, same reasoning |
+| `MD024` `siblings_only: true` | Repeating a heading such as "Parameters" under different parents is normal structure. Same-parent repeats still fail |
+| `MD033` allows `details` and `summary` | Disclosure blocks are authored deliberately, and the docs renderer permits raw HTML |
 
 ### Infection thread cap
 

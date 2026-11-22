@@ -15,13 +15,35 @@
 // Those trees accounted for 1885 of the 2032 findings measured across the fleet
 // before they were excluded, which is churn nobody can act on.
 //
+// Tuned rules, each verified to leave rendered output unchanged:
+//   MD024 siblings_only      - repeated heading text under different parents is
+//                              normal structure, so only same-parent repeats fail
+//   MD033 allowed details, summary - disclosure blocks are authored on purpose
+//
+// LICENSE.md and COPYRIGHT.md start with prose by convention, so MD041 would
+// always fire on them. They are not documentation and are ignored outright.
+//
 // The required workflow runs this by name as the `markdown` job.
 {
   "config": {
     "default": true,
     "MD013": false,
+    "MD024": {
+      "siblings_only": true
+    },
+    "MD033": {
+      "allowed_elements": ["details", "summary"]
+    },
     "MD060": false
   },
   "globs": ["**/*.md"],
-  "ignores": ["vendor/**", "node_modules/**", ".github/skills/**", ".specify/**", "plan/**"]
+  "ignores": [
+    "vendor/**",
+    "node_modules/**",
+    ".github/skills/**",
+    ".specify/**",
+    "plan/**",
+    "LICENSE.md",
+    "COPYRIGHT.md"
+  ]
 }

@@ -113,7 +113,7 @@ The following boundaries are enforced ecosystem-wide by the central
 `vendor/webware/webware-tools/mago.toml`. The exact TOML lives there and is not restated here, so
 the rule and its rationale cannot drift apart.
 
-- **Http perimeter.** The PSR Http server contracts (`Psr\Http\Server\**`  - 
+- **Http perimeter.** The PSR Http server contracts (`Psr\Http\Server\**`  -
   `MiddlewareInterface`, `RequestHandlerInterface`) are usable only from
   `Webware\**\Http\**` - including the admin-nested `Http\Admin\Middleware\` and
   `Http\Admin\RequestHandler\` layout - plus `Webware\Async\**` (a runner must accept a PSR-15

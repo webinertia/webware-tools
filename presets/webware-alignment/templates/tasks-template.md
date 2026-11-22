@@ -93,7 +93,7 @@ and are not a package parameter.
   `vendor/` and the Composer cache, `host.docker.internal` host-gateway for Xdebug); for packages
   whose tests need MySQL, uncomment the opt-in `mysql` service (and the `depends_on` block on
   `tooling`) and point the package's `mysql.local.php` at host `mysql`, port `3306`; uncomment the
-  `phpmyadmin` service (http://localhost:8080) for a web UI
+  `phpmyadmin` service (<http://localhost:8080>) for a web UI
 - [ ] T021 Create `.dockerignore` by copying the preset's `artifacts/.dockerignore`
   (exclude `vendor/`, `.git/`, `.github/`, `.devcontainer/`, `.specify/`, `specs/`, caches,
   `*.log`)

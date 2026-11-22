@@ -10,7 +10,7 @@ The pair discriminates; a lone clean file does not.
 
 ## Layout
 
-```
+```text
 guard-fixtures/
   cases/<rule>/<case>.php   one small file per case, grouped by the rule under test
   manifest.json             the expected verdict for every case, before and after
@@ -31,7 +31,7 @@ zero-segment namespaces (`Http\...`, `Event\...`) that prove `**` matches zero s
 From the tooling container. The host binary is a different mago version and a host run is not
 evidence.
 
-```
+```bash
 docker compose up -d
 docker compose exec -T tooling php guard-fixtures/check.php
 ```
@@ -59,7 +59,7 @@ refuses by omission.
 
 To re-record the baseline against a configuration you are deliberately testing:
 
-```
+```bash
 docker compose exec -T tooling php guard-fixtures/check.php --record=guard-fixtures/baseline.json
 ```
 
@@ -88,7 +88,7 @@ selector otherwise.
 `check.php` reads every `[[guard.structural.rules]]` and `[[guard.perimeter.restrictions]]` block out
 of `mago.toml` and fails when one has no fixture exercising it:
 
-```
+```text
 FAIL no fixture exercises the structural rule on = "**\Telemetry\*"
 FAIL no fixture references the perimeter dependency "Webware\Telemetry\**"
 ```

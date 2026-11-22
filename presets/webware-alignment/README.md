@@ -27,6 +27,7 @@ inspecting another package:
 | `codecov.yml` | `codecov.yml` |
 | `renovate.json` | `renovate.json` |
 | `phpbench.json.dist` | `phpbench.json.dist` |
+| `markdownlint-cli2.jsonc` | `markdownlint-cli2.jsonc` (copy verbatim - the `markdown` job reads it by that name) |
 | `webware-ci.json` | `webware-ci.json` in the repository root, beside `mago.toml` (replace `{{PLACEHOLDER}}`s with Package Parameters) |
 | `copilot-instructions.md` | `.github/copilot-instructions.md` (replace `{{PACKAGE_TITLE}}`) |
 | `gitattributes.txt` | merge into `.gitattributes` |

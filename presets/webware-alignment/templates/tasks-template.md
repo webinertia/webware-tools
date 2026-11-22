@@ -54,6 +54,10 @@ and are not a package parameter.
 - [ ] T013 Create `renovate.json` by copying the preset's `artifacts/renovate.json`
 - [ ] T014 Create `phpbench.json.dist` by copying the preset's `artifacts/phpbench.json.dist`;
   no `benchmarks/` directory required
+- [ ] T014a Create `markdownlint-cli2.jsonc` by copying the preset's
+  `artifacts/markdownlint-cli2.jsonc` verbatim. The required workflow runs it as the `markdown` job
+  and fails when the file is absent, because the default rule set reports line length and table
+  alignment on every document. Only rendering-relevant rules are enabled; do not add style rules
 
 ## Phase 5: Required-workflow config + agent instructions
 

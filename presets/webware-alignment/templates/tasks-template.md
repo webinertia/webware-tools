@@ -7,7 +7,7 @@ and are not a package parameter.
 
 ## Phase 1: composer.json
 
-- [ ] T001 Align `composer.json` `require.php` to `~8.4.1 || ~8.5.0` (no `8.6.0-dev`), set
+- [ ] T001 Align `composer.json` `require.php` to `~8.4.1 || ~8.5.0 || ~8.6.0` (no `8.6.0-dev`), set
   `config.platform.php` to `8.4.99` in `composer.json`
 - [ ] T002 Align `require-dev`: PHPUnit `^13.3.0`, add `infection/infection: ^0.35.0`,
   `phpbench/phpbench: ^1.7`, `roave/backward-compatibility-check: ^8.21.0`; keep package deps,
@@ -54,6 +54,10 @@ and are not a package parameter.
 - [ ] T013 Create `renovate.json` by copying the preset's `artifacts/renovate.json`
 - [ ] T014 Create `phpbench.json.dist` by copying the preset's `artifacts/phpbench.json.dist`;
   no `benchmarks/` directory required
+- [ ] T014a Create `markdownlint-cli2.jsonc` by copying the preset's
+  `artifacts/markdownlint-cli2.jsonc` verbatim. The required workflow runs it as the `markdown` job
+  and fails when the file is absent, because the default rule set reports line length and table
+  alignment on every document. Only rendering-relevant rules are enabled; do not add style rules
 
 ## Phase 5: Required-workflow config + agent instructions
 

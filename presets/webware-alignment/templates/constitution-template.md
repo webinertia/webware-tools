@@ -45,7 +45,7 @@ local overrides is `vendor/webware/webware-tools/mago-guard-realignment.md`.
 
 ### IV. PHP Compatibility
 
-- Support current supported PHP versions only (`~8.4.1 || ~8.5.0`); `config.platform.php` pinned
+- Support current supported PHP versions only (`~8.4.1 || ~8.5.0 || ~8.6.0`); `config.platform.php` pinned
   to `8.4.99` for dependency resolution.
 - No `8.6.0-dev` in `require.php`.
 
@@ -100,7 +100,7 @@ local overrides is `vendor/webware/webware-tools/mago-guard-realignment.md`.
 - These files are kept in sync with the central `webware/webware-tools` preset.
 - The Dockerfile derives Mago's version from the central `mago.toml` `version =` pin at build
   time (resolved through `composer.lock`); there is no `MAGO_VERSION` build arg. `PHP_VERSION`
-  tracks the package's latest supported 8.4 patch release.
+  tracks the package's latest supported 8.6 patch release.
 
 ### VII. Line Endings
 

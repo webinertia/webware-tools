@@ -27,6 +27,7 @@ inspecting another package:
 | `codecov.yml` | `codecov.yml` |
 | `renovate.json` | `renovate.json` |
 | `phpbench.json.dist` | `phpbench.json.dist` |
+| `markdownlint-cli2.jsonc` | `markdownlint-cli2.jsonc` (copy verbatim - the `markdown` job reads it by that name) |
 | `webware-ci.json` | `webware-ci.json` in the repository root, beside `mago.toml` (replace `{{PLACEHOLDER}}`s with Package Parameters) |
 | `copilot-instructions.md` | `.github/copilot-instructions.md` (replace `{{PACKAGE_TITLE}}`) |
 | `gitattributes.txt` | merge into `.gitattributes` |
@@ -45,7 +46,7 @@ by the organization ruleset - there is no per-package wrapper workflow and no wo
 GitHub invokes the required workflow directly, so it cannot receive `with:` inputs; this file is how
 a package varies its pipeline.
 
-It is a template: `{{PHP_VERSIONS}}` is replaced by a JSON array (e.g. `["8.4", "8.5"]`), the
+It is a template: `{{PHP_VERSIONS}}` is replaced by a JSON array (e.g. `["8.4", "8.5", "8.6"]`), the
 boolean placeholders are unquoted, and the rest are quoted strings. `integration_php_version` may be
 left empty, which runs the integration suite on every matrix leg. Packages whose tests need a
 database add the `db_*` keys:
@@ -196,7 +197,7 @@ Xdebug is installed but off by default - enable step debugging with `XDEBUG_MODE
 
 The Dockerfile derives Mago's version from the central `mago.toml` `version =` pin at build
 time, resolved through `composer.lock`, so there is no `MAGO_VERSION` build arg to keep in sync.
-`PHP_VERSION` tracks the package's latest supported 8.4 patch release.
+`PHP_VERSION` tracks the package's latest supported 8.6 patch release.
 
 For packages whose tests need MySQL (e.g. anything using `php-db/phpdb-mysql`), `compose.yml`
 ships an opt-in `mysql` service - uncomment the

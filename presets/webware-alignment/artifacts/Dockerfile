@@ -14,9 +14,9 @@
 # .gitattributes), which keeps the container and host line endings consistent.
 # ---------------------------------------------------------------------------
 
-# PHP version to base the image on (latest 8.5 patch release). Keep in sync
+# PHP version to base the image on (latest 8.6 patch release). Keep in sync
 # with the package's supported PHP versions and `config.platform.php`.
-ARG PHP_VERSION=8.5.12
+ARG PHP_VERSION=8.6.0
 
 # Composer version (copied from the official composer image at build time).
 ARG COMPOSER_VERSION=2.11.2

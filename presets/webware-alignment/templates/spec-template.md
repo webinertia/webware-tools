@@ -41,8 +41,8 @@ is `artifacts/webware-ci.json`, and the required workflow reads those names exac
 
 | Parameter | [PACKAGE] value |
 |---|---|
-| `php_versions` | `["8.4", "8.5"]` |
-| `require.php` | `~8.4.1 \|\| ~8.5.0` |
+| `php_versions` | `["8.4", "8.5", "8.6"]` |
+| `require.php` | `~8.4.1 \|\| ~8.5.0 \|\| ~8.6.0` |
 | `config.platform.php` | `8.4.99` |
 | `run_integration` | [true/false] |
 | `integration_php_version` | highest supported PHP - narrows the integration suite and its DB service to one matrix leg; leave empty to run it on every leg `run_integration` covers |
@@ -52,7 +52,7 @@ is `artifacts/webware-ci.json`, and the required workflow reads those names exac
 | `min_msi` / `min_covered_msi` | `95` / `95` |
 | DB container (`db_image`) | [omitted unless package needs a database]; canonical MySQL value `mysql:9.7`, with `db_port: 3306`, `db_env_json` (seeds the DB), `db_health_cmd` (readiness probe), and `test_env_json` (overrides phpunit.xml.dist connection for CI) |
 | Integration container | [e.g. Mailpit, MySQL, omitted] |
-| Tooling `PHP_VERSION` (Docker) | `8.5.12` (latest 8.5 patch; keep in sync with `require.php`) |
+| Tooling `PHP_VERSION` (Docker) | `8.6.0` (latest 8.6 patch; keep in sync with `require.php`) |
 | Tooling Mago version (Docker) | derived from the central `mago.toml` pin via `composer.lock` (no literal to maintain) |
 | Test autoload namespaces | `WebwareTest\<Package>\` → `test/unit/`, `WebwareTestIntegration\<Package>\` → `test/integration/` |
 

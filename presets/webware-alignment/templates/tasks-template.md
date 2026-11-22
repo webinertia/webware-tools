@@ -7,7 +7,7 @@ and are not a package parameter.
 
 ## Phase 1: composer.json
 
-- [ ] T001 Align `composer.json` `require.php` to `~8.4.1 || ~8.5.0` (no `8.6.0-dev`), set
+- [ ] T001 Align `composer.json` `require.php` to `~8.4.1 || ~8.5.0 || ~8.6.0` (no `8.6.0-dev`), set
   `config.platform.php` to `8.4.99` in `composer.json`
 - [ ] T002 Align `require-dev`: PHPUnit `^13.3.0`, add `infection/infection: ^0.35.0`,
   `phpbench/phpbench: ^1.7`, `roave/backward-compatibility-check: ^8.21.0`; keep package deps,

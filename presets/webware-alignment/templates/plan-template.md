@@ -14,7 +14,7 @@ extending the shared config, Infection/Codecov/Renovate/PHPBench config files, a
 
 ## Technical Context
 
-**Language/Version**: PHP `~8.4.1 || ~8.5.0`
+**Language/Version**: PHP `~8.4.1 || ~8.5.0 || ~8.6.0`
 
 **Primary Dependencies**: PHPUnit `^13.3.0`, Infection `^0.35.0`, PHPBench `^1.7`,
 roave/backward-compatibility-check `^8.21.0`, `webware/webware-tools` (dev, for `mago.toml`
@@ -34,7 +34,7 @@ on Windows, WSL, Linux, and macOS.
 
 **Performance Goals**: N/A
 
-**Constraints**: CI matrix `["8.4", "8.5"]`; `config.platform.php` = `8.4.99`; `min_msi` and
+**Constraints**: CI matrix `["8.4", "8.5", "8.6"]`; `config.platform.php` = `8.4.99`; `min_msi` and
 `min_covered_msi` = 95
 
 **Scale/Scope**: Tooling alignment only (test scaffolding, not full coverage)
@@ -147,7 +147,7 @@ Consumer obligations derived from the contract:
 
 ### Phase 1: composer.json
 
-- `require.php`: `~8.4.1 || ~8.5.0`. Do not add `8.6.0-dev`.
+- `require.php`: `~8.4.1 || ~8.5.0 || ~8.6.0`. Do not add `8.6.0-dev`.
 - `require-dev`: PHPUnit `^13.3.0`; add Infection `^0.35.0`, PHPBench `^1.7`,
   roave/backward-compatibility-check `^8.21.0`; keep existing package deps,
   `webware/webware-tools`, `roave/security-advisories`; remove `phpstan/phpstan`,
@@ -243,7 +243,7 @@ Consumer obligations derived from the contract:
 ### Phase 7: Containerized development environment
 
 - `Dockerfile` (new): copy from the preset's `artifacts/Dockerfile`. Base image
-  `php:8.5.12-cli` (latest 8.5 patch, in sync with `require.php`); install Composer from the
+  `php:8.6.0-cli` (latest 8.6 patch, in sync with `require.php`); install Composer from the
   official `composer` image; download the Mago release asset for `${TARGETARCH}` (amd64 →
   `x86_64`, arm64 → `aarch64`) at the Mago version derived from the webware-tools `mago.toml`
   pin (`version =`, resolved through `composer.lock`) and install to `/usr/local/bin/mago`;

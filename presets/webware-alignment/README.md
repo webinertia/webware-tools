@@ -63,6 +63,20 @@ The Package Parameters table in the generated spec is empty by design. Fill in p
 values before planning, reading the package's `composer.json` and `mago.toml` for the values it
 already carries.
 
+### Markdown lint scope
+
+`artifacts/markdownlint-cli2.jsonc` lints every `**/*.md` file except four trees:
+
+- `vendor/**` and `node_modules/**`, which are not the package's own content.
+- `.github/skills/**` and `.specify/**`, which are spec-kit managed. Anything fixed there is
+  overwritten the next time spec-kit regenerates the tree, so the finding cannot be acted on.
+- `plan/**`, which holds working plans and session handoffs that are never published.
+
+Disabling rules was considered and rejected in favour of excluding paths. The full default rule
+set stays on, so a finding means the package's own documentation is inconsistent. The two rules
+that are off, `MD013` and `MD060`, are off because they are output neutral: line wrapping and
+table padding change no rendered result.
+
 ### Infection thread cap
 
 `artifacts/infection.json5.dist` pins `threads` to `4` rather than `"max"`:
@@ -204,7 +218,7 @@ ships an opt-in `mysql` service - uncomment the
 `mysql` service and the `depends_on` block on `tooling`, then point the package's local DB config
 (e.g. `config/autoload/mysql.local.php`) at host `mysql`, port `3306`, using the service's
 `MYSQL_*` credentials. The service mirrors the CI `db_image` / `db_env_json` Package Parameters,
-so the dev database matches CI. An optional `phpmyadmin` web UI (http://localhost:8080) is also
+so the dev database matches CI. An optional `phpmyadmin` web UI (<http://localhost:8080>) is also
 included for inspecting the database.
 
 ## When to use / when not

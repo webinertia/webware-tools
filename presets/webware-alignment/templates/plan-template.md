@@ -257,7 +257,7 @@ Consumer obligations derived from the contract:
   MySQL, uncomment the opt-in `mysql` service (and the `depends_on` block on `tooling`); it
   mirrors the CI `db_image` / `db_env_json` Package Parameters and is reachable from `tooling` as
   host `mysql` on port 3306 (matching the PhpDb `mysql.local.php` convention). An opt-in
-  `phpmyadmin` service provides a web UI (http://localhost:8080) over the database.
+  `phpmyadmin` service provides a web UI (<http://localhost:8080>) over the database.
 - `.dockerignore` (new): copy from the preset's `artifacts/.dockerignore` (exclude `vendor/`,
   `.git/`, `.github/`, `.devcontainer/`, `.specify/`, `specs/`, `.phpunit.cache`, `coverage/`,
   `*.log`).

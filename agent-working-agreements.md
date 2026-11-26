@@ -54,3 +54,12 @@ remembers. Every package receives it as
 - Canonical references ship in this package. Consult them rather than trusting recall:
   this file, `mago-analysis-types.md`, and `presets/webware-alignment/artifacts/` - the artifacts
   every package derives from.
+- Container runtime is platform-specific. On a **Windows** development machine, local container work
+  runs on WSL containers (`wslc.exe`, default path `C:\Program Files\WSL\wslc.exe`), not Docker
+  Desktop. Do not start Docker Desktop, and do not invoke `docker`, `docker compose` or
+  `docker build`, to run a build, a test or a tooling container there. Linux and macOS contributors,
+  and the CI runners, keep using Docker.
+- There is no `wslc compose`. A compose file is imported through the WSL Container Desktop app, or
+  its services are translated into `wslc` commands. Mapping: `docker run` -> `wslc run`,
+  `docker build` -> `wslc build`, `docker exec` -> `wslc exec`, `docker ps` -> `wslc ps`,
+  `docker images` -> `wslc images`, `docker volume` -> `wslc volume`.
